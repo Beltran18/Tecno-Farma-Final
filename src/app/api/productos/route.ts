@@ -3,10 +3,10 @@ import { productosSimulados } from '@/lib/datos-simulados';
 import { type Producto } from '@/lib/types';
 
 export async function GET() {
-  // En una aplicación real, aquí es donde te conectarías a una base de datos.
-  // Por ahora, simplemente devolvemos los datos simulados que ya tenemos.
   try {
-    return NextResponse.json(productosSimulados);
+    // Devolvemos una copia para no mutar el array original directamente
+    const productos = [...productosSimulados];
+    return NextResponse.json(productos);
   } catch (error) {
     console.error('Error al obtener los productos:', error);
     return new NextResponse('Error interno del servidor', { status: 500 });

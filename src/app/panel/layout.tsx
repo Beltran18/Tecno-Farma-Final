@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import {
   Avatar,
   AvatarFallback,
@@ -37,6 +37,7 @@ export default function DisposicionPanel({
   children: React.ReactNode;
 }) {
   const router = useRouter();
+  const pathname = usePathname();
 
   return (
     <SidebarProvider>
@@ -47,7 +48,7 @@ export default function DisposicionPanel({
         <SidebarContent>
           <SidebarMenu>
             <SidebarMenuItem>
-              <SidebarMenuButton href="/panel" tooltip="Panel" isActive>
+              <SidebarMenuButton href="/panel" tooltip="Panel" isActive={pathname === '/panel'}>
                 <Home />
                 Panel Principal
               </SidebarMenuButton>

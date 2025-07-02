@@ -104,7 +104,6 @@ export function ClientePanel({ productosIniciales }: ClientePanelProps) {
 
       const productoAgregado = await response.json();
       
-      // La fecha de JSON es un string, hay que convertirla a objeto Date
       const productoFinal = {
           ...productoAgregado,
           fechaVencimiento: new Date(productoAgregado.fechaVencimiento)
@@ -126,14 +125,66 @@ export function ClientePanel({ productosIniciales }: ClientePanelProps) {
     }
   };
   
-  const actualizarProducto = (productoActualizado: Producto) => {
-    setProductos(productos.map(p => p.id === productoActualizado.id ? productoActualizado : p));
-    setProductoEnEdicion(null);
-    setFormularioAbierto(false);
+  const actualizarProducto = async (productoActualizado: Producto) => {
+    try {
+        const response = await fetch(`/api/productos/${productoActualizado.id}`, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(productoActualizado),
+        });
+
+        if (!response.ok) {
+            throw new Error('La respuesta de la red no fue correcta');
+        }
+
+        const productoDevuelto = await response.json();
+        const productoFinal = {
+            ...productoDevuelto,
+            fechaVencimiento: new Date(productoDevuelto.fechaVencimiento),
+        };
+
+        setProductos(productos.map(p => p.id === productoFinal.id ? productoFinal : p));
+        setProductoEnEdicion(null);
+        setFormularioAbierto(false);
+        notificacion({
+            title: 'Éxito',
+            description: 'Producto actualizado correctamente.',
+        });
+    } catch (error) {
+        console.error('Error al actualizar el producto:', error);
+        notificacion({
+            title: 'Error',
+            description: 'No se pudo actualizar el producto. Inténtalo de nuevo.',
+            variant: 'destructive',
+        });
+    }
   };
 
-  const eliminarProducto = (productoId: string) => {
-    setProductos(productos.filter(p => p.id !== productoId));
+  const eliminarProducto = async (productoId: string) => {
+     try {
+        const response = await fetch(`/api/productos/${productoId}`, {
+            method: 'DELETE',
+        });
+
+        if (!response.ok) {
+            throw new Error('La respuesta de la red no fue correcta');
+        }
+
+        setProductos(productos.filter(p => p.id !== productoId));
+        notificacion({
+            title: 'Éxito',
+            description: 'Producto eliminado correctamente.',
+        });
+    } catch (error) {
+        console.error('Error al eliminar el producto:', error);
+        notificacion({
+            title: 'Error',
+            description: 'No se pudo eliminar el producto. Inténtalo de nuevo.',
+            variant: 'destructive',
+        });
+    }
   }
 
   const abrirFormularioEditar = (producto: Producto) => {
@@ -231,8 +282,8 @@ export function ClientePanel({ productosIniciales }: ClientePanelProps) {
                     </TableCell>
                     <TableCell className="text-right">{producto.cantidad}</TableCell>
                     <TableCell>
-                       <span className={isBefore(producto.fechaVencimiento, new Date()) ? 'text-destructive' : ''}>
-                         {format(producto.fechaVencimiento, 'dd/MM/yyyy')}
+                       <span className={isBefore(new Date(producto.fechaVencimiento), new Date()) ? 'text-destructive' : ''}>
+                         {format(new Date(producto.fechaVencimiento), 'dd/MM/yyyy')}
                        </span>
                     </TableCell>
                     <TableCell>{producto.numeroLote}</TableCell>
@@ -281,11 +332,11 @@ export function ClientePanel({ productosIniciales }: ClientePanelProps) {
                <div className="space-y-4">
                   {alertasVencimiento.length > 0 ? (
                      alertasVencimiento.map(producto => (
-                       <Alert key={producto.id} variant={isBefore(producto.fechaVencimiento, new Date()) ? 'destructive' : 'default'}>
+                       <Alert key={producto.id} variant={isBefore(new Date(producto.fechaVencimiento), new Date()) ? 'destructive' : 'default'}>
                          <AlertTriangle className="h-4 w-4" />
                          <AlertTitle>{producto.nombre} ({producto.numeroLote})</AlertTitle>
                          <AlertDescription>
-                           {isBefore(producto.fechaVencimiento, new Date()) ? 'Ha vencido el' : 'Vence el'} {format(producto.fechaVencimiento, 'PPP', { locale: es })}.
+                           {isBefore(new Date(producto.fechaVencimiento), new Date()) ? 'Ha vencido el' : 'Vence el'} {format(new Date(producto.fechaVencimiento), 'PPP', { locale: es })}.
                          </AlertDescription>
                        </Alert>
                      ))
@@ -308,7 +359,7 @@ export function ClientePanel({ productosIniciales }: ClientePanelProps) {
   );
 }
 
-function FormularioProducto({ producto, onAgregar, onActualizar }: { producto: Producto | null, onAgregar: (p: Omit<Producto, 'id'>) => void, onActualizar: (p: Producto) => void}) {
+function FormularioProducto({ producto, onAgregar, onActualizar }: { producto: Producto | null, onAgregar: (p: Omit<Producto, 'id'>) => Promise<void>, onActualizar: (p: Producto) => Promise<void>}) {
   const [nombre, setNombre] = useState('');
   const [categoria, setCategoria] = useState<'Analgésicos' | 'Antibióticos' | 'Vitaminas' | 'Dermatología' | 'Otros'>('Otros');
   const [precio, setPrecio] = useState(0);
@@ -322,7 +373,7 @@ function FormularioProducto({ producto, onAgregar, onActualizar }: { producto: P
       setCategoria(producto.categoria);
       setPrecio(producto.precio);
       setCantidad(producto.cantidad);
-      setFechaVencimiento(producto.fechaVencimiento);
+      setFechaVencimiento(new Date(producto.fechaVencimiento));
       setNumeroLote(producto.numeroLote);
     } else {
       setNombre('');
@@ -334,15 +385,15 @@ function FormularioProducto({ producto, onAgregar, onActualizar }: { producto: P
     }
   }, [producto]);
 
-  const handleEnviar = (e: React.FormEvent) => {
+  const handleEnviar = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!fechaVencimiento) return;
     const datosProducto = { nombre, categoria, precio, cantidad, fechaVencimiento, numeroLote };
 
     if (producto) {
-      onActualizar({ ...datosProducto, id: producto.id });
+      await onActualizar({ ...datosProducto, id: producto.id });
     } else {
-      onAgregar(datosProducto);
+      await onAgregar(datosProducto);
     }
   };
 
