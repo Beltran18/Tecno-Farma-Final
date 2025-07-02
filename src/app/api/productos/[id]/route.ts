@@ -1,6 +1,5 @@
 import { type NextRequest, NextResponse } from 'next/server';
-import { productosSimulados } from '@/lib/datos-simulados';
-import { type Producto } from '@/lib/types';
+import { getProductById, updateProduct, deleteProduct } from '@/services/product-service';
 
 // Obtener un solo producto por ID
 export async function GET(
@@ -8,7 +7,7 @@ export async function GET(
   { params }: { params: { id: string } }
 ) {
   try {
-    const producto = productosSimulados.find(p => p.id === params.id);
+    const producto = await getProductById(params.id);
     if (!producto) {
       return new NextResponse(JSON.stringify({ message: 'Producto no encontrado' }), { status: 404, headers: { 'Content-Type': 'application/json' } });
     }
@@ -26,20 +25,11 @@ export async function PUT(
 ) {
   try {
     const datosActualizados = await request.json();
-    const indiceProducto = productosSimulados.findIndex(p => p.id === params.id);
+    const productoActualizado = await updateProduct(params.id, datosActualizados);
 
-    if (indiceProducto === -1) {
+    if (!productoActualizado) {
       return new NextResponse(JSON.stringify({ message: 'Producto no encontrado' }), { status: 404, headers: { 'Content-Type': 'application/json' } });
     }
-
-    // Asegurarse de que la fecha siga siendo un objeto Date
-    const productoActualizado: Producto = {
-        ...productosSimulados[indiceProducto],
-        ...datosActualizados,
-        fechaVencimiento: new Date(datosActualizados.fechaVencimiento),
-    };
-
-    productosSimulados[indiceProducto] = productoActualizado;
 
     return NextResponse.json(productoActualizado);
   } catch (error) {
@@ -54,13 +44,11 @@ export async function DELETE(
   { params }: { params: { id: string } }
 ) {
   try {
-    const indiceProducto = productosSimulados.findIndex(p => p.id === params.id);
+    const fueEliminado = await deleteProduct(params.id);
 
-    if (indiceProducto === -1) {
+    if (!fueEliminado) {
       return new NextResponse(JSON.stringify({ message: 'Producto no encontrado' }), { status: 404, headers: { 'Content-Type': 'application/json' } });
     }
-
-    productosSimulados.splice(indiceProducto, 1);
 
     return new NextResponse(null, { status: 204 }); // Sin contenido, éxito
   } catch (error) {
