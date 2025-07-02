@@ -541,7 +541,7 @@ export function ClientePanel({ productosIniciales }: ClientePanelProps) {
                                         <p className="text-xs text-muted-foreground">{producto.categoria} - Lote: {producto.numeroLote}</p>
                                     </div>
                                     <div className="text-sm text-muted-foreground">
-                                        {format(new Date(producto.fechaVencimiento), 'dd/MM/yy')}
+                                        {isClient ? format(new Date(producto.fechaVencimiento), 'dd/MM/yy') : ''}
                                     </div>
                                 </div>
                             ))
@@ -623,7 +623,7 @@ export function ClientePanel({ productosIniciales }: ClientePanelProps) {
                     <TableCell className="text-right">{producto.cantidad}</TableCell>
                     <TableCell>
                        <span className={isClient && isBefore(new Date(producto.fechaVencimiento), new Date()) ? 'text-destructive' : ''}>
-                         {format(new Date(producto.fechaVencimiento), 'dd/MM/yyyy')}
+                         {isClient ? format(new Date(producto.fechaVencimiento), 'dd/MM/yyyy') : ''}
                        </span>
                     </TableCell>
                     <TableCell>{producto.numeroLote}</TableCell>
@@ -742,7 +742,7 @@ export function ClientePanel({ productosIniciales }: ClientePanelProps) {
                          <AlertTriangle className="h-4 w-4" />
                          <AlertTitle>{producto.nombre} ({producto.numeroLote})</AlertTitle>
                          <AlertDescription>
-                           {isClient && isBefore(new Date(producto.fechaVencimiento), new Date()) ? 'Ha vencido el' : 'Vence el'} {format(new Date(producto.fechaVencimiento), 'PPP', { locale: es })}.
+                           {isClient && isBefore(new Date(producto.fechaVencimiento), new Date()) ? 'Ha vencido el' : 'Vence el'} {isClient ? format(new Date(producto.fechaVencimiento), 'PPP', { locale: es }) : ''}.
                          </AlertDescription>
                        </Alert>
                      ))
