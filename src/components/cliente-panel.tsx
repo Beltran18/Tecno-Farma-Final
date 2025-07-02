@@ -46,7 +46,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
-import { MoreHorizontal, DollarSign, Package, AlertTriangle, PlusCircle, Search, Calendar as CalendarIcon, Settings, Upload } from 'lucide-react';
+import { MoreHorizontal, DollarSign, Package, AlertTriangle, PlusCircle, Search, Calendar as CalendarIcon, Settings, Upload, Download } from 'lucide-react';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Calendar } from '@/components/ui/calendar';
 import { format, isBefore, isWithinInterval, addDays, subDays } from 'date-fns';
@@ -271,6 +271,47 @@ export function ClientePanel({ productosIniciales }: ClientePanelProps) {
     }
   };
 
+  const handleExportarProductos = () => {
+    if (productos.length === 0) {
+        notificacion({
+            title: 'Inventario Vacío',
+            description: 'No hay productos para exportar.',
+            variant: 'destructive',
+        });
+        return;
+    }
+
+    const headers = ['nombre', 'categoria', 'precio', 'cantidad', 'fechaVencimiento', 'numeroLote', 'proveedorNombre'];
+    const csvRows = [
+      headers.join(','),
+      ...productos.map(p => [
+        `"${p.nombre.replace(/"/g, '""')}"`,
+        `"${p.categoria.replace(/"/g, '""')}"`,
+        p.precio,
+        p.cantidad,
+        format(new Date(p.fechaVencimiento), 'yyyy-MM-dd'),
+        `"${p.numeroLote.replace(/"/g, '""')}"`,
+        `"${(p.proveedorNombre || '').replace(/"/g, '""')}"`,
+      ].join(','))
+    ];
+
+    const csvContent = csvRows.join('\n');
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.setAttribute('href', url);
+    link.setAttribute('download', `inventario_${format(new Date(), 'yyyyMMdd')}.csv`);
+    link.style.visibility = 'hidden';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    
+    notificacion({
+        title: 'Éxito',
+        description: 'La exportación del inventario ha comenzado.',
+    });
+  };
+
   const abrirFormularioEditar = (producto: Producto) => {
     setProductoEnEdicion(producto);
     setFormularioAbierto(true);
@@ -341,10 +382,14 @@ export function ClientePanel({ productosIniciales }: ClientePanelProps) {
                     />
                 </div>
               </div>
-              <div className="flex gap-2">
+              <div className="flex flex-wrap gap-2">
                  <Button variant="outline" onClick={() => setImportDialogOpen(true)}>
                     <Upload className="mr-2 h-4 w-4" />
                     Importar
+                </Button>
+                <Button variant="outline" onClick={handleExportarProductos}>
+                    <Download className="mr-2 h-4 w-4" />
+                    Exportar
                 </Button>
                 <Button onClick={abrirFormularioNuevo}>
                     <PlusCircle className="mr-2 h-4 w-4" />
