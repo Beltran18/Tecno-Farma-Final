@@ -1,4 +1,4 @@
-import { cn } from "../../libreria/utilidades"
+import { cn } from "@/libreria/utilidades"
 
 function Skeleton({
   className,

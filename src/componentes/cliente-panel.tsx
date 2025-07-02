@@ -6,13 +6,13 @@ import {
   TabsContent,
   TabsList,
   TabsTrigger,
-} from './ui/tabs';
+} from '@/componentes/ui/tabs';
 import {
   Card,
   CardContent,
   CardHeader,
   CardTitle,
-} from './ui/card';
+} from '@/componentes/ui/card';
 import {
   Dialog,
   DialogContent,
@@ -21,7 +21,7 @@ import {
   DialogTrigger,
   DialogFooter,
   DialogClose
-} from './ui/dialog';
+} from '@/componentes/ui/dialog';
 import {
   Table,
   TableBody,
@@ -29,28 +29,28 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from './ui/table';
+} from '@/componentes/ui/table';
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from './ui/dropdown-menu';
+} from '@/componentes/ui/dropdown-menu';
 import {
   Alert,
   AlertDescription,
   AlertTitle,
-} from './ui/alert';
-import { Button } from './ui/button';
-import { Input } from './ui/input';
-import { Badge } from './ui/badge';
+} from '@/componentes/ui/alert';
+import { Button } from '@/componentes/ui/button';
+import { Input } from '@/componentes/ui/input';
+import { Badge } from '@/componentes/ui/badge';
 import { MoreHorizontal, DollarSign, RefreshCw, AlertTriangle, PlusCircle, Search, Calendar as CalendarIcon } from 'lucide-react';
-import { Popover, PopoverContent, PopoverTrigger } from './ui/popover';
-import { Calendar } from './ui/calendar';
+import { Popover, PopoverContent, PopoverTrigger } from '@/componentes/ui/popover';
+import { Calendar } from '@/componentes/ui/calendar';
 import { format, isBefore, isWithinInterval, addDays, subDays } from 'date-fns';
 import { es } from 'date-fns/locale';
 
-import { type Producto } from '../libreria/tipos';
+import { type Producto } from '@/libreria/tipos';
 
 interface ClientePanelProps {
   productosIniciales: Producto[];

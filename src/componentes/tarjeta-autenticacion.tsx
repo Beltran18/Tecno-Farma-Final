@@ -1,5 +1,5 @@
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from './ui/card';
-import { Logo } from './logo';
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/componentes/ui/card';
+import { Logo } from '@/componentes/logo';
 
 interface TarjetaAutenticacionProps {
   title: string;

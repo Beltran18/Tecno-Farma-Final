@@ -1,5 +1,5 @@
 import { Pill } from 'lucide-react';
-import { cn } from '../libreria/utilidades';
+import { cn } from '@/libreria/utilidades';
 
 export function Logo({ className }: { className?: string }) {
   return (
