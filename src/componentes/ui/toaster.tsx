@@ -1,6 +1,6 @@
 "use client"
 
-import { usarNotificacion } from "@/hooks/usar-notificacion"
+import { usarNotificacion } from "../../hooks/usar-notificacion"
 import {
   Toast,
   ToastClose,
@@ -8,7 +8,7 @@ import {
   ToastProvider,
   ToastTitle,
   ToastViewport,
-} from "@/componentes/ui/toast"
+} from "./toast"
 
 export function Toaster() {
   const { toasts } = usarNotificacion()

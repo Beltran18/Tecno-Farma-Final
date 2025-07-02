@@ -12,9 +12,7 @@
     "prefix": ""
   },
   "aliases": {
-    "components": "@/componentes",
-    "utils": "@/libreria/utilidades",
-    "hooks": "@/hooks"
-  },
-  "iconLibrary": "lucide"
+    "components": "src/componentes",
+    "utils": "src/libreria/utilidades"
+  }
 }

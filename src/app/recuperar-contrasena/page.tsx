@@ -1,11 +1,11 @@
 'use client';
 
 import Link from 'next/link';
-import { Button } from '@/componentes/ui/button';
-import { Input } from '@/componentes/ui/input';
-import { Label } from '@/componentes/ui/label';
-import { TarjetaAutenticacion } from '@/componentes/tarjeta-autenticacion';
-import { usarNotificacion } from '@/hooks/usar-notificacion';
+import { Button } from '../../componentes/ui/button';
+import { Input } from '../../componentes/ui/input';
+import { Label } from '../../componentes/ui/label';
+import { TarjetaAutenticacion } from '../../componentes/tarjeta-autenticacion';
+import { usarNotificacion } from '../../hooks/usar-notificacion';
 
 export default function PaginaRecuperarContrasena() {
   const { notificacion } = usarNotificacion();

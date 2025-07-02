@@ -2,10 +2,10 @@
 
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { Button } from '@/componentes/ui/button';
-import { Input } from '@/componentes/ui/input';
-import { Label } from '@/componentes/ui/label';
-import { TarjetaAutenticacion } from '@/componentes/tarjeta-autenticacion';
+import { Button } from '../componentes/ui/button';
+import { Input } from '../componentes/ui/input';
+import { Label } from '../componentes/ui/label';
+import { TarjetaAutenticacion } from '../componentes/tarjeta-autenticacion';
 
 export default function PaginaInicioSesion() {
   const router = useRouter();
