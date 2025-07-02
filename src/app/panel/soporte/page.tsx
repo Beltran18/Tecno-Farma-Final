@@ -8,6 +8,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
 import { usarNotificacion } from '@/hooks/usar-notificacion';
 import { LifeBuoy } from 'lucide-react';
+import { crearTicketSoporte } from '@/ai/flows/support-flow';
 
 export default function PaginaSoporte() {
   const { notificacion } = usarNotificacion();
@@ -17,22 +18,36 @@ export default function PaginaSoporte() {
   const [mensaje, setMensaje] = useState('');
   const [enviando, setEnviando] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setEnviando(true);
 
-    // Simulación de envío de solicitud
-    setTimeout(() => {
+    try {
+      const resultado = await crearTicketSoporte({
+        nombre,
+        email,
+        asunto,
+        mensaje,
+      });
+
       notificacion({
-        title: 'Solicitud Enviada',
-        description: 'Hemos recibido tu mensaje. El equipo de soporte se pondrá en contacto contigo pronto.',
+        title: `Ticket Creado: ${resultado.ticketId}`,
+        description: `${resultado.mensajeConfirmacion} Tiempo de respuesta estimado: ${resultado.respuestaEstimada}.`,
       });
       setNombre('');
       setEmail('');
       setAsunto('');
       setMensaje('');
+    } catch (error) {
+      console.error('Error al crear el ticket de soporte:', error);
+      notificacion({
+        title: 'Error en la Solicitud',
+        description: 'No se pudo enviar tu solicitud. Por favor, inténtalo de nuevo más tarde.',
+        variant: 'destructive',
+      });
+    } finally {
       setEnviando(false);
-    }, 1500);
+    }
   };
 
   return (
