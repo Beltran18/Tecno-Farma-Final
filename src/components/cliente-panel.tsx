@@ -47,7 +47,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
-import { MoreHorizontal, DollarSign, Package, AlertTriangle, PlusCircle, Search, Calendar as CalendarIcon, Settings, Upload, Download, CalendarOff, PackagePlus, Printer, MinusCircle } from 'lucide-react';
+import { MoreHorizontal, DollarSign, Package, AlertTriangle, PlusCircle, Search, Calendar as CalendarIcon, Settings, Upload, Download, CalendarOff, PackagePlus, Printer, MinusCircle, History } from 'lucide-react';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Calendar } from '@/components/ui/calendar';
 import { format, isBefore, isWithinInterval, addDays, subDays } from 'date-fns';
@@ -60,7 +60,7 @@ import {
   type ChartConfig,
 } from '@/components/ui/chart';
 
-import { type Producto, type Categoria, type Proveedor } from '@/lib/types';
+import { type Producto, type Categoria, type Proveedor, type MovimientoInventario, TipoMovimiento } from '@/lib/types';
 import { usarNotificacion } from '@/hooks/usar-notificacion';
 
 interface ClientePanelProps {
@@ -83,6 +83,9 @@ export function ClientePanel({ productosIniciales }: ClientePanelProps) {
   const [isClient, setIsClient] = useState(false);
   const [salidaDialogOpen, setSalidaDialogOpen] = useState(false);
   const [productoParaSalida, setProductoParaSalida] = useState<Producto | null>(null);
+  const [historyDialogOpen, setHistoryDialogOpen] = useState(false);
+  const [productoParaHistorial, setProductoParaHistorial] = useState<Producto | null>(null);
+
   const { notificacion } = usarNotificacion();
   const router = useRouter();
 
@@ -381,23 +384,45 @@ export function ClientePanel({ productosIniciales }: ClientePanelProps) {
     setSalidaDialogOpen(true);
   };
 
+  const abrirDialogoHistorial = (producto: Producto) => {
+    setProductoParaHistorial(producto);
+    setHistoryDialogOpen(true);
+  };
+
   const handleRegistrarSalida = async (cantidadSalida: number) => {
     if (!productoParaSalida) return;
 
-    if (cantidadSalida <= 0) {
-        notificacion({ title: 'Cantidad Inválida', description: 'La cantidad debe ser mayor que cero.', variant: 'destructive' });
-        return;
-    }
-    if (cantidadSalida > productoParaSalida.cantidad) {
-        notificacion({ title: 'Stock Insuficiente', description: 'No puedes registrar una salida mayor al stock actual.', variant: 'destructive' });
-        return;
-    }
+    try {
+      const response = await fetch(`/api/productos/${productoParaSalida.id}/salida`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ cantidad: cantidadSalida }),
+      });
 
-    const productoActualizado = { ...productoParaSalida, cantidad: productoParaSalida.cantidad - cantidadSalida };
-    await actualizarProducto(productoActualizado);
-    setSalidaDialogOpen(false);
-    setProductoParaSalida(null);
-    notificacion({ title: 'Éxito', description: `Se registraron ${cantidadSalida} unidades de salida para ${productoParaSalida.nombre}.` });
+      const data = await response.json();
+      if (!response.ok) {
+        throw new Error(data.message || 'Error al registrar la salida');
+      }
+
+      const productoActualizado = {
+        ...data,
+        fechaVencimiento: new Date(data.fechaVencimiento),
+      };
+
+      setProductos(productos.map(p => p.id === productoActualizado.id ? productoActualizado : p));
+      setSalidaDialogOpen(false);
+      setProductoParaSalida(null);
+      notificacion({
+        title: 'Éxito',
+        description: `Se registró la salida de ${cantidadSalida} unidades.`,
+      });
+    } catch (error: any) {
+      notificacion({
+        title: 'Error',
+        description: error.message,
+        variant: 'destructive',
+      });
+    }
   };
   
   return (
@@ -616,6 +641,10 @@ export function ClientePanel({ productosIniciales }: ClientePanelProps) {
                             <MinusCircle className="mr-2 h-4 w-4" />
                             <span>Registrar Salida</span>
                           </DropdownMenuItem>
+                           <DropdownMenuItem onSelect={() => abrirDialogoHistorial(producto)}>
+                            <History className="mr-2 h-4 w-4" />
+                            <span>Ver Historial</span>
+                          </DropdownMenuItem>
                           <DropdownMenuItem onSelect={() => router.push(`/panel/imprimir-etiqueta/${producto.id}`)}>
                             <Printer className="mr-2 h-4 w-4" />
                             <span>Imprimir Etiqueta</span>
@@ -767,6 +796,12 @@ export function ClientePanel({ productosIniciales }: ClientePanelProps) {
             />
         </DialogContent>
       </Dialog>
+
+      <HistorialProductoDialog 
+        producto={productoParaHistorial}
+        open={historyDialogOpen}
+        onOpenChange={setHistoryDialogOpen}
+      />
     </Tabs>
   );
 }
@@ -818,7 +853,7 @@ function FormularioProducto({
     
     const proveedorSeleccionado = proveedores.find(p => p.id === proveedorId);
     
-    const datosProducto: Omit<Producto, 'id'> = { 
+    const datosProducto = { 
         nombre, 
         categoria, 
         precio, 
@@ -961,5 +996,83 @@ function FormularioSalidaProducto({
         <Button type="submit">Guardar Salida</Button>
       </DialogFooter>
     </form>
+  );
+}
+
+function HistorialProductoDialog({ producto, open, onOpenChange }: { producto: Producto | null, open: boolean, onOpenChange: (open: boolean) => void }) {
+  const [historial, setHistorial] = useState<MovimientoInventario[]>([]);
+  const [cargando, setCargando] = useState(false);
+  
+  useEffect(() => {
+    if (open && producto) {
+      const fetchHistorial = async () => {
+        setCargando(true);
+        try {
+          const response = await fetch(`/api/movimientos/${producto.id}`);
+          if (!response.ok) {
+            throw new Error('No se pudo cargar el historial');
+          }
+          const data = await response.json();
+          setHistorial(data);
+        } catch (error) {
+          console.error(error);
+          setHistorial([]);
+        } finally {
+          setCargando(false);
+        }
+      };
+      fetchHistorial();
+    }
+  }, [open, producto]);
+
+  if (!producto) return null;
+
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="sm:max-w-3xl">
+        <DialogHeader>
+          <DialogTitle>Historial de Movimientos</DialogTitle>
+          <DialogDescription>Producto: {producto.nombre} - Lote: {producto.numeroLote}</DialogDescription>
+        </DialogHeader>
+        <div className="max-h-[60vh] overflow-y-auto pr-4">
+          {cargando ? (
+            <p className="py-8 text-center text-sm text-muted-foreground">Cargando historial...</p>
+          ) : historial.length > 0 ? (
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Fecha</TableHead>
+                  <TableHead>Tipo</TableHead>
+                  <TableHead className='text-center'>Cantidad</TableHead>
+                  <TableHead className='text-center'>Stock Anterior</TableHead>
+                  <TableHead className='text-center'>Stock Nuevo</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {historial.map((mov) => (
+                  <TableRow key={mov.id}>
+                    <TableCell>{format(new Date(mov.fecha), 'dd/MM/yy HH:mm')}</TableCell>
+                    <TableCell><Badge variant="secondary">{mov.tipo}</Badge></TableCell>
+                    <TableCell className={`text-center font-medium ${[TipoMovimiento.AJUSTE_NEGATIVO, TipoMovimiento.SALIDA_MANUAL].includes(mov.tipo) ? 'text-destructive' : 'text-emerald-600'}`}>
+                        {[TipoMovimiento.AJUSTE_NEGATIVO, TipoMovimiento.SALIDA_MANUAL].includes(mov.tipo) ? '-' : '+'}
+                        {mov.cantidadMovida}
+                    </TableCell>
+                    <TableCell className='text-center'>{mov.stockAnterior}</TableCell>
+                    <TableCell className='text-center'>{mov.stockNuevo}</TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          ) : (
+            <p className="py-8 text-center text-sm text-muted-foreground">No hay movimientos registrados para este producto.</p>
+          )}
+        </div>
+        <DialogFooter>
+            <DialogClose asChild>
+                <Button type="button" variant="outline">Cerrar</Button>
+            </DialogClose>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   );
 }

@@ -2,7 +2,7 @@ import { type NextRequest, NextResponse } from 'next/server';
 import { parse } from 'csv-parse/sync';
 import { createProduct } from '@/services/product-service';
 import { getAllProveedores } from '@/services/proveedor-service';
-import { type Producto } from '@/lib/types';
+import { type Producto, TipoMovimiento } from '@/lib/types';
 
 export async function POST(request: NextRequest) {
   try {
@@ -55,7 +55,7 @@ export async function POST(request: NextRequest) {
           continue;
       }
 
-      const productoCreado = await createProduct(nuevoProductoData);
+      const productoCreado = await createProduct(nuevoProductoData, TipoMovimiento.IMPORTACION_CSV);
       productosImportados.push(productoCreado);
     }
 

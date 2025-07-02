@@ -1,5 +1,5 @@
-import { type Producto } from '@/lib/types';
-import { addDays, subDays } from 'date-fns';
+import { type Producto, TipoMovimiento } from '@/lib/types';
+import { logMovement } from './movement-service';
 
 // --- Almacenamiento en Memoria Temporal (con persistencia en desarrollo) ---
 const globalForDb = globalThis as unknown as { productos: Producto[] };
@@ -23,9 +23,11 @@ export async function getProductById(id: string): Promise<Producto | undefined> 
   return productos.find(p => p.id === id);
 }
 
-export async function createProduct(productData: Omit<Producto, 'id'>): Promise<Producto> {
+export async function createProduct(
+  productData: Omit<Producto, 'id'>,
+  tipo: TipoMovimiento.CREACION_INICIAL | TipoMovimiento.IMPORTACION_CSV = TipoMovimiento.CREACION_INICIAL
+): Promise<Producto> {
   // TODO: Reemplazar con la lógica para crear un producto en la base de datos.
-  // Ejemplo: return await db.product.create({ data: productData });
   const nuevoProducto: Producto = {
     ...productData,
     id: `prod_${Date.now()}`,
@@ -33,28 +35,94 @@ export async function createProduct(productData: Omit<Producto, 'id'>): Promise<
   };
   productos.push(nuevoProducto);
   console.log("Producto nuevo agregado al almacén en memoria:", nuevoProducto);
+  
+  await logMovement({
+    productoId: nuevoProducto.id,
+    productoNombre: nuevoProducto.nombre,
+    tipo,
+    cantidadMovida: nuevoProducto.cantidad,
+    stockAnterior: 0,
+    stockNuevo: nuevoProducto.cantidad,
+    notas: tipo === TipoMovimiento.IMPORTACION_CSV ? 'Importado desde archivo CSV' : 'Creado desde formulario',
+  });
+
   return nuevoProducto;
 }
 
 export async function updateProduct(id: string, productData: Partial<Omit<Producto, 'id'>>): Promise<Producto | null> {
     // TODO: Reemplazar con la lógica para actualizar un producto en la base de datos.
-    // Ejemplo: return await db.product.update({ where: { id }, data: productData });
   const productIndex = productos.findIndex(p => p.id === id);
   if (productIndex === -1) {
     console.log(`Producto con id: ${id} no encontrado para actualizar.`);
     return null;
   }
   
+  const productoAnterior = { ...productos[productIndex] };
+  const stockAnterior = productoAnterior.cantidad;
+
   const productoActualizado: Producto = {
-    ...productos[productIndex],
+    ...productoAnterior,
     ...productData,
-    fechaVencimiento: new Date(productData.fechaVencimiento || productos[productIndex].fechaVencimiento),
+    fechaVencimiento: new Date(productData.fechaVencimiento || productoAnterior.fechaVencimiento),
   };
+  
+  const stockNuevo = productoActualizado.cantidad;
+
+  if (stockNuevo !== stockAnterior) {
+    const cantidadMovida = Math.abs(stockNuevo - stockAnterior);
+    const tipo = stockNuevo > stockAnterior ? TipoMovimiento.AJUSTE_POSITIVO : TipoMovimiento.AJUSTE_NEGATIVO;
+    await logMovement({
+      productoId: id,
+      productoNombre: productoActualizado.nombre,
+      tipo,
+      cantidadMovida,
+      stockAnterior,
+      stockNuevo,
+      notas: 'Cantidad ajustada desde el formulario de edición.',
+    });
+  }
+
 
   productos[productIndex] = productoActualizado;
   console.log("Producto actualizado en el almacén en memoria:", productoActualizado);
   return productoActualizado;
 }
+
+export async function registerProductExit(id: string, cantidadSalida: number, notas?: string): Promise<Producto | null> {
+  const productIndex = productos.findIndex(p => p.id === id);
+  if (productIndex === -1) {
+    return null;
+  }
+  
+  const productoAnterior = { ...productos[productIndex] };
+  const stockAnterior = productoAnterior.cantidad;
+
+  if (cantidadSalida > stockAnterior) {
+    throw new Error('Stock insuficiente.');
+  }
+
+  const stockNuevo = stockAnterior - cantidadSalida;
+  
+  const productoActualizado: Producto = {
+    ...productoAnterior,
+    cantidad: stockNuevo,
+  };
+  
+  await logMovement({
+    productoId: id,
+    productoNombre: productoActualizado.nombre,
+    tipo: TipoMovimiento.SALIDA_MANUAL,
+    cantidadMovida: cantidadSalida,
+    stockAnterior,
+    stockNuevo,
+    notas: notas || 'Salida registrada manualmente.',
+  });
+
+  productos[productIndex] = productoActualizado;
+  console.log("Salida de producto registrada:", productoActualizado);
+  return productoActualizado;
+}
+
 
 export async function deleteProduct(id: string): Promise<boolean> {
     // TODO: Reemplazar con la lógica para eliminar un producto de la base de datos.
