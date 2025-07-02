@@ -46,11 +46,18 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
-import { MoreHorizontal, DollarSign, Package, AlertTriangle, PlusCircle, Search, Calendar as CalendarIcon, Settings, Upload, Download } from 'lucide-react';
+import { MoreHorizontal, DollarSign, Package, AlertTriangle, PlusCircle, Search, Calendar as CalendarIcon, Settings, Upload, Download, CalendarOff, PackagePlus } from 'lucide-react';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Calendar } from '@/components/ui/calendar';
 import { format, isBefore, isWithinInterval, addDays, subDays } from 'date-fns';
 import { es } from 'date-fns/locale';
+import { Pie, PieChart, Cell } from 'recharts';
+import {
+  ChartContainer,
+  ChartTooltip,
+  ChartTooltipContent,
+  type ChartConfig,
+} from '@/components/ui/chart';
 
 import { type Producto, type Categoria, type Proveedor } from '@/lib/types';
 import { usarNotificacion } from '@/hooks/usar-notificacion';
@@ -128,6 +135,39 @@ export function ClientePanel({ productosIniciales }: ClientePanelProps) {
     const fechaUmbral = addDays(hoy, umbralDiasVencimiento);
     return productos.filter(p => isWithinInterval(new Date(p.fechaVencimiento), { start: subDays(hoy, 1), end: fechaUmbral }));
   }, [productos, umbralDiasVencimiento]);
+
+  const productosRecientes = useMemo(() => {
+    return [...productos]
+        .sort((a, b) => b.id.localeCompare(a.id))
+        .slice(0, 5);
+  }, [productos]);
+
+  const distribucionCategorias = useMemo(() => {
+    if (productos.length === 0) return [];
+    
+    const conteo = productos.reduce((acc, producto) => {
+      acc[producto.categoria] = (acc[producto.categoria] || 0) + 1;
+      return acc;
+    }, {} as Record<string, number>);
+
+    return Object.entries(conteo)
+        .map(([categoria, total], index) => ({
+            categoria,
+            total,
+            fill: `hsl(var(--chart-${(index % 5) + 1}))`
+        }))
+        .sort((a, b) => b.total - a.total);
+  }, [productos]);
+
+  const chartConfig = useMemo(() => ({
+    total: {
+      label: 'Total',
+    },
+    ...distribucionCategorias.reduce((acc, item) => {
+        acc[item.categoria] = { label: item.categoria, color: item.fill };
+        return acc;
+    }, {} as ChartConfig)
+  }), [distribucionCategorias]) satisfies ChartConfig;
 
   const agregarProducto = async (producto: Omit<Producto, 'id'>) => {
     try {
@@ -325,13 +365,13 @@ export function ClientePanel({ productosIniciales }: ClientePanelProps) {
   return (
     <Tabs defaultValue="panel" className="space-y-4">
       <TabsList>
-        <TabsTrigger value="panel">Panel de Inventario</TabsTrigger>
+        <TabsTrigger value="panel">Panel de Control</TabsTrigger>
         <TabsTrigger value="products">Productos</TabsTrigger>
         <TabsTrigger value="alerts">Alertas</TabsTrigger>
       </TabsList>
 
       <TabsContent value="panel">
-        <div className="grid gap-4 md:grid-cols-2">
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">Valor Total del Inventario</CardTitle>
@@ -363,6 +403,93 @@ export function ClientePanel({ productosIniciales }: ClientePanelProps) {
               </p>
             </CardContent>
           </Card>
+           <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Alertas de Stock Bajo</CardTitle>
+              <AlertTriangle className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{alertasStockBajo.length}</div>
+              <p className="text-xs text-muted-foreground">
+                Umbral: {umbralStockBajo} unidades
+              </p>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Próximos a Vencer</CardTitle>
+              <CalendarOff className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{alertasVencimiento.length}</div>
+              <p className="text-xs text-muted-foreground">
+                En los próximos {umbralDiasVencimiento} días
+              </p>
+            </CardContent>
+          </Card>
+        </div>
+        <div className="mt-4 grid grid-cols-1 gap-4 lg:grid-cols-2">
+            <Card>
+                <CardHeader>
+                    <CardTitle>Distribución por Categoría</CardTitle>
+                    <CardDescription>
+                        Visualización de la cantidad de productos en cada categoría.
+                    </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  {distribucionCategorias.length > 0 ? (
+                    <ChartContainer config={chartConfig} className="min-h-[250px] w-full aspect-auto">
+                      <PieChart>
+                          <ChartTooltip
+                              cursor={false}
+                              content={<ChartTooltipContent hideLabel nameKey="categoria" />}
+                          />
+                          <Pie data={distribucionCategorias} dataKey="total" nameKey="categoria" innerRadius={60}>
+                             {distribucionCategorias.map((entry) => (
+                                <Cell key={`cell-${entry.categoria}`} fill={entry.fill} />
+                            ))}
+                          </Pie>
+                      </PieChart>
+                    </ChartContainer>
+                  ) : (
+                    <div className="flex items-center justify-center h-[250px]">
+                      <p className="text-sm text-muted-foreground">No hay datos para mostrar el gráfico.</p>
+                    </div>
+                  )}
+                </CardContent>
+            </Card>
+            <Card>
+                <CardHeader>
+                    <CardTitle>Productos Recientes</CardTitle>
+                    <CardDescription>
+                        Los últimos productos agregados al inventario.
+                    </CardDescription>
+                </CardHeader>
+                <CardContent>
+                    <div className="space-y-4">
+                        {productosRecientes.length > 0 ? (
+                            productosRecientes.map(producto => (
+                                <div key={producto.id} className="flex items-center">
+                                    <div className="p-2 bg-muted rounded-full mr-4">
+                                        <PackagePlus className="h-5 w-5 text-muted-foreground" />
+                                    </div>
+                                    <div className="flex-grow">
+                                        <p className="text-sm font-medium">{producto.nombre}</p>
+                                        <p className="text-xs text-muted-foreground">{producto.categoria} - Lote: {producto.numeroLote}</p>
+                                    </div>
+                                    <div className="text-sm text-muted-foreground">
+                                        {format(new Date(producto.fechaVencimiento), 'dd/MM/yy')}
+                                    </div>
+                                </div>
+                            ))
+                        ) : (
+                            <div className="flex items-center justify-center h-[250px]">
+                                <p className="text-sm text-muted-foreground">No hay productos recientes.</p>
+                             </div>
+                        )}
+                    </div>
+                </CardContent>
+            </Card>
         </div>
       </TabsContent>
 
