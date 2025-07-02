@@ -38,14 +38,14 @@ Este documento realiza un seguimiento del progreso de la implementación de los 
 | **RF025** | El sistema debe permitir a los usuarios registrar las entradas de nuevos suministros al inventario. | ✅ **Completado** | Se logra a través del registro de nuevos productos (RF015), que actualmente guarda en memoria. |
 | **RF026** | El sistema debe permitir a los usuarios registrar las salidas de productos del inventario. | ❌ **Pendiente** | |
 | **RF027** | El sistema debe permitir a los usuarios mantener un historial de todas las transacciones de inventario, incluyendo entradas y salidas. | ❌ **Pendiente** | |
-| **RF028** | El sistema debe permitir al administrador gestionar proveedores, incluyendo registro, actualización y eliminación de proveedores. | ❌ **Pendiente** | |
-| **RF029** | El sistema debe permitir al administrador asociar productos a sus respectivos proveedores. | ❌ **Pendiente** | |
+| **RF028** | El sistema debe permitir al administrador gestionar proveedores, incluyendo registro, actualización y eliminación de proveedores. | ✅ **Completado** | Implementada página de gestión de proveedores con funcionalidad CRUD completa. |
+| **RF029** | El sistema debe permitir al administrador asociar productos a sus respectivos proveedores. | ✅ **Completado** | El formulario de productos ahora usa un menú desplegable para asociar proveedores existentes. |
 | **RF030** | El sistema debe permitir al administrador generar reportes de compras a proveedores, incluyendo cantidades, fechas y costos. | ❌ **Pendiente** | |
 | **RF031** | El sistema debe permitir al administrador registrar y gestionar las devoluciones de productos a proveedores. | ❌ **Pendiente** | |
 | **RF032** | El sistema debe permitir al administrador dar soporte a la configuración de múltiples empleados con diferentes niveles de acceso y permisos. | ❌ **Pendiente** | |
 | **RF033** | El sistema debe permitir al administrador dar autenticación de usuario para acceder a cualquier funcionalidad de gestión de inventario. | 🟡 **En Proceso** | Las páginas de autenticación existen, pero falta la lógica de roles y permisos. |
 | **RF034** | El sistema debe registrar y mostrar el historial de cambios de cada producto en el inventario. | ❌ **Pendiente** | |
-| **RF035** | El sistema debe permitir al administrador gestionar categorías de productos para una organización eficiente del inventario. | ❌ **Pendiente** | |
+| **RF035** | El sistema debe permitir al administrador gestionar categorías de productos para una organización eficiente del inventario. | ✅ **Completado** | Implementada página de gestión de categorías (crear/eliminar). |
 | **RF036** | El sistema debe permitir al administrador configurar notificaciones automáticas por correo electrónico para alertas críticas de inventario. | ❌ **Pendiente** | |
 | **RF037** | El sistema debe permitir al usuario consultar el historial de ventas de un producto específico. | ❌ **Pendiente** | |
 | **RF038** | El sistema debe permitir al administrador registrar la trazabilidad completa de los lotes de medicamentos para cumplir con regulaciones sanitarias. | ❌ **Pendiente** | |
