@@ -1,13 +1,7 @@
 import { type Categoria } from '@/lib/types';
 
 // En una aplicación real, esto estaría en una base de datos.
-let categorias: Categoria[] = [
-    { id: 'cat_1', nombre: 'Analgésicos' },
-    { id: 'cat_2', nombre: 'Antibióticos' },
-    { id: 'cat_3', nombre: 'Vitaminas' },
-    { id: 'cat_4', nombre: 'Dermatología' },
-    { id: 'cat_5', nombre: 'Antihistamínicos' },
-];
+let categorias: Categoria[] = [];
 
 export async function getAllCategories(): Promise<Categoria[]> {
   // TODO: Reemplazar con lógica de base de datos
