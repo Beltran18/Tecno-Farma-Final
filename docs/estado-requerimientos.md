@@ -1,5 +1,5 @@
 # Estado de Requerimientos Funcionales - TecnoFarma
-if is 
+
 Este documento realiza un seguimiento del progreso de la implementación de los requerimientos funcionales del proyecto.
 
 ## Leyenda de Estados
@@ -31,12 +31,12 @@ Este documento realiza un seguimiento del progreso de la implementación de los 
 | **RF018** | El sistema debe permitir a los usuarios buscar productos en el inventario por nombre, categoría o número de lote. | ✅ **Completado** | La barra de búsqueda filtra los resultados en el frontend. |
 | **RF019** | El sistema debe permitir al usuario visualizar alertas de productos con bajo stock, según un umbral definido por el mismo usuario. | ✅ **Completado** | Las alertas se muestran en la pestaña "Alertas" y el umbral es configurable. |
 | **RF020** | El sistema debe permitir a los usuarios generar alertas para productos próximos a vencer. | ✅ **Completado** | Las alertas se muestran en la pestaña "Alertas" y el umbral de días es configurable. |
-| **RF021** | El sistema debe permitir a los usuarios realizar conteos físicos del inventario y ajustar las cantidades en el sistema. | ✅ **Completado** | El ajuste de cantidades se puede hacer a través de la edición de productos (RF016), que actualmente guarda en memoria. |
+| **RF021** | El sistema debe permitir a los usuarios realizar conteos físicos del inventario y ajustar las cantidades en el sistema. | ✅ **Completado** | El ajuste de cantidades se puede hacer a través de la edición de productos (RF016) o registrando salidas de stock (RF026). |
 | **RF022** | El sistema debe permitir al administrador realizar la importación de datos de inventario desde archivos en formatos CSV o Excel. | ✅ **Completado** | Implementada importación desde CSV. Formato esperado: nombre,categoria,precio,cantidad,fechaVencimiento (YYYY-MM-DD),numeroLote,proveedorNombre. |
 | **RF023** | El sistema debe permitir al administrador realizar la exportación de datos de inventario a archivos en formatos CSV o Excel. | ✅ **Completado** | Implementada exportación a CSV desde el panel de productos. |
 | **RF024** | El sistema debe permitir al usuario generar reportes de inventario actuales que incluyan el stock total, el valor del inventario y los productos próximos a vencer. | ✅ **Completado** | Se ha implementado una página de reportes con resumen y detalle del inventario, lista para imprimir. |
 | **RF025** | El sistema debe permitir a los usuarios registrar las entradas de nuevos suministros al inventario. | ✅ **Completado** | Se logra a través del registro de nuevos productos (RF015), que actualmente guarda en memoria. |
-| **RF026** | El sistema debe permitir a los usuarios registrar las salidas de productos del inventario. | ❌ **Pendiente** | |
+| **RF026** | El sistema debe permitir a los usuarios registrar las salidas de productos del inventario. | ✅ **Completado** | Se puede registrar una salida de stock desde el menú de acciones de cada producto, disminuyendo la cantidad. |
 | **RF027** | El sistema debe permitir a los usuarios mantener un historial de todas las transacciones de inventario, incluyendo entradas y salidas. | ❌ **Pendiente** | |
 | **RF028** | El sistema debe permitir al administrador gestionar proveedores, incluyendo registro, actualización y eliminación de proveedores. | ✅ **Completado** | Implementada página de gestión de proveedores con funcionalidad CRUD completa. |
 | **RF029** | El sistema debe permitir al administrador asociar productos a sus respectivos proveedores. | ✅ **Completado** | El formulario de productos ahora usa un menú desplegable para asociar proveedores existentes. |

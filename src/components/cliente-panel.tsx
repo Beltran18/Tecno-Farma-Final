@@ -47,7 +47,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
-import { MoreHorizontal, DollarSign, Package, AlertTriangle, PlusCircle, Search, Calendar as CalendarIcon, Settings, Upload, Download, CalendarOff, PackagePlus, Printer } from 'lucide-react';
+import { MoreHorizontal, DollarSign, Package, AlertTriangle, PlusCircle, Search, Calendar as CalendarIcon, Settings, Upload, Download, CalendarOff, PackagePlus, Printer, MinusCircle } from 'lucide-react';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Calendar } from '@/components/ui/calendar';
 import { format, isBefore, isWithinInterval, addDays, subDays } from 'date-fns';
@@ -81,6 +81,8 @@ export function ClientePanel({ productosIniciales }: ClientePanelProps) {
   const [importFile, setImportFile] = useState<File | null>(null);
   const [isImporting, setIsImporting] = useState(false);
   const [isClient, setIsClient] = useState(false);
+  const [salidaDialogOpen, setSalidaDialogOpen] = useState(false);
+  const [productoParaSalida, setProductoParaSalida] = useState<Producto | null>(null);
   const { notificacion } = usarNotificacion();
   const router = useRouter();
 
@@ -373,6 +375,30 @@ export function ClientePanel({ productosIniciales }: ClientePanelProps) {
     setProductoEnEdicion(null);
     setFormularioAbierto(true);
   }
+
+  const abrirFormularioSalida = (producto: Producto) => {
+    setProductoParaSalida(producto);
+    setSalidaDialogOpen(true);
+  };
+
+  const handleRegistrarSalida = async (cantidadSalida: number) => {
+    if (!productoParaSalida) return;
+
+    if (cantidadSalida <= 0) {
+        notificacion({ title: 'Cantidad Inválida', description: 'La cantidad debe ser mayor que cero.', variant: 'destructive' });
+        return;
+    }
+    if (cantidadSalida > productoParaSalida.cantidad) {
+        notificacion({ title: 'Stock Insuficiente', description: 'No puedes registrar una salida mayor al stock actual.', variant: 'destructive' });
+        return;
+    }
+
+    const productoActualizado = { ...productoParaSalida, cantidad: productoParaSalida.cantidad - cantidadSalida };
+    await actualizarProducto(productoActualizado);
+    setSalidaDialogOpen(false);
+    setProductoParaSalida(null);
+    notificacion({ title: 'Éxito', description: `Se registraron ${cantidadSalida} unidades de salida para ${productoParaSalida.nombre}.` });
+  };
   
   return (
     <Tabs defaultValue="panel" className="space-y-4">
@@ -586,6 +612,10 @@ export function ClientePanel({ productosIniciales }: ClientePanelProps) {
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end">
                           <DropdownMenuItem onSelect={() => abrirFormularioEditar(producto)}>Editar</DropdownMenuItem>
+                          <DropdownMenuItem onSelect={() => abrirFormularioSalida(producto)}>
+                            <MinusCircle className="mr-2 h-4 w-4" />
+                            <span>Registrar Salida</span>
+                          </DropdownMenuItem>
                           <DropdownMenuItem onSelect={() => router.push(`/panel/imprimir-etiqueta/${producto.id}`)}>
                             <Printer className="mr-2 h-4 w-4" />
                             <span>Imprimir Etiqueta</span>
@@ -728,6 +758,15 @@ export function ClientePanel({ productosIniciales }: ClientePanelProps) {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      <Dialog open={salidaDialogOpen} onOpenChange={setSalidaDialogOpen}>
+        <DialogContent className="sm:max-w-md">
+            <FormularioSalidaProducto
+                producto={productoParaSalida}
+                onGuardar={handleRegistrarSalida}
+            />
+        </DialogContent>
+      </Dialog>
     </Tabs>
   );
 }
@@ -865,6 +904,61 @@ function FormularioProducto({
           </Button>
         </DialogClose>
         <Button type="submit">Guardar Cambios</Button>
+      </DialogFooter>
+    </form>
+  );
+}
+
+function FormularioSalidaProducto({ 
+  producto, 
+  onGuardar 
+}: { 
+  producto: Producto | null, 
+  onGuardar: (cantidadSalida: number) => Promise<void>, 
+}) {
+  const [cantidad, setCantidad] = useState(1);
+
+  useEffect(() => {
+    setCantidad(1);
+  }, [producto]);
+
+  if (!producto) return null;
+
+  const handleEnviar = async (e: React.FormEvent) => {
+    e.preventDefault();
+    await onGuardar(cantidad);
+  };
+
+  return (
+    <form onSubmit={handleEnviar}>
+      <DialogHeader>
+        <DialogTitle>Registrar Salida de Producto</DialogTitle>
+        <DialogDescription>
+          Vas a registrar una salida para: <strong>{producto.nombre}</strong>. Stock actual: {producto.cantidad.toLocaleString('es-CO')} unidades.
+        </DialogDescription>
+      </DialogHeader>
+      <div className="grid gap-4 py-4">
+        <div className="space-y-2">
+            <label htmlFor="cantidad-salida">Cantidad a retirar</label>
+            <Input
+              id="cantidad-salida"
+              type="number"
+              value={cantidad}
+              onChange={e => setCantidad(parseInt(e.target.value, 10) || 0)}
+              required
+              min="1"
+              max={producto.cantidad}
+              placeholder="Ej: 5"
+            />
+        </div>
+      </div>
+      <DialogFooter>
+        <DialogClose asChild>
+          <Button type="button" variant="secondary">
+            Cancelar
+          </Button>
+        </DialogClose>
+        <Button type="submit">Guardar Salida</Button>
       </DialogFooter>
     </form>
   );
