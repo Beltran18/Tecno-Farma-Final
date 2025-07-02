@@ -181,15 +181,15 @@ export function ClientePanel({ productosIniciales }: ClientePanelProps) {
         body: JSON.stringify(producto),
       });
 
-      if (!response.ok) {
-        throw new Error('La respuesta de la red no fue correcta');
-      }
+      const data = await response.json();
 
-      const productoAgregado = await response.json();
+      if (!response.ok) {
+        throw new Error(data.message || 'Error al agregar el producto.');
+      }
       
       const productoFinal = {
-          ...productoAgregado,
-          fechaVencimiento: new Date(productoAgregado.fechaVencimiento)
+          ...data,
+          fechaVencimiento: new Date(data.fechaVencimiento)
       };
 
       setProductos([...productos, productoFinal]);
@@ -198,11 +198,11 @@ export function ClientePanel({ productosIniciales }: ClientePanelProps) {
         title: 'Éxito',
         description: 'Producto agregado correctamente.',
       });
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error al agregar el producto:', error);
       notificacion({
         title: 'Error',
-        description: 'No se pudo agregar el producto. Inténtalo de nuevo.',
+        description: error.message || 'No se pudo agregar el producto. Inténtalo de nuevo.',
         variant: 'destructive',
       });
     }
@@ -218,14 +218,15 @@ export function ClientePanel({ productosIniciales }: ClientePanelProps) {
             body: JSON.stringify(productoActualizado),
         });
 
+        const data = await response.json();
+
         if (!response.ok) {
-            throw new Error('La respuesta de la red no fue correcta');
+            throw new Error(data.message || 'Error al actualizar el producto.');
         }
 
-        const productoDevuelto = await response.json();
         const productoFinal = {
-            ...productoDevuelto,
-            fechaVencimiento: new Date(productoDevuelto.fechaVencimiento),
+            ...data,
+            fechaVencimiento: new Date(data.fechaVencimiento),
         };
 
         setProductos(productos.map(p => p.id === productoFinal.id ? productoFinal : p));
@@ -235,11 +236,11 @@ export function ClientePanel({ productosIniciales }: ClientePanelProps) {
             title: 'Éxito',
             description: 'Producto actualizado correctamente.',
         });
-    } catch (error) {
+    } catch (error: any) {
         console.error('Error al actualizar el producto:', error);
         notificacion({
             title: 'Error',
-            description: 'No se pudo actualizar el producto. Inténtalo de nuevo.',
+            description: error.message || 'No se pudo actualizar el producto. Inténtalo de nuevo.',
             variant: 'destructive',
         });
     }
@@ -252,7 +253,8 @@ export function ClientePanel({ productosIniciales }: ClientePanelProps) {
         });
 
         if (!response.ok) {
-            throw new Error('La respuesta de la red no fue correcta');
+            const errorData = await response.json();
+            throw new Error(errorData.message || 'No se pudo eliminar el producto.');
         }
 
         setProductos(productos.filter(p => p.id !== productoId));
@@ -260,11 +262,11 @@ export function ClientePanel({ productosIniciales }: ClientePanelProps) {
             title: 'Éxito',
             description: 'Producto eliminado correctamente.',
         });
-    } catch (error) {
+    } catch (error: any) {
         console.error('Error al eliminar el producto:', error);
         notificacion({
             title: 'Error',
-            description: 'No se pudo eliminar el producto. Inténtalo de nuevo.',
+            description: error.message || 'No se pudo eliminar el producto. Inténtalo de nuevo.',
             variant: 'destructive',
         });
     }
