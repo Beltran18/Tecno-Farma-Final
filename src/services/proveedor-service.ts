@@ -1,11 +1,7 @@
 import { type Proveedor } from '@/lib/types';
 
 // En una aplicación real, esto estaría en una base de datos.
-let proveedores: Proveedor[] = [
-    { id: 'prov_1', nombre: 'Farmacias Cruz Verde', contacto: 'Juan Perez', telefono: '3101234567' },
-    { id: 'prov_2', nombre: 'Genfar', contacto: 'Ana Garcia', telefono: '3209876543' },
-    { id: 'prov_3', nombre: 'Bayer', contacto: 'Carlos Rodriguez', telefono: '3005558899' },
-];
+let proveedores: Proveedor[] = [];
 
 export async function getAllProveedores(): Promise<Proveedor[]> {
   return JSON.parse(JSON.stringify(proveedores));
