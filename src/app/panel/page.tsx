@@ -1,5 +1,5 @@
-import { productosSimulados } from '@/libreria/datos-simulados';
-import { ClientePanel } from '@/componentes/cliente-panel';
+import { productosSimulados } from '@/lib/datos-simulados';
+import { ClientePanel } from '@/components/cliente-panel';
 
 export default function PaginaPanel() {
   const productos = productosSimulados;

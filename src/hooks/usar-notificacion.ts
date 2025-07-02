@@ -6,7 +6,7 @@ import * as React from "react"
 import type {
   ToastActionElement,
   ToastProps,
-} from "@/componentes/ui/toast"
+} from "@/components/ui/toast"
 
 const LIMITE_NOTIFICACIONES = 1
 const RETRASO_ELIMINAR_NOTIFICACION = 1000000

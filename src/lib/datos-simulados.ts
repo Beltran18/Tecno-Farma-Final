@@ -1,4 +1,4 @@
-import { type Producto } from '@/libreria/tipos';
+import { type Producto } from '@/lib/types';
 import { addDays, subDays } from 'date-fns';
 
 export const productosSimulados: Producto[] = [

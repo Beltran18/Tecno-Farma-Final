@@ -6,7 +6,7 @@ import {
   Avatar,
   AvatarFallback,
   AvatarImage,
-} from '@/componentes/ui/avatar';
+} from '@/components/ui/avatar';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -14,7 +14,7 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from '@/componentes/ui/dropdown-menu';
+} from '@/components/ui/dropdown-menu';
 import {
   SidebarProvider,
   Sidebar,
@@ -26,10 +26,10 @@ import {
   SidebarMenuButton,
   SidebarInset,
   SidebarTrigger,
-} from '@/componentes/ui/sidebar';
-import { Button } from '@/componentes/ui/button';
+} from '@/components/ui/sidebar';
+import { Button } from '@/components/ui/button';
 import { Home, User, LogOut, Settings } from 'lucide-react';
-import { Logo } from '@/componentes/logo';
+import { Logo } from '@/components/logo';
 
 export default function DisposicionPanel({
   children,

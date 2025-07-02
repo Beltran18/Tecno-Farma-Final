@@ -12,7 +12,7 @@
     "prefix": ""
   },
   "aliases": {
-    "components": "@/componentes",
-    "utils": "@/libreria/utilidades"
+    "components": "@/components",
+    "utils": "@/lib/utils"
   }
 }
