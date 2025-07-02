@@ -15,7 +15,7 @@ Este documento realiza un seguimiento del progreso de la implementación de los 
 | **RF002** | El sistema debe permitir al administrador realizar pedidos de reposición de stock directamente a través del sistema. | ❌ **Pendiente** | |
 | **RF003** | El sistema debe permitir al usuario visualizar un dashboard con indicadores clave como rotación de inventario y margen de ganancia. | ✅ **Completado** | Se muestran indicadores dinámicos basados en los datos del inventario (Valor total y Unidades totales). Métricas más complejas como rotación o margen requieren datos adicionales (costos, ventas). |
 | **RF004** | El sistema debe permitir al administrador configurar y automatizar el envío de reportes periódicos de inventario a una dirección de correo electrónico. | ❌ **Pendiente** | |
-| **RF005** | El sistema debe permitir a los usuarios ingresar al soporte técnico en línea. | ❌ **Pendiente** | |
+| **RF005** | El sistema debe permitir a los usuarios ingresar al soporte técnico en línea. | 🟡 **En Proceso** | Creada la página de soporte con un formulario funcional en el frontend. Falta la lógica de backend para enviar la solicitud. |
 | **RF006** | El sistema debe permitir al administrador y a empleados operar en plataformas de escritorio. | ✅ **Completado** | La aplicación es una aplicación web, accesible desde escritorio. |
 | **RF007** | El sistema debe permitir al administrador gestionar las recetas médicas, incluyendo verificación de stock de los medicamentos prescritos. | ❌ **Pendiente** | |
 | **RF008** | El sistema debe permitir al administrador imprimir etiquetas para los productos, incluyendo información como precio y fecha de vencimiento. | ❌ **Pendiente** | |
