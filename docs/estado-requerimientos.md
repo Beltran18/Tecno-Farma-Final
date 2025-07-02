@@ -1,5 +1,5 @@
 # Estado de Requerimientos Funcionales - TecnoFarma
-
+if is 
 Este documento realiza un seguimiento del progreso de la implementación de los requerimientos funcionales del proyecto.
 
 ## Leyenda de Estados

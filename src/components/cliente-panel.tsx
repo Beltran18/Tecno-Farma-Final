@@ -118,11 +118,12 @@ export function ClientePanel({ productosIniciales }: ClientePanelProps) {
   }, [notificacion]);
   
   useEffect(() => {
+    if (!isClient) return;
     const hoy = new Date();
     const fechaUmbral = addDays(hoy, umbralDiasVencimiento);
     const alertas = productos.filter(p => isWithinInterval(new Date(p.fechaVencimiento), { start: subDays(hoy, 1), end: fechaUmbral }));
     setAlertasVencimiento(alertas);
-  }, [productos, umbralDiasVencimiento]);
+  }, [productos, umbralDiasVencimiento, isClient]);
 
   const { totalValorInventario, totalUnidades } = useMemo(() => {
     const valor = productos.reduce((acc, p) => acc + p.precio * p.cantidad, 0);
@@ -142,7 +143,7 @@ export function ClientePanel({ productosIniciales }: ClientePanelProps) {
 
   const alertasStockBajo = useMemo(() =>
     productos.filter((p) => p.cantidad > 0 && p.cantidad <= umbralStockBajo),
-    [productos, umbralStockBjo]
+    [productos, umbralStockBajo]
   );
 
   const productosRecientes = useMemo(() => {
