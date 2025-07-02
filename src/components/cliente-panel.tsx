@@ -12,13 +12,13 @@ import {
   CardContent,
   CardHeader,
   CardTitle,
+  CardDescription,
 } from '@/components/ui/card';
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
   DialogFooter,
   DialogClose
 } from '@/components/ui/dialog';
@@ -43,8 +43,9 @@ import {
 } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
-import { MoreHorizontal, DollarSign, Package, AlertTriangle, PlusCircle, Search, Calendar as CalendarIcon } from 'lucide-react';
+import { MoreHorizontal, DollarSign, Package, AlertTriangle, PlusCircle, Search, Calendar as CalendarIcon, Settings } from 'lucide-react';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Calendar } from '@/components/ui/calendar';
 import { format, isBefore, isWithinInterval, addDays, subDays } from 'date-fns';
@@ -57,9 +58,6 @@ interface ClientePanelProps {
   productosIniciales: Producto[];
 }
 
-const UMBRAL_STOCK_BAJO = 10;
-const UMBRAL_DIAS_VENCIMIENTO = 30;
-
 export function ClientePanel({ productosIniciales }: ClientePanelProps) {
   const [productos, setProductos] = useState<Producto[]>(productosIniciales);
   const [terminoBusqueda, setTerminoBusqueda] = useState('');
@@ -67,6 +65,8 @@ export function ClientePanel({ productosIniciales }: ClientePanelProps) {
   const [productoEnEdicion, setProductoEnEdicion] = useState<Producto | null>(null);
   const [categorias, setCategorias] = useState<Categoria[]>([]);
   const [proveedores, setProveedores] = useState<Proveedor[]>([]);
+  const [umbralStockBajo, setUmbralStockBajo] = useState(10);
+  const [umbralDiasVencimiento, setUmbralDiasVencimiento] = useState(30);
   const { notificacion } = usarNotificacion();
 
   useEffect(() => {
@@ -115,15 +115,15 @@ export function ClientePanel({ productosIniciales }: ClientePanelProps) {
   );
 
   const alertasStockBajo = useMemo(() =>
-    productos.filter((p) => p.cantidad > 0 && p.cantidad <= UMBRAL_STOCK_BAJO),
-    [productos]
+    productos.filter((p) => p.cantidad > 0 && p.cantidad <= umbralStockBajo),
+    [productos, umbralStockBajo]
   );
 
   const alertasVencimiento = useMemo(() => {
     const hoy = new Date();
-    const fechaUmbral = addDays(hoy, UMBRAL_DIAS_VENCIMIENTO);
+    const fechaUmbral = addDays(hoy, umbralDiasVencimiento);
     return productos.filter(p => isWithinInterval(new Date(p.fechaVencimiento), { start: subDays(hoy, 1), end: fechaUmbral }));
-  }, [productos]);
+  }, [productos, umbralDiasVencimiento]);
 
   const agregarProducto = async (producto: Omit<Producto, 'id'>) => {
     try {
@@ -359,10 +359,64 @@ export function ClientePanel({ productosIniciales }: ClientePanelProps) {
         </Card>
       </TabsContent>
 
-      <TabsContent value="alerts">
+      <TabsContent value="alerts" className="space-y-6">
+        <Card>
+          <CardHeader>
+            <div className="flex items-center gap-4">
+              <Settings className="h-6 w-6 text-muted-foreground" />
+              <div>
+                <CardTitle>Configuración de Alertas</CardTitle>
+                <CardDescription>
+                  Define los umbrales para las notificaciones de inventario.
+                </CardDescription>
+              </div>
+            </div>
+          </CardHeader>
+          <CardContent>
+            <div className="grid md:grid-cols-2 gap-6">
+              <div className="space-y-2">
+                <Label htmlFor="stock-threshold">Umbral de Stock Bajo</Label>
+                <Input
+                  id="stock-threshold"
+                  type="number"
+                  value={umbralStockBajo}
+                  onChange={(e) =>
+                    setUmbralStockBajo(
+                      Number(e.target.value) >= 0 ? Number(e.target.value) : 0
+                    )
+                  }
+                  min="0"
+                />
+                <p className="text-sm text-muted-foreground">
+                  Recibir alertas para productos con esta cantidad o menos.
+                </p>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="expiry-threshold">
+                  Umbral de Vencimiento (días)
+                </Label>
+                <Input
+                  id="expiry-threshold"
+                  type="number"
+                  value={umbralDiasVencimiento}
+                  onChange={(e) =>
+                    setUmbralDiasVencimiento(
+                      Number(e.target.value) >= 0 ? Number(e.target.value) : 0
+                    )
+                  }
+                  min="0"
+                />
+                <p className="text-sm text-muted-foreground">
+                  Alertar sobre productos que vencen en los próximos X días.
+                </p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
          <div className="grid gap-6">
             <div>
-               <h3 className="text-lg font-medium mb-2">Alertas de Stock Bajo</h3>
+               <h3 className="text-lg font-medium mb-2">Alertas de Stock Bajo ({alertasStockBajo.length})</h3>
                <div className="space-y-4">
                   {alertasStockBajo.length > 0 ? (
                      alertasStockBajo.map(producto => (
@@ -378,7 +432,7 @@ export function ClientePanel({ productosIniciales }: ClientePanelProps) {
                </div>
             </div>
              <div>
-               <h3 className="text-lg font-medium mb-2">Alertas de Vencimiento</h3>
+               <h3 className="text-lg font-medium mb-2">Alertas de Vencimiento ({alertasVencimiento.length})</h3>
                <div className="space-y-4">
                   {alertasVencimiento.length > 0 ? (
                      alertasVencimiento.map(producto => (
@@ -509,11 +563,11 @@ function FormularioProducto({
          <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
                 <label htmlFor="price">Precio</label>
-                <Input id="price" type="number" value={precio} onChange={e => setPrecio(parseFloat(e.target.value) || 0)} required />
+                <Input id="price" type="number" value={precio} onChange={e => setPrecio(parseFloat(e.target.value) || 0)} required min="0" />
             </div>
             <div className="space-y-2">
                 <label htmlFor="quantity">Cantidad</label>
-                <Input id="quantity" type="number" value={cantidad} onChange={e => setCantidad(parseInt(e.target.value, 10) || 0)} required />
+                <Input id="quantity" type="number" value={cantidad} onChange={e => setCantidad(parseInt(e.target.value, 10) || 0)} required min="0"/>
             </div>
         </div>
         <div className="grid grid-cols-2 gap-4">
