@@ -20,7 +20,8 @@ import {
   DialogHeader,
   DialogTitle,
   DialogFooter,
-  DialogClose
+  DialogClose,
+  DialogDescription,
 } from '@/components/ui/dialog';
 import {
   Table,
@@ -45,7 +46,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
-import { MoreHorizontal, DollarSign, Package, AlertTriangle, PlusCircle, Search, Calendar as CalendarIcon, Settings } from 'lucide-react';
+import { MoreHorizontal, DollarSign, Package, AlertTriangle, PlusCircle, Search, Calendar as CalendarIcon, Settings, Upload } from 'lucide-react';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Calendar } from '@/components/ui/calendar';
 import { format, isBefore, isWithinInterval, addDays, subDays } from 'date-fns';
@@ -67,6 +68,9 @@ export function ClientePanel({ productosIniciales }: ClientePanelProps) {
   const [proveedores, setProveedores] = useState<Proveedor[]>([]);
   const [umbralStockBajo, setUmbralStockBajo] = useState(10);
   const [umbralDiasVencimiento, setUmbralDiasVencimiento] = useState(30);
+  const [importDialogOpen, setImportDialogOpen] = useState(false);
+  const [importFile, setImportFile] = useState<File | null>(null);
+  const [isImporting, setIsImporting] = useState(false);
   const { notificacion } = usarNotificacion();
 
   useEffect(() => {
@@ -224,6 +228,49 @@ export function ClientePanel({ productosIniciales }: ClientePanelProps) {
     }
   }
 
+  const handleImportarProductos = async () => {
+    if (!importFile) return;
+
+    setIsImporting(true);
+    const formData = new FormData();
+    formData.append('file', importFile);
+
+    try {
+        const response = await fetch('/api/productos/importar', {
+            method: 'POST',
+            body: formData,
+        });
+
+        if (!response.ok) {
+            const error = await response.json();
+            throw new Error(error.message || 'Error al importar productos');
+        }
+
+        const { message, productosImportados } = await response.json();
+        
+        const productosFinales = productosImportados.map((p: Producto) => ({
+            ...p,
+            fechaVencimiento: new Date(p.fechaVencimiento),
+        }));
+
+        setProductos(prev => [...prev, ...productosFinales]);
+        notificacion({
+            title: 'Éxito',
+            description: message,
+        });
+    } catch (error: any) {
+        notificacion({
+            title: 'Error de Importación',
+            description: error.message,
+            variant: 'destructive',
+        });
+    } finally {
+        setIsImporting(false);
+        setImportFile(null);
+        setImportDialogOpen(false);
+    }
+  };
+
   const abrirFormularioEditar = (producto: Producto) => {
     setProductoEnEdicion(producto);
     setFormularioAbierto(true);
@@ -282,20 +329,28 @@ export function ClientePanel({ productosIniciales }: ClientePanelProps) {
         <Card>
           <CardHeader>
             <div className="flex flex-col items-start gap-4 sm:flex-row sm:items-center sm:justify-between">
-              <div className="relative w-full sm:w-64">
-                <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-                <Input
-                  type="search"
-                  placeholder="Buscar por nombre, categoría..."
-                  className="w-full pl-8"
-                  value={terminoBusqueda}
-                  onChange={(e) => setTerminoBusqueda(e.target.value)}
-                />
+              <div className="flex w-full flex-col-reverse items-start gap-2 sm:flex-row sm:items-center sm:w-auto">
+                <div className="relative w-full sm:w-64">
+                    <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+                    <Input
+                    type="search"
+                    placeholder="Buscar por nombre, categoría..."
+                    className="w-full pl-8"
+                    value={terminoBusqueda}
+                    onChange={(e) => setTerminoBusqueda(e.target.value)}
+                    />
+                </div>
               </div>
-              <Button onClick={abrirFormularioNuevo}>
-                <PlusCircle className="mr-2 h-4 w-4" />
-                Registrar Producto
-              </Button>
+              <div className="flex gap-2">
+                 <Button variant="outline" onClick={() => setImportDialogOpen(true)}>
+                    <Upload className="mr-2 h-4 w-4" />
+                    Importar
+                </Button>
+                <Button onClick={abrirFormularioNuevo}>
+                    <PlusCircle className="mr-2 h-4 w-4" />
+                    Registrar Producto
+                </Button>
+              </div>
             </div>
           </CardHeader>
           <CardContent>
@@ -459,6 +514,30 @@ export function ClientePanel({ productosIniciales }: ClientePanelProps) {
             categorias={categorias}
             proveedores={proveedores}
           />
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={importDialogOpen} onOpenChange={setImportDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Importar Productos desde CSV</DialogTitle>
+            <DialogDescription>
+              El archivo debe tener las columnas: nombre, categoria, precio, cantidad, fechaVencimiento (en formato AAAA-MM-DD), numeroLote, proveedorNombre (opcional).
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <Input
+              type="file"
+              accept=".csv"
+              onChange={(e) => setImportFile(e.target.files ? e.target.files[0] : null)}
+            />
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setImportDialogOpen(false)}>Cancelar</Button>
+            <Button onClick={handleImportarProductos} disabled={!importFile || isImporting}>
+              {isImporting ? 'Importando...' : 'Subir e Importar'}
+            </Button>
+          </DialogFooter>
         </DialogContent>
       </Dialog>
     </Tabs>
