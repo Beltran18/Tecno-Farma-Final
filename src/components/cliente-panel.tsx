@@ -85,7 +85,7 @@ export function ClientePanel({ productosIniciales }: ClientePanelProps) {
   const alertasVencimiento = useMemo(() => {
     const hoy = new Date();
     const fechaUmbral = addDays(hoy, UMBRAL_DIAS_VENCIMIENTO);
-    return productos.filter(p => isWithinInterval(p.fechaVencimiento, { start: subDays(hoy, 1), end: fechaUmbral }));
+    return productos.filter(p => isWithinInterval(new Date(p.fechaVencimiento), { start: subDays(hoy, 1), end: fechaUmbral }));
   }, [productos]);
 
   const agregarProducto = async (producto: Omit<Producto, 'id'>) => {
@@ -420,11 +420,11 @@ function FormularioProducto({ producto, onAgregar, onActualizar }: { producto: P
          <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
                 <label htmlFor="price">Precio</label>
-                <Input id="price" type="number" value={precio} onChange={e => setPrecio(parseFloat(e.target.value))} required />
+                <Input id="price" type="number" value={precio} onChange={e => setPrecio(parseFloat(e.target.value) || 0)} required />
             </div>
             <div className="space-y-2">
                 <label htmlFor="quantity">Cantidad</label>
-                <Input id="quantity" type="number" value={cantidad} onChange={e => setCantidad(parseInt(e.target.value, 10))} required />
+                <Input id="quantity" type="number" value={cantidad} onChange={e => setCantidad(parseInt(e.target.value, 10) || 0)} required />
             </div>
         </div>
         <div className="grid grid-cols-2 gap-4">
