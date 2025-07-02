@@ -28,7 +28,7 @@ import {
   SidebarTrigger,
 } from '@/components/ui/sidebar';
 import { Button } from '@/components/ui/button';
-import { Home, User, LogOut, Settings } from 'lucide-react';
+import { Home, User, LogOut, Settings, Tag } from 'lucide-react';
 import { Logo } from '@/components/logo';
 
 export default function DisposicionPanel({
@@ -38,6 +38,12 @@ export default function DisposicionPanel({
 }) {
   const router = useRouter();
   const pathname = usePathname();
+
+  const getTitle = () => {
+    if (pathname === '/panel') return 'Panel de Control';
+    if (pathname.startsWith('/panel/categorias')) return 'Gestión de Categorías';
+    return 'TecnoFarma';
+  };
 
   return (
     <SidebarProvider>
@@ -51,6 +57,12 @@ export default function DisposicionPanel({
               <SidebarMenuButton href="/panel" tooltip="Panel" isActive={pathname === '/panel'}>
                 <Home />
                 Panel Principal
+              </SidebarMenuButton>
+            </SidebarMenuItem>
+            <SidebarMenuItem>
+              <SidebarMenuButton href="/panel/categorias" tooltip="Categorías" isActive={pathname.startsWith('/panel/categorias')}>
+                <Tag />
+                Categorías
               </SidebarMenuButton>
             </SidebarMenuItem>
           </SidebarMenu>
@@ -92,7 +104,7 @@ export default function DisposicionPanel({
       <SidebarInset>
         <header className="flex h-14 items-center gap-4 border-b bg-background/95 px-4 backdrop-blur-sm">
           <SidebarTrigger className="md:hidden" />
-          <h1 className="text-xl font-semibold">Panel de Control</h1>
+          <h1 className="text-xl font-semibold">{getTitle()}</h1>
         </header>
         <main className="flex-1 overflow-auto p-4 md:p-6">{children}</main>
       </SidebarInset>

@@ -1,9 +1,14 @@
 export interface Producto {
   id: string;
   nombre: string;
-  categoria: 'Analgésicos' | 'Antibióticos' | 'Vitaminas' | 'Dermatología' | 'Otros';
+  categoria: string;
   precio: number;
   cantidad: number;
   fechaVencimiento: Date;
   numeroLote: string;
+}
+
+export interface Categoria {
+  id: string;
+  nombre: string;
 }

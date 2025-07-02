@@ -50,7 +50,7 @@ import { Calendar } from '@/components/ui/calendar';
 import { format, isBefore, isWithinInterval, addDays, subDays } from 'date-fns';
 import { es } from 'date-fns/locale';
 
-import { type Producto } from '@/lib/types';
+import { type Producto, type Categoria } from '@/lib/types';
 import { usarNotificacion } from '@/hooks/usar-notificacion';
 
 interface ClientePanelProps {
@@ -65,7 +65,30 @@ export function ClientePanel({ productosIniciales }: ClientePanelProps) {
   const [terminoBusqueda, setTerminoBusqueda] = useState('');
   const [formularioAbierto, setFormularioAbierto] = useState(false);
   const [productoEnEdicion, setProductoEnEdicion] = useState<Producto | null>(null);
+  const [categorias, setCategorias] = useState<Categoria[]>([]);
   const { notificacion } = usarNotificacion();
+
+  useEffect(() => {
+    const fetchCategorias = async () => {
+        try {
+            const response = await fetch('/api/categorias');
+            if (!response.ok) {
+                throw new Error('No se pudieron cargar las categorías');
+            }
+            const data = await response.json();
+            setCategorias(data);
+        } catch (error) {
+            console.error(error);
+            notificacion({
+                title: 'Error',
+                description: 'No se pudieron cargar las categorías.',
+                variant: 'destructive',
+            });
+        }
+    };
+
+    fetchCategorias();
+  }, [notificacion]);
 
   const { totalValorInventario, totalUnidades } = useMemo(() => {
     const valor = productos.reduce((acc, p) => acc + p.precio * p.cantidad, 0);
@@ -369,6 +392,7 @@ export function ClientePanel({ productosIniciales }: ClientePanelProps) {
             producto={productoEnEdicion}
             onAgregar={agregarProducto}
             onActualizar={actualizarProducto}
+            categorias={categorias}
           />
         </DialogContent>
       </Dialog>
@@ -376,9 +400,9 @@ export function ClientePanel({ productosIniciales }: ClientePanelProps) {
   );
 }
 
-function FormularioProducto({ producto, onAgregar, onActualizar }: { producto: Producto | null, onAgregar: (p: Omit<Producto, 'id'>) => Promise<void>, onActualizar: (p: Producto) => Promise<void>}) {
+function FormularioProducto({ producto, onAgregar, onActualizar, categorias }: { producto: Producto | null, onAgregar: (p: Omit<Producto, 'id'>) => Promise<void>, onActualizar: (p: Producto) => Promise<void>, categorias: Categoria[] }) {
   const [nombre, setNombre] = useState('');
-  const [categoria, setCategoria] = useState<'Analgésicos' | 'Antibióticos' | 'Vitaminas' | 'Dermatología' | 'Otros'>('Otros');
+  const [categoria, setCategoria] = useState('');
   const [precio, setPrecio] = useState(0);
   const [cantidad, setCantidad] = useState(0);
   const [fechaVencimiento, setFechaVencimiento] = useState<Date | undefined>(new Date());
@@ -394,17 +418,17 @@ function FormularioProducto({ producto, onAgregar, onActualizar }: { producto: P
       setNumeroLote(producto.numeroLote);
     } else {
       setNombre('');
-      setCategoria('Otros');
+      setCategoria(categorias.length > 0 ? categorias[0].nombre : '');
       setPrecio(0);
       setCantidad(0);
       setFechaVencimiento(new Date());
       setNumeroLote('');
     }
-  }, [producto]);
+  }, [producto, categorias]);
 
   const handleEnviar = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!fechaVencimiento) return;
+    if (!fechaVencimiento || !categoria) return;
     const datosProducto = { nombre, categoria, precio, cantidad, fechaVencimiento, numeroLote };
 
     if (producto) {
@@ -426,12 +450,11 @@ function FormularioProducto({ producto, onAgregar, onActualizar }: { producto: P
         </div>
         <div className="space-y-2">
             <label htmlFor="category">Categoría</label>
-            <select id="category" value={categoria} onChange={e => setCategoria(e.target.value as any)} className="w-full flex h-10 rounded-md border border-input bg-background px-3 py-2 text-sm">
-                <option>Analgésicos</option>
-                <option>Antibióticos</option>
-                <option>Vitaminas</option>
-                <option>Dermatología</option>
-                <option>Otros</option>
+            <select id="category" value={categoria} onChange={e => setCategoria(e.target.value)} className="w-full flex h-10 rounded-md border border-input bg-background px-3 py-2 text-sm" required>
+                <option value="" disabled>Selecciona una categoría</option>
+                {categorias.map(cat => (
+                    <option key={cat.id} value={cat.nombre}>{cat.nombre}</option>
+                ))}
             </select>
         </div>
          <div className="grid grid-cols-2 gap-4">
