@@ -6,6 +6,8 @@ export interface Producto {
   cantidad: number;
   fechaVencimiento: Date;
   numeroLote: string;
+  proveedorId?: string;
+  proveedorNombre?: string;
 }
 
 export interface Categoria {

@@ -39,12 +39,12 @@ Este documento realiza un seguimiento del progreso de la implementación de los 
 | **RF026** | El sistema debe permitir a los usuarios registrar las salidas de productos del inventario. | ❌ **Pendiente** | No hay un registro explícito de "salidas", solo edición o eliminación. |
 | **RF027** | El sistema debe permitir a los usuarios mantener un historial de todas las transacciones de inventario, incluyendo entradas y salidas. | ❌ **Pendiente** | |
 | **RF028** | El sistema debe permitir al administrador gestionar proveedores, incluyendo registro, actualización y eliminación de proveedores. | ✅ **Completado** | Se ha creado una página para gestionar (crear/editar/eliminar) proveedores. Los datos se guardan en memoria. |
-| **RF029** | El sistema debe permitir al administrador asociar productos a sus respectivos proveedores. | ❌ **Pendiente** | |
+| **RF029** | El sistema debe permitir al administrador asociar productos a sus respectivos proveedores. | ✅ **Completado** | Se puede seleccionar un proveedor desde el formulario de producto. |
 | **RF030** | El sistema debe permitir al administrador generar reportes de compras a proveedores, incluyendo cantidades, fechas y costos. | ❌ **Pendiente** | |
 | **RF031** | El sistema debe permitir al administrador registrar y gestionar las devoluciones de productos a proveedores. | ❌ **Pendiente** | |
 | **RF032** | El sistema debe permitir al administrador dar soporte a la configuración de múltiples empleados con diferentes niveles de acceso y permisos. | ❌ **Pendiente** | |
 | **RF033** | El sistema debe permitir al administrador dar autenticación de usuario para acceder a cualquier funcionalidad de gestión de inventario. | 🟡 **En Proceso** | Las páginas de autenticación existen, pero falta la lógica de roles y permisos. |
-| **RF034** | El sistema debe permitir al administrador registrar y mostrar el historial de cambios de cada producto en el inventario. | ❌ **Pendiente** | |
+| **RF034** | El sistema debe registrar y mostrar el historial de cambios de cada producto en el inventario. | ❌ **Pendiente** | |
 | **RF035** | El sistema debe permitir al administrador gestionar categorías de productos para una organización eficiente del inventario. | ✅ **Completado** | Se ha creado una página para gestionar (crear/eliminar) categorías. El formulario de productos ahora usa estas categorías dinámicamente. |
 | **RF036** | El sistema debe permitir al administrador configurar notificaciones automáticas por correo electrónico para alertas críticas de inventario. | ❌ **Pendiente** | |
 | **RF037** | El sistema debe permitir al usuario consultar el historial de ventas de un producto específico. | ❌ **Pendiente** | |

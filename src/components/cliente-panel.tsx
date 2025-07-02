@@ -50,7 +50,7 @@ import { Calendar } from '@/components/ui/calendar';
 import { format, isBefore, isWithinInterval, addDays, subDays } from 'date-fns';
 import { es } from 'date-fns/locale';
 
-import { type Producto, type Categoria } from '@/lib/types';
+import { type Producto, type Categoria, type Proveedor } from '@/lib/types';
 import { usarNotificacion } from '@/hooks/usar-notificacion';
 
 interface ClientePanelProps {
@@ -66,28 +66,36 @@ export function ClientePanel({ productosIniciales }: ClientePanelProps) {
   const [formularioAbierto, setFormularioAbierto] = useState(false);
   const [productoEnEdicion, setProductoEnEdicion] = useState<Producto | null>(null);
   const [categorias, setCategorias] = useState<Categoria[]>([]);
+  const [proveedores, setProveedores] = useState<Proveedor[]>([]);
   const { notificacion } = usarNotificacion();
 
   useEffect(() => {
-    const fetchCategorias = async () => {
+    const fetchData = async () => {
         try {
-            const response = await fetch('/api/categorias');
-            if (!response.ok) {
-                throw new Error('No se pudieron cargar las categorías');
-            }
-            const data = await response.json();
-            setCategorias(data);
-        } catch (error) {
+            const [catResponse, provResponse] = await Promise.all([
+                fetch('/api/categorias'),
+                fetch('/api/proveedores')
+            ]);
+
+            if (!catResponse.ok) throw new Error('No se pudieron cargar las categorías');
+            if (!provResponse.ok) throw new Error('No se pudieron cargar los proveedores');
+            
+            const catData = await catResponse.json();
+            const provData = await provResponse.json();
+            
+            setCategorias(catData);
+            setProveedores(provData);
+        } catch (error: any) {
             console.error(error);
             notificacion({
-                title: 'Error',
-                description: 'No se pudieron cargar las categorías.',
+                title: 'Error de carga',
+                description: 'No se pudieron cargar los datos necesarios (categorías/proveedores).',
                 variant: 'destructive',
             });
         }
     };
 
-    fetchCategorias();
+    fetchData();
   }, [notificacion]);
 
   const { totalValorInventario, totalUnidades } = useMemo(() => {
@@ -296,6 +304,7 @@ export function ClientePanel({ productosIniciales }: ClientePanelProps) {
                 <TableRow>
                   <TableHead>Nombre</TableHead>
                   <TableHead>Categoría</TableHead>
+                  <TableHead>Proveedor</TableHead>
                   <TableHead className="text-right">Precio</TableHead>
                   <TableHead className="text-right">Cantidad</TableHead>
                   <TableHead>Vencimiento</TableHead>
@@ -312,6 +321,7 @@ export function ClientePanel({ productosIniciales }: ClientePanelProps) {
                     <TableCell>
                       <Badge variant="outline">{producto.categoria}</Badge>
                     </TableCell>
+                    <TableCell>{producto.proveedorNombre || 'N/A'}</TableCell>
                     <TableCell className="text-right">
                       {new Intl.NumberFormat('es-CO', {
                         style: 'currency',
@@ -387,12 +397,13 @@ export function ClientePanel({ productosIniciales }: ClientePanelProps) {
       </TabsContent>
       
       <Dialog open={formularioAbierto} onOpenChange={setFormularioAbierto}>
-        <DialogContent className="sm:max-w-[425px]">
+        <DialogContent className="sm:max-w-md">
           <FormularioProducto
             producto={productoEnEdicion}
             onAgregar={agregarProducto}
             onActualizar={actualizarProducto}
             categorias={categorias}
+            proveedores={proveedores}
           />
         </DialogContent>
       </Dialog>
@@ -400,9 +411,22 @@ export function ClientePanel({ productosIniciales }: ClientePanelProps) {
   );
 }
 
-function FormularioProducto({ producto, onAgregar, onActualizar, categorias }: { producto: Producto | null, onAgregar: (p: Omit<Producto, 'id'>) => Promise<void>, onActualizar: (p: Producto) => Promise<void>, categorias: Categoria[] }) {
+function FormularioProducto({ 
+  producto, 
+  onAgregar, 
+  onActualizar, 
+  categorias,
+  proveedores
+}: { 
+  producto: Producto | null, 
+  onAgregar: (p: Omit<Producto, 'id'>) => Promise<void>, 
+  onActualizar: (p: Producto) => Promise<void>, 
+  categorias: Categoria[],
+  proveedores: Proveedor[]
+}) {
   const [nombre, setNombre] = useState('');
   const [categoria, setCategoria] = useState('');
+  const [proveedorId, setProveedorId] = useState('');
   const [precio, setPrecio] = useState(0);
   const [cantidad, setCantidad] = useState(0);
   const [fechaVencimiento, setFechaVencimiento] = useState<Date | undefined>(new Date());
@@ -416,6 +440,7 @@ function FormularioProducto({ producto, onAgregar, onActualizar, categorias }: {
       setCantidad(producto.cantidad);
       setFechaVencimiento(new Date(producto.fechaVencimiento));
       setNumeroLote(producto.numeroLote);
+      setProveedorId(producto.proveedorId || '');
     } else {
       setNombre('');
       setCategoria(categorias.length > 0 ? categorias[0].nombre : '');
@@ -423,13 +448,26 @@ function FormularioProducto({ producto, onAgregar, onActualizar, categorias }: {
       setCantidad(0);
       setFechaVencimiento(new Date());
       setNumeroLote('');
+      setProveedorId('');
     }
-  }, [producto, categorias]);
+  }, [producto, categorias, proveedores]);
 
   const handleEnviar = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!fechaVencimiento || !categoria) return;
-    const datosProducto = { nombre, categoria, precio, cantidad, fechaVencimiento, numeroLote };
+    
+    const proveedorSeleccionado = proveedores.find(p => p.id === proveedorId);
+    
+    const datosProducto: Omit<Producto, 'id'> = { 
+        nombre, 
+        categoria, 
+        precio, 
+        cantidad, 
+        fechaVencimiento, 
+        numeroLote,
+        proveedorId: proveedorSeleccionado?.id,
+        proveedorNombre: proveedorSeleccionado?.nombre,
+    };
 
     if (producto) {
       await onActualizar({ ...datosProducto, id: producto.id });
@@ -448,14 +486,25 @@ function FormularioProducto({ producto, onAgregar, onActualizar, categorias }: {
             <label htmlFor="name">Nombre</label>
             <Input id="name" value={nombre} onChange={e => setNombre(e.target.value)} required />
         </div>
-        <div className="space-y-2">
-            <label htmlFor="category">Categoría</label>
-            <select id="category" value={categoria} onChange={e => setCategoria(e.target.value)} className="w-full flex h-10 rounded-md border border-input bg-background px-3 py-2 text-sm" required>
-                <option value="" disabled>Selecciona una categoría</option>
-                {categorias.map(cat => (
-                    <option key={cat.id} value={cat.nombre}>{cat.nombre}</option>
-                ))}
-            </select>
+        <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-2">
+                <label htmlFor="category">Categoría</label>
+                <select id="category" value={categoria} onChange={e => setCategoria(e.target.value)} className="w-full flex h-10 rounded-md border border-input bg-background px-3 py-2 text-sm" required>
+                    <option value="" disabled>Selecciona una categoría</option>
+                    {categorias.map(cat => (
+                        <option key={cat.id} value={cat.nombre}>{cat.nombre}</option>
+                    ))}
+                </select>
+            </div>
+            <div className="space-y-2">
+                <label htmlFor="provider">Proveedor</label>
+                <select id="provider" value={proveedorId} onChange={e => setProveedorId(e.target.value)} className="w-full flex h-10 rounded-md border border-input bg-background px-3 py-2 text-sm">
+                    <option value="">Ninguno</option>
+                    {proveedores.map(prov => (
+                        <option key={prov.id} value={prov.id}>{prov.nombre}</option>
+                    ))}
+                </select>
+            </div>
         </div>
          <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
