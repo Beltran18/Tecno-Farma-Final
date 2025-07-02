@@ -1,6 +1,7 @@
 "use client"
 
 import * as React from "react"
+import Link from "next/link"
 import { Slot } from "@radix-ui/react-slot"
 import { VariantProps, cva } from "class-variance-authority"
 import { PanelLeft } from "lucide-react"
@@ -494,7 +495,7 @@ const SidebarMenu = React.forwardRef<
   <ul
     ref={ref}
     data-sidebar="menu"
-    className={cn("flex w-full min-w-0 flex-col gap-1", className)}
+    className={cn("flex w-full min-w-0 flex-col gap-1 p-2", className)}
     {...props}
   />
 ))
@@ -558,22 +559,22 @@ const SidebarMenuButton = React.forwardRef<
     },
     ref
   ) => {
-    const Comp = asChild ? Slot : "button"
-    const { isMobile, state } = useSidebar()
-    const router = useRouter()
+    const { isMobile, state, setOpenMobile } = useSidebar()
+    const Comp = asChild ? Slot : href ? Link : "button"
 
     const handleClick = (event: React.MouseEvent<HTMLButtonElement>) => {
       if (onClick) {
         onClick(event)
       }
-      if (href) {
-        router.push(href)
+      if (isMobile) {
+        setOpenMobile(false)
       }
     }
 
     const button = (
       <Comp
-        ref={ref}
+        ref={ref as any}
+        href={href as any}
         data-sidebar="menu-button"
         data-size={size}
         data-active={isActive}
