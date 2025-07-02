@@ -44,7 +44,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
-import { MoreHorizontal, DollarSign, RefreshCw, AlertTriangle, PlusCircle, Search, Calendar as CalendarIcon } from 'lucide-react';
+import { MoreHorizontal, DollarSign, Package, AlertTriangle, PlusCircle, Search, Calendar as CalendarIcon } from 'lucide-react';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Calendar } from '@/components/ui/calendar';
 import { format, isBefore, isWithinInterval, addDays, subDays } from 'date-fns';
@@ -66,6 +66,12 @@ export function ClientePanel({ productosIniciales }: ClientePanelProps) {
   const [formularioAbierto, setFormularioAbierto] = useState(false);
   const [productoEnEdicion, setProductoEnEdicion] = useState<Producto | null>(null);
   const { notificacion } = usarNotificacion();
+
+  const { totalValorInventario, totalUnidades } = useMemo(() => {
+    const valor = productos.reduce((acc, p) => acc + p.precio * p.cantidad, 0);
+    const unidades = productos.reduce((acc, p) => acc + p.cantidad, 0);
+    return { totalValorInventario: valor, totalUnidades: unidades };
+  }, [productos]);
 
   const productosFiltrados = useMemo(() =>
     productos.filter(
@@ -209,22 +215,33 @@ export function ClientePanel({ productosIniciales }: ClientePanelProps) {
         <div className="grid gap-4 md:grid-cols-2">
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Rotación de Inventario</CardTitle>
-              <RefreshCw className="h-4 w-4 text-muted-foreground" />
+              <CardTitle className="text-sm font-medium">Valor Total del Inventario</CardTitle>
+              <DollarSign className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">4.5</div>
-              <p className="text-xs text-muted-foreground">Veces por año</p>
+              <div className="text-2xl font-bold">
+                 {new Intl.NumberFormat('es-CO', {
+                  style: 'currency',
+                  currency: 'COP',
+                  minimumFractionDigits: 0,
+                  maximumFractionDigits: 0,
+                }).format(totalValorInventario)}
+              </div>
+              <p className="text-xs text-muted-foreground">
+                Calculado sobre {productos.length} productos
+              </p>
             </CardContent>
           </Card>
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Margen de Ganancia</CardTitle>
-              <DollarSign className="h-4 w-4 text-muted-foreground" />
+              <CardTitle className="text-sm font-medium">Unidades Totales en Stock</CardTitle>
+              <Package className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">35.2%</div>
-              <p className="text-xs text-muted-foreground">Promedio sobre costo</p>
+              <div className="text-2xl font-bold">{totalUnidades.toLocaleString('es-CO')}</div>
+              <p className="text-xs text-muted-foreground">
+                Sumatoria de todos los productos
+              </p>
             </CardContent>
           </Card>
         </div>
