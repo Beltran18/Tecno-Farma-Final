@@ -186,7 +186,14 @@ export function DashboardClient({ initialProducts }: DashboardClientProps) {
                     <TableCell>
                       <Badge variant="outline">{product.category}</Badge>
                     </TableCell>
-                    <TableCell className="text-right">${product.price.toFixed(2)}</TableCell>
+                    <TableCell className="text-right">
+                      {new Intl.NumberFormat('es-CO', {
+                        style: 'currency',
+                        currency: 'COP',
+                        minimumFractionDigits: 0,
+                        maximumFractionDigits: 0,
+                      }).format(product.price)}
+                    </TableCell>
                     <TableCell className="text-right">{product.quantity}</TableCell>
                     <TableCell>
                        <span className={isBefore(product.expirationDate, new Date()) ? 'text-destructive' : ''}>
