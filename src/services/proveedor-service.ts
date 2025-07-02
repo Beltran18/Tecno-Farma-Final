@@ -1,7 +1,11 @@
 import { type Proveedor } from '@/lib/types';
 
 // En una aplicación real, esto estaría en una base de datos.
-let proveedores: Proveedor[] = [];
+const globalForDb = globalThis as unknown as { proveedores: Proveedor[] };
+if (!globalForDb.proveedores) {
+  globalForDb.proveedores = [];
+}
+let proveedores: Proveedor[] = globalForDb.proveedores;
 
 export async function getAllProveedores(): Promise<Proveedor[]> {
   return JSON.parse(JSON.stringify(proveedores));

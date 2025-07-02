@@ -1,11 +1,12 @@
 import { type Producto } from '@/lib/types';
 import { addDays, subDays } from 'date-fns';
 
-// --- Almacenamiento en Memoria Temporal ---
-// En una aplicación real, esta variable no existiría.
-// En su lugar, cada función se conectaría a una base de datos (PostgreSQL, MongoDB, etc.)
-// para realizar las operaciones correspondientes.
-let productos: Producto[] = [];
+// --- Almacenamiento en Memoria Temporal (con persistencia en desarrollo) ---
+const globalForDb = globalThis as unknown as { productos: Producto[] };
+if (!globalForDb.productos) {
+  globalForDb.productos = [];
+}
+const productos: Producto[] = globalForDb.productos;
 // -----------------------------------------
 
 export async function getAllProducts(): Promise<Producto[]> {

@@ -1,7 +1,12 @@
 import { type Categoria } from '@/lib/types';
 
 // En una aplicación real, esto estaría en una base de datos.
-let categorias: Categoria[] = [];
+const globalForDb = globalThis as unknown as { categorias: Categoria[] };
+if (!globalForDb.categorias) {
+  globalForDb.categorias = [];
+}
+let categorias: Categoria[] = globalForDb.categorias;
+
 
 export async function getAllCategories(): Promise<Categoria[]> {
   // TODO: Reemplazar con lógica de base de datos
