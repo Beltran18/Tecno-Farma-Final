@@ -12,3 +12,10 @@ export interface Categoria {
   id: string;
   nombre: string;
 }
+
+export interface Proveedor {
+  id: string;
+  nombre: string;
+  contacto: string;
+  telefono: string;
+}
