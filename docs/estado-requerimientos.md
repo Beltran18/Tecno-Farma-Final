@@ -1,4 +1,3 @@
-
 # Estado de Requerimientos Funcionales - TecnoFarma
 
 Este documento realiza un seguimiento del progreso de la implementación de los requerimientos funcionales del proyecto.
@@ -26,17 +25,17 @@ Este documento realiza un seguimiento del progreso de la implementación de los 
 | **RF012** | El sistema debe permitir a los usuarios ingresar a una herramienta de ayuda y tutoriales para facilitar el aprendizaje de las funcionalidades del sistema. | ❌ **Pendiente** | |
 | **RF013** | El sistema debe permitir al usuario registrar manualmente el estado de entrega de los pedidos en línea (pendiente, enviado, entregado). | ❌ **Pendiente** | |
 | **RF014** | El sistema debe permitir al usuario recibir notificaciones sobre actualizaciones del sistema para acceder a nuevas funcionalidades. | ❌ **Pendiente** | |
-| **RF015** | El sistema debe permitir al administrador registrar nuevos productos en el inventario con detalles como nombre, categoría, precio, cantidad, fecha de vencimiento y número de lote. | ✅ **Completado** | Funcionalidad CRUD completa implementada. |
-| **RF016** | El sistema debe permitir al administrador actualizar la información de los productos existentes en el inventario. | ✅ **Completado** | Funcionalidad CRUD completa implementada. |
-| **RF017** | El sistema debe permitir al administrador eliminar productos del inventario. | ✅ **Completado** | Funcionalidad CRUD completa implementada. |
+| **RF015** | El sistema debe permitir al administrador registrar nuevos productos en el inventario con detalles como nombre, categoría, precio, cantidad, fecha de vencimiento y número de lote. | ✅ **Completado** | Funcionalidad CRUD completa implementada. Los datos se guardan en memoria y se pierden al recargar. |
+| **RF016** | El sistema debe permitir al administrador actualizar la información de los productos existentes en el inventario. | ✅ **Completado** | Funcionalidad CRUD completa implementada. Los datos se guardan en memoria y se pierden al recargar. |
+| **RF017** | El sistema debe permitir al administrador eliminar productos del inventario. | ✅ **Completado** | Funcionalidad CRUD completa implementada. Los datos se guardan en memoria y se pierden al recargar. |
 | **RF018** | El sistema debe permitir a los usuarios buscar productos en el inventario por nombre, categoría o número de lote. | ✅ **Completado** | La barra de búsqueda filtra los resultados en el frontend. |
 | **RF019** | El sistema debe permitir al usuario visualizar alertas de productos con bajo stock, según un umbral definido por el mismo usuario. | ✅ **Completado** | Las alertas se muestran en la pestaña "Alertas". El umbral está definido como una constante. |
 | **RF020** | El sistema debe permitir a los usuarios generar alertas para productos próximos a vencer. | ✅ **Completado** | Las alertas se muestran en la pestaña "Alertas". El umbral de días está definido como una constante. |
-| **RF021** | El sistema debe permitir a los usuarios realizar conteos físicos del inventario y ajustar las cantidades en el sistema. | 🟡 **En Proceso** | El ajuste de cantidades se puede hacer a través de la edición de productos (RF016). |
+| **RF021** | El sistema debe permitir a los usuarios realizar conteos físicos del inventario y ajustar las cantidades en el sistema. | 🟡 **En Proceso** | El ajuste de cantidades se puede hacer a través de la edición de productos (RF016), que actualmente guarda en memoria. |
 | **RF022** | El sistema debe permitir al administrador realizar la importación de datos de inventario desde archivos en formatos CSV o Excel. | ❌ **Pendiente** | |
 | **RF023** | El sistema debe permitir al administrador realizar la exportación de datos de inventario a archivos en formatos CSV o Excel. | ❌ **Pendiente** | |
 | **RF024** | El sistema debe permitir al usuario generar reportes de inventario actuales que incluyan el stock total, el valor del inventario y los productos próximos a vencer. | ❌ **Pendiente** | |
-| **RF025** | El sistema debe permitir a los usuarios registrar las entradas de nuevos suministros al inventario. | ✅ **Completado** | Se logra a través del registro de nuevos productos (RF015). |
+| **RF025** | El sistema debe permitir a los usuarios registrar las entradas de nuevos suministros al inventario. | ✅ **Completado** | Se logra a través del registro de nuevos productos (RF015), que actualmente guarda en memoria. |
 | **RF026** | El sistema debe permitir a los usuarios registrar las salidas de productos del inventario. | ❌ **Pendiente** | No hay un registro explícito de "salidas", solo edición o eliminación. |
 | **RF027** | El sistema debe permitir a los usuarios mantener un historial de todas las transacciones de inventario, incluyendo entradas y salidas. | ❌ **Pendiente** | |
 | **RF028** | El sistema debe permitir al administrador gestionar proveedores, incluyendo registro, actualización y eliminación de proveedores. | ❌ **Pendiente** | |
@@ -63,4 +62,3 @@ Este documento realiza un seguimiento del progreso de la implementación de los 
 | **RF049** | El sistema debe mostrar a los usuarios mensajes de error amigables en caso de credenciales inválidas u otros errores de autenticación. | ✅ **Completado** | El sistema de notificaciones se usa para mostrar errores de las operaciones CRUD. |
 | **RF050** | El sistema deberá permitir al administrador crear la cuenta administrador. | ❌ **Pendiente** | |
 | **RF051** | El sistema deberá permitir al administrador crear cuentas de empleados. | ❌ **Pendiente** | |
-
