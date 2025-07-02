@@ -1,3 +1,4 @@
+
 {
   "compilerOptions": {
     "target": "ES2017",
@@ -18,11 +19,12 @@
         "name": "next"
       }
     ],
-    "baseUrl": "src",
+    "baseUrl": ".",
     "paths": {
-      "@/*": [
-        "./*"
-      ]
+      "@/app/*": ["src/app/*"],
+      "@/componentes/*": ["src/componentes/*"],
+      "@/hooks/*": ["src/hooks/*"],
+      "@/libreria/*": ["src/libreria/*"]
     }
   },
   "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts"],
