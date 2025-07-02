@@ -51,6 +51,7 @@ import { format, isBefore, isWithinInterval, addDays, subDays } from 'date-fns';
 import { es } from 'date-fns/locale';
 
 import { type Producto } from '@/lib/types';
+import { usarNotificacion } from '@/hooks/usar-notificacion';
 
 interface ClientePanelProps {
   productosIniciales: Producto[];
@@ -64,6 +65,7 @@ export function ClientePanel({ productosIniciales }: ClientePanelProps) {
   const [terminoBusqueda, setTerminoBusqueda] = useState('');
   const [formularioAbierto, setFormularioAbierto] = useState(false);
   const [productoEnEdicion, setProductoEnEdicion] = useState<Producto | null>(null);
+  const { notificacion } = usarNotificacion();
 
   const productosFiltrados = useMemo(() =>
     productos.filter(
@@ -86,9 +88,42 @@ export function ClientePanel({ productosIniciales }: ClientePanelProps) {
     return productos.filter(p => isWithinInterval(p.fechaVencimiento, { start: subDays(hoy, 1), end: fechaUmbral }));
   }, [productos]);
 
-  const agregarProducto = (producto: Omit<Producto, 'id'>) => {
-    setProductos([...productos, { ...producto, id: `prod_${Date.now()}` }]);
-    setFormularioAbierto(false);
+  const agregarProducto = async (producto: Omit<Producto, 'id'>) => {
+    try {
+      const response = await fetch('/api/productos', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(producto),
+      });
+
+      if (!response.ok) {
+        throw new Error('La respuesta de la red no fue correcta');
+      }
+
+      const productoAgregado = await response.json();
+      
+      // La fecha de JSON es un string, hay que convertirla a objeto Date
+      const productoFinal = {
+          ...productoAgregado,
+          fechaVencimiento: new Date(productoAgregado.fechaVencimiento)
+      };
+
+      setProductos([...productos, productoFinal]);
+      setFormularioAbierto(false);
+      notificacion({
+        title: 'Éxito',
+        description: 'Producto agregado correctamente.',
+      });
+    } catch (error) {
+      console.error('Error al agregar el producto:', error);
+      notificacion({
+        title: 'Error',
+        description: 'No se pudo agregar el producto. Inténtalo de nuevo.',
+        variant: 'destructive',
+      });
+    }
   };
   
   const actualizarProducto = (productoActualizado: Producto) => {
