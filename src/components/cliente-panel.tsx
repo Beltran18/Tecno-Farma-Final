@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useMemo, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import {
   Tabs,
   TabsContent,
@@ -46,7 +47,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
-import { MoreHorizontal, DollarSign, Package, AlertTriangle, PlusCircle, Search, Calendar as CalendarIcon, Settings, Upload, Download, CalendarOff, PackagePlus } from 'lucide-react';
+import { MoreHorizontal, DollarSign, Package, AlertTriangle, PlusCircle, Search, Calendar as CalendarIcon, Settings, Upload, Download, CalendarOff, PackagePlus, Printer } from 'lucide-react';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Calendar } from '@/components/ui/calendar';
 import { format, isBefore, isWithinInterval, addDays, subDays } from 'date-fns';
@@ -79,6 +80,7 @@ export function ClientePanel({ productosIniciales }: ClientePanelProps) {
   const [importFile, setImportFile] = useState<File | null>(null);
   const [isImporting, setIsImporting] = useState(false);
   const { notificacion } = usarNotificacion();
+  const router = useRouter();
 
   useEffect(() => {
     const fetchData = async () => {
@@ -574,6 +576,10 @@ export function ClientePanel({ productosIniciales }: ClientePanelProps) {
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end">
                           <DropdownMenuItem onSelect={() => abrirFormularioEditar(producto)}>Editar</DropdownMenuItem>
+                          <DropdownMenuItem onSelect={() => router.push(`/panel/imprimir-etiqueta/${producto.id}`)}>
+                            <Printer className="mr-2 h-4 w-4" />
+                            <span>Imprimir Etiqueta</span>
+                          </DropdownMenuItem>
                           <DropdownMenuItem onSelect={() => eliminarProducto(producto.id)} className="text-destructive">Eliminar</DropdownMenuItem>
                         </DropdownMenuContent>
                       </DropdownMenu>
