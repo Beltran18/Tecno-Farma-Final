@@ -76,11 +76,17 @@ export function ClientePanel({ productosIniciales }: ClientePanelProps) {
   const [proveedores, setProveedores] = useState<Proveedor[]>([]);
   const [umbralStockBajo, setUmbralStockBajo] = useState(10);
   const [umbralDiasVencimiento, setUmbralDiasVencimiento] = useState(30);
+  const [alertasVencimiento, setAlertasVencimiento] = useState<Producto[]>([]);
   const [importDialogOpen, setImportDialogOpen] = useState(false);
   const [importFile, setImportFile] = useState<File | null>(null);
   const [isImporting, setIsImporting] = useState(false);
+  const [isClient, setIsClient] = useState(false);
   const { notificacion } = usarNotificacion();
   const router = useRouter();
+
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -110,6 +116,13 @@ export function ClientePanel({ productosIniciales }: ClientePanelProps) {
 
     fetchData();
   }, [notificacion]);
+  
+  useEffect(() => {
+    const hoy = new Date();
+    const fechaUmbral = addDays(hoy, umbralDiasVencimiento);
+    const alertas = productos.filter(p => isWithinInterval(new Date(p.fechaVencimiento), { start: subDays(hoy, 1), end: fechaUmbral }));
+    setAlertasVencimiento(alertas);
+  }, [productos, umbralDiasVencimiento]);
 
   const { totalValorInventario, totalUnidades } = useMemo(() => {
     const valor = productos.reduce((acc, p) => acc + p.precio * p.cantidad, 0);
@@ -129,14 +142,8 @@ export function ClientePanel({ productosIniciales }: ClientePanelProps) {
 
   const alertasStockBajo = useMemo(() =>
     productos.filter((p) => p.cantidad > 0 && p.cantidad <= umbralStockBajo),
-    [productos, umbralStockBajo]
+    [productos, umbralStockBjo]
   );
-
-  const alertasVencimiento = useMemo(() => {
-    const hoy = new Date();
-    const fechaUmbral = addDays(hoy, umbralDiasVencimiento);
-    return productos.filter(p => isWithinInterval(new Date(p.fechaVencimiento), { start: subDays(hoy, 1), end: fechaUmbral }));
-  }, [productos, umbralDiasVencimiento]);
 
   const productosRecientes = useMemo(() => {
     return [...productos]
@@ -563,7 +570,7 @@ export function ClientePanel({ productosIniciales }: ClientePanelProps) {
                     </TableCell>
                     <TableCell className="text-right">{producto.cantidad}</TableCell>
                     <TableCell>
-                       <span className={isBefore(new Date(producto.fechaVencimiento), new Date()) ? 'text-destructive' : ''}>
+                       <span className={isClient && isBefore(new Date(producto.fechaVencimiento), new Date()) ? 'text-destructive' : ''}>
                          {format(new Date(producto.fechaVencimiento), 'dd/MM/yyyy')}
                        </span>
                     </TableCell>
@@ -671,11 +678,11 @@ export function ClientePanel({ productosIniciales }: ClientePanelProps) {
                <div className="space-y-4">
                   {alertasVencimiento.length > 0 ? (
                      alertasVencimiento.map(producto => (
-                       <Alert key={producto.id} variant={isBefore(new Date(producto.fechaVencimiento), new Date()) ? 'destructive' : 'default'}>
+                       <Alert key={producto.id} variant={isClient && isBefore(new Date(producto.fechaVencimiento), new Date()) ? 'destructive' : 'default'}>
                          <AlertTriangle className="h-4 w-4" />
                          <AlertTitle>{producto.nombre} ({producto.numeroLote})</AlertTitle>
                          <AlertDescription>
-                           {isBefore(new Date(producto.fechaVencimiento), new Date()) ? 'Ha vencido el' : 'Vence el'} {format(new Date(producto.fechaVencimiento), 'PPP', { locale: es })}.
+                           {isClient && isBefore(new Date(producto.fechaVencimiento), new Date()) ? 'Ha vencido el' : 'Vence el'} {format(new Date(producto.fechaVencimiento), 'PPP', { locale: es })}.
                          </AlertDescription>
                        </Alert>
                      ))
