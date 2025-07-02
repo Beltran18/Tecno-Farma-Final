@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useMemo } from 'react';
+import React, { useMemo, useState, useEffect } from 'react';
 import { type Producto } from '@/lib/types';
 import {
   Card,
@@ -32,6 +32,13 @@ const UMBRAL_STOCK_BAJO = 10;
 const UMBRAL_DIAS_VENCIMIENTO = 30;
 
 export function ClienteReportes({ productos }: ClienteReportesProps) {
+  const [fechaReporte, setFechaReporte] = useState<string | null>(null);
+
+  useEffect(() => {
+    // Genera la fecha solo en el cliente, después de la hidratación.
+    setFechaReporte(format(new Date(), "dd 'de' MMMM 'de' yyyy, h:mm a", { locale: es }));
+  }, []);
+
   const { totalValorInventario, totalUnidades } = useMemo(() => {
     const valor = productos.reduce((acc, p) => acc + p.precio * p.cantidad, 0);
     const unidades = productos.reduce((acc, p) => acc + p.cantidad, 0);
@@ -49,15 +56,13 @@ export function ClienteReportes({ productos }: ClienteReportesProps) {
     return productos.filter(p => isWithinInterval(new Date(p.fechaVencimiento), { start: subDays(hoy, 1), end: fechaUmbral }));
   }, [productos]);
   
-  const fechaReporte = format(new Date(), "dd 'de' MMMM 'de' yyyy, h:mm a", { locale: es });
-
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-start no-imprimir">
         <div>
           <h1 className="text-2xl font-bold">Reporte de Inventario</h1>
           <p className="text-muted-foreground">
-            Un resumen de tu inventario a la fecha de {fechaReporte}.
+            Un resumen de tu inventario a la fecha de {fechaReporte || 'cargando...'}.
           </p>
         </div>
         <Button onClick={() => window.print()}>
