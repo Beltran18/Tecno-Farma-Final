@@ -19,7 +19,7 @@ Este documento realiza un seguimiento del progreso de la implementación de los 
 | **RF006** | El sistema debe permitir al administrador y a empleados operar en plataformas de escritorio. | ✅ **Completado** | La aplicación es una aplicación web, accesible desde escritorio. |
 | **RF007** | El sistema debe permitir al administrador gestionar las recetas médicas, incluyendo verificación de stock de los medicamentos prescritos. | ❌ **Pendiente** | |
 | **RF008** | El sistema debe permitir al administrador imprimir etiquetas para los productos, incluyendo información como precio y fecha de vencimiento. | ❌ **Pendiente** | |
-| **RF009** | El sistema debe permitir al administrador acceder a una vista de calendario para seguimiento de fechas de vencimiento y pedidos programados. | ❌ **Pendiente** | |
+| **RF009** | El sistema debe permitir al administrador acceder a una vista de calendario para seguimiento de fechas de vencimiento y pedidos programados. | ✅ **Completado** | Implementada vista de calendario para fechas de vencimiento. La parte de pedidos programados aún está pendiente. |
 | **RF010** | El sistema debe permitir al administrador realizar análisis de rentabilidad de producto o categoría. | ❌ **Pendiente** | |
 | **RF011** | El sistema debe permitir al administrador realizar la gestión de garantías de productos dentro del inventario, registrando fechas de inicio y fin de la garantía. | ❌ **Pendiente** | |
 | **RF012** | El sistema debe permitir a los usuarios ingresar a una herramienta de ayuda y tutoriales para facilitar el aprendizaje de las funcionalidades del sistema. | ❌ **Pendiente** | |

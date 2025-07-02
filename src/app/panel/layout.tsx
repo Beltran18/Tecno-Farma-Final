@@ -28,7 +28,7 @@ import {
   SidebarTrigger,
 } from '@/components/ui/sidebar';
 import { Button } from '@/components/ui/button';
-import { Home, User, LogOut, Settings, Tag, Truck } from 'lucide-react';
+import { Home, User, LogOut, Settings, Tag, Truck, CalendarDays } from 'lucide-react';
 import { Logo } from '@/components/logo';
 
 export default function DisposicionPanel({
@@ -43,6 +43,7 @@ export default function DisposicionPanel({
     if (pathname === '/panel') return 'Panel de Control';
     if (pathname.startsWith('/panel/categorias')) return 'Gestión de Categorías';
     if (pathname.startsWith('/panel/proveedores')) return 'Gestión de Proveedores';
+    if (pathname.startsWith('/panel/calendario')) return 'Calendario de Vencimientos';
     return 'TecnoFarma';
   };
 
@@ -70,6 +71,12 @@ export default function DisposicionPanel({
               <SidebarMenuButton href="/panel/proveedores" tooltip="Proveedores" isActive={pathname.startsWith('/panel/proveedores')}>
                 <Truck />
                 Proveedores
+              </SidebarMenuButton>
+            </SidebarMenuItem>
+            <SidebarMenuItem>
+              <SidebarMenuButton href="/panel/calendario" tooltip="Calendario" isActive={pathname.startsWith('/panel/calendario')}>
+                <CalendarDays />
+                Calendario
               </SidebarMenuButton>
             </SidebarMenuItem>
           </SidebarMenu>
