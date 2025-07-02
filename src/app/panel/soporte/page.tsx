@@ -1,53 +1,16 @@
 'use client';
 
-import { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Label } from '@/components/ui/label';
-import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
-import { usarNotificacion } from '@/hooks/usar-notificacion';
-import { LifeBuoy } from 'lucide-react';
-import { crearTicketSoporte } from '@/ai/flows/support-flow';
+import { LifeBuoy, MessageCircle } from 'lucide-react';
 
 export default function PaginaSoporte() {
-  const { notificacion } = usarNotificacion();
-  const [nombre, setNombre] = useState('');
-  const [email, setEmail] = useState('');
-  const [asunto, setAsunto] = useState('');
-  const [mensaje, setMensaje] = useState('');
-  const [enviando, setEnviando] = useState(false);
+  const numeroWhatsapp = '573217336430';
+  const mensajeWhatsapp = 'Hola, necesito soporte con el sistema TecnoFarma.';
+  const whatsappUrl = `https://wa.me/${numeroWhatsapp}?text=${encodeURIComponent(mensajeWhatsapp)}`;
 
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    setEnviando(true);
-
-    try {
-      const resultado = await crearTicketSoporte({
-        nombre,
-        email,
-        asunto,
-        mensaje,
-      });
-
-      notificacion({
-        title: `Ticket Creado: ${resultado.ticketId}`,
-        description: `${resultado.mensajeConfirmacion} Tiempo de respuesta estimado: ${resultado.respuestaEstimada}.`,
-      });
-      setNombre('');
-      setEmail('');
-      setAsunto('');
-      setMensaje('');
-    } catch (error) {
-      console.error('Error al crear el ticket de soporte:', error);
-      notificacion({
-        title: 'Error en la Solicitud',
-        description: 'No se pudo enviar tu solicitud. Por favor, inténtalo de nuevo más tarde.',
-        variant: 'destructive',
-      });
-    } finally {
-      setEnviando(false);
-    }
+  const handleContactar = () => {
+    window.open(whatsappUrl, '_blank');
   };
 
   return (
@@ -57,44 +20,21 @@ export default function PaginaSoporte() {
           <div className="flex items-center gap-4">
              <LifeBuoy className="h-8 w-8 text-primary" />
              <div>
-                <CardTitle>Soporte Técnico</CardTitle>
+                <CardTitle>Soporte Técnico Directo</CardTitle>
                 <CardDescription>
-                  ¿Necesitas ayuda? Completa el formulario y nos pondremos en contacto.
+                  ¿Necesitas ayuda? Contáctanos directamente por WhatsApp para una atención personalizada.
                 </CardDescription>
              </div>
           </div>
         </CardHeader>
-        <CardContent>
-          <form onSubmit={handleSubmit} className="space-y-6">
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                <div className="space-y-2">
-                    <Label htmlFor="nombre">Nombre</Label>
-                    <Input id="nombre" placeholder="Tu nombre completo" value={nombre} onChange={(e) => setNombre(e.target.value)} required />
-                </div>
-                <div className="space-y-2">
-                    <Label htmlFor="email">Correo Electrónico</Label>
-                    <Input id="email" type="email" placeholder="tu@correo.com" value={email} onChange={(e) => setEmail(e.target.value)} required />
-                </div>
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="asunto">Asunto</Label>
-              <Input id="asunto" placeholder="Ej: Problema con el inventario" value={asunto} onChange={(e) => setAsunto(e.target.value)} required />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="mensaje">Mensaje</Label>
-              <Textarea
-                id="mensaje"
-                placeholder="Describe tu problema o consulta en detalle..."
-                className="min-h-[150px]"
-                value={mensaje}
-                onChange={(e) => setMensaje(e.target.value)}
-                required
-              />
-            </div>
-            <Button type="submit" className="w-full" disabled={enviando}>
-              {enviando ? 'Enviando...' : 'Enviar Solicitud'}
+        <CardContent className="text-center">
+            <p className="text-muted-foreground mb-6">
+                Al hacer clic en el botón, se abrirá una conversación en WhatsApp con un mensaje predefinido para agilizar tu consulta.
+            </p>
+            <Button size="lg" onClick={handleContactar}>
+              <MessageCircle className="mr-2 h-5 w-5" />
+              Contactar por WhatsApp
             </Button>
-          </form>
         </CardContent>
       </Card>
     </div>
