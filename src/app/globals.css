@@ -95,3 +95,25 @@ body {
     text-decoration-color: hsl(var(--destructive));
   }
 }
+
+@media print {
+  @page {
+    size: A4;
+    margin: 1.5cm;
+  }
+  .no-imprimir {
+    display: none !important;
+  }
+  main {
+    padding: 0 !important;
+    margin: 0 !important;
+  }
+  .printable-card {
+    border: 1px solid hsl(var(--border)) !important;
+    box-shadow: none !important;
+    page-break-inside: avoid;
+  }
+  body {
+    background-color: #fff !important;
+  }
+}

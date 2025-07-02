@@ -28,7 +28,7 @@ import {
   SidebarTrigger,
 } from '@/components/ui/sidebar';
 import { Button } from '@/components/ui/button';
-import { Home, User, LogOut, Settings, Tag, Truck, CalendarDays, LifeBuoy } from 'lucide-react';
+import { Home, User, LogOut, Settings, Tag, Truck, CalendarDays, LifeBuoy, FileText } from 'lucide-react';
 import { Logo } from '@/components/logo';
 
 export default function DisposicionPanel({
@@ -44,13 +44,14 @@ export default function DisposicionPanel({
     if (pathname.startsWith('/panel/categorias')) return 'Gestión de Categorías';
     if (pathname.startsWith('/panel/proveedores')) return 'Gestión de Proveedores';
     if (pathname.startsWith('/panel/calendario')) return 'Calendario de Vencimientos';
+    if (pathname.startsWith('/panel/reportes')) return 'Generación de Reportes';
     if (pathname.startsWith('/panel/soporte')) return 'Soporte Técnico';
     return 'TecnoFarma';
   };
 
   return (
     <SidebarProvider>
-      <Sidebar>
+      <Sidebar className="no-imprimir">
         <SidebarHeader>
           <Logo />
         </SidebarHeader>
@@ -78,6 +79,12 @@ export default function DisposicionPanel({
               <SidebarMenuButton href="/panel/calendario" tooltip="Calendario" isActive={pathname.startsWith('/panel/calendario')}>
                 <CalendarDays />
                 Calendario
+              </SidebarMenuButton>
+            </SidebarMenuItem>
+             <SidebarMenuItem>
+              <SidebarMenuButton href="/panel/reportes" tooltip="Reportes" isActive={pathname.startsWith('/panel/reportes')}>
+                <FileText />
+                Reportes
               </SidebarMenuButton>
             </SidebarMenuItem>
             <SidebarMenuItem>
@@ -123,7 +130,7 @@ export default function DisposicionPanel({
         </SidebarFooter>
       </Sidebar>
       <SidebarInset>
-        <header className="flex h-14 items-center gap-4 border-b bg-background/95 px-4 backdrop-blur-sm">
+        <header className="flex h-14 items-center gap-4 border-b bg-background/95 px-4 backdrop-blur-sm no-imprimir">
           <SidebarTrigger className="md:hidden" />
           <h1 className="text-xl font-semibold">{getTitle()}</h1>
         </header>
