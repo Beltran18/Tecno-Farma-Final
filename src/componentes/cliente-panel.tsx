@@ -1,0 +1,375 @@
+'use client';
+
+import React, { useState, useMemo, useEffect } from 'react';
+import {
+  Tabs,
+  TabsContent,
+  TabsList,
+  TabsTrigger,
+} from '@/componentes/ui/tabs';
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from '@/componentes/ui/card';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+  DialogFooter,
+  DialogClose
+} from '@/componentes/ui/dialog';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/componentes/ui/table';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/componentes/ui/dropdown-menu';
+import {
+  Alert,
+  AlertDescription,
+  AlertTitle,
+} from '@/componentes/ui/alert';
+import { Button } from '@/componentes/ui/button';
+import { Input } from '@/componentes/ui/input';
+import { Badge } from '@/componentes/ui/badge';
+import { MoreHorizontal, DollarSign, RefreshCw, AlertTriangle, PlusCircle, Search, Calendar as CalendarIcon } from 'lucide-react';
+import { Popover, PopoverContent, PopoverTrigger } from './ui/popover';
+import { Calendar } from './ui/calendar';
+import { format, isBefore, isWithinInterval, addDays, subDays } from 'date-fns';
+import { es } from 'date-fns/locale';
+
+import { type Producto } from '@/libreria/tipos';
+
+interface ClientePanelProps {
+  productosIniciales: Producto[];
+}
+
+const UMBRAL_STOCK_BAJO = 10;
+const UMBRAL_DIAS_VENCIMIENTO = 30;
+
+export function ClientePanel({ productosIniciales }: ClientePanelProps) {
+  const [productos, setProductos] = useState<Producto[]>(productosIniciales);
+  const [terminoBusqueda, setTerminoBusqueda] = useState('');
+  const [formularioAbierto, setFormularioAbierto] = useState(false);
+  const [productoEnEdicion, setProductoEnEdicion] = useState<Producto | null>(null);
+
+  const productosFiltrados = useMemo(() =>
+    productos.filter(
+      (producto) =>
+        producto.nombre.toLowerCase().includes(terminoBusqueda.toLowerCase()) ||
+        producto.categoria.toLowerCase().includes(terminoBusqueda.toLowerCase()) ||
+        producto.numeroLote.toLowerCase().includes(terminoBusqueda.toLowerCase())
+    ),
+    [productos, terminoBusqueda]
+  );
+
+  const alertasStockBajo = useMemo(() =>
+    productos.filter((p) => p.cantidad > 0 && p.cantidad <= UMBRAL_STOCK_BAJO),
+    [productos]
+  );
+
+  const alertasVencimiento = useMemo(() => {
+    const hoy = new Date();
+    const fechaUmbral = addDays(hoy, UMBRAL_DIAS_VENCIMIENTO);
+    return productos.filter(p => isWithinInterval(p.fechaVencimiento, { start: subDays(hoy, 1), end: fechaUmbral }));
+  }, [productos]);
+
+  const agregarProducto = (producto: Omit<Producto, 'id'>) => {
+    setProductos([...productos, { ...producto, id: `prod_${Date.now()}` }]);
+    setFormularioAbierto(false);
+  };
+  
+  const actualizarProducto = (productoActualizado: Producto) => {
+    setProductos(productos.map(p => p.id === productoActualizado.id ? productoActualizado : p));
+    setProductoEnEdicion(null);
+    setFormularioAbierto(false);
+  };
+
+  const eliminarProducto = (productoId: string) => {
+    setProductos(productos.filter(p => p.id !== productoId));
+  }
+
+  const abrirFormularioEditar = (producto: Producto) => {
+    setProductoEnEdicion(producto);
+    setFormularioAbierto(true);
+  }
+
+  const abrirFormularioNuevo = () => {
+    setProductoEnEdicion(null);
+    setFormularioAbierto(true);
+  }
+  
+  return (
+    <Tabs defaultValue="panel" className="space-y-4">
+      <TabsList>
+        <TabsTrigger value="panel">Panel de Inventario</TabsTrigger>
+        <TabsTrigger value="products">Productos</TabsTrigger>
+        <TabsTrigger value="alerts">Alertas</TabsTrigger>
+      </TabsList>
+
+      <TabsContent value="panel">
+        <div className="grid gap-4 md:grid-cols-2">
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Rotación de Inventario</CardTitle>
+              <RefreshCw className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">4.5</div>
+              <p className="text-xs text-muted-foreground">Veces por año</p>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Margen de Ganancia</CardTitle>
+              <DollarSign className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">35.2%</div>
+              <p className="text-xs text-muted-foreground">Promedio sobre costo</p>
+            </CardContent>
+          </Card>
+        </div>
+      </TabsContent>
+
+      <TabsContent value="products">
+        <Card>
+          <CardHeader>
+            <div className="flex flex-col items-start gap-4 sm:flex-row sm:items-center sm:justify-between">
+              <div className="relative w-full sm:w-64">
+                <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+                <Input
+                  type="search"
+                  placeholder="Buscar por nombre, categoría..."
+                  className="w-full pl-8"
+                  value={terminoBusqueda}
+                  onChange={(e) => setTerminoBusqueda(e.target.value)}
+                />
+              </div>
+              <Button onClick={abrirFormularioNuevo}>
+                <PlusCircle className="mr-2 h-4 w-4" />
+                Registrar Producto
+              </Button>
+            </div>
+          </CardHeader>
+          <CardContent>
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Nombre</TableHead>
+                  <TableHead>Categoría</TableHead>
+                  <TableHead className="text-right">Precio</TableHead>
+                  <TableHead className="text-right">Cantidad</TableHead>
+                  <TableHead>Vencimiento</TableHead>
+                  <TableHead>Lote</TableHead>
+                  <TableHead>
+                    <span className="sr-only">Acciones</span>
+                  </TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {productosFiltrados.map((producto) => (
+                  <TableRow key={producto.id}>
+                    <TableCell className="font-medium">{producto.nombre}</TableCell>
+                    <TableCell>
+                      <Badge variant="outline">{producto.categoria}</Badge>
+                    </TableCell>
+                    <TableCell className="text-right">
+                      {new Intl.NumberFormat('es-CO', {
+                        style: 'currency',
+                        currency: 'COP',
+                        minimumFractionDigits: 0,
+                        maximumFractionDigits: 0,
+                      }).format(producto.precio)}
+                    </TableCell>
+                    <TableCell className="text-right">{producto.cantidad}</TableCell>
+                    <TableCell>
+                       <span className={isBefore(producto.fechaVencimiento, new Date()) ? 'text-destructive' : ''}>
+                         {format(producto.fechaVencimiento, 'dd/MM/yyyy')}
+                       </span>
+                    </TableCell>
+                    <TableCell>{producto.numeroLote}</TableCell>
+                    <TableCell>
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button aria-haspopup="true" size="icon" variant="ghost">
+                            <MoreHorizontal className="h-4 w-4" />
+                            <span className="sr-only">Toggle menu</span>
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                          <DropdownMenuItem onSelect={() => abrirFormularioEditar(producto)}>Editar</DropdownMenuItem>
+                          <DropdownMenuItem onSelect={() => eliminarProducto(producto.id)} className="text-destructive">Eliminar</DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </CardContent>
+        </Card>
+      </TabsContent>
+
+      <TabsContent value="alerts">
+         <div className="grid gap-6">
+            <div>
+               <h3 className="text-lg font-medium mb-2">Alertas de Stock Bajo</h3>
+               <div className="space-y-4">
+                  {alertasStockBajo.length > 0 ? (
+                     alertasStockBajo.map(producto => (
+                       <Alert key={producto.id}>
+                         <AlertTriangle className="h-4 w-4" />
+                         <AlertTitle>{producto.nombre}</AlertTitle>
+                         <AlertDescription>
+                           Stock bajo: {producto.cantidad} unidades restantes.
+                         </AlertDescription>
+                       </Alert>
+                     ))
+                  ) : <p className="text-sm text-muted-foreground">No hay alertas de stock bajo.</p>}
+               </div>
+            </div>
+             <div>
+               <h3 className="text-lg font-medium mb-2">Alertas de Vencimiento</h3>
+               <div className="space-y-4">
+                  {alertasVencimiento.length > 0 ? (
+                     alertasVencimiento.map(producto => (
+                       <Alert key={producto.id} variant={isBefore(producto.fechaVencimiento, new Date()) ? 'destructive' : 'default'}>
+                         <AlertTriangle className="h-4 w-4" />
+                         <AlertTitle>{producto.nombre} ({producto.numeroLote})</AlertTitle>
+                         <AlertDescription>
+                           {isBefore(producto.fechaVencimiento, new Date()) ? 'Ha vencido el' : 'Vence el'} {format(producto.fechaVencimiento, 'PPP', { locale: es })}.
+                         </AlertDescription>
+                       </Alert>
+                     ))
+                  ) : <p className="text-sm text-muted-foreground">No hay productos próximos a vencer.</p>}
+               </div>
+            </div>
+         </div>
+      </TabsContent>
+      
+      <Dialog open={formularioAbierto} onOpenChange={setFormularioAbierto}>
+        <DialogContent className="sm:max-w-[425px]">
+          <FormularioProducto
+            producto={productoEnEdicion}
+            onAgregar={agregarProducto}
+            onActualizar={actualizarProducto}
+          />
+        </DialogContent>
+      </Dialog>
+    </Tabs>
+  );
+}
+
+function FormularioProducto({ producto, onAgregar, onActualizar }: { producto: Producto | null, onAgregar: (p: Omit<Producto, 'id'>) => void, onActualizar: (p: Producto) => void}) {
+  const [nombre, setNombre] = useState('');
+  const [categoria, setCategoria] = useState<'Analgésicos' | 'Antibióticos' | 'Vitaminas' | 'Dermatología' | 'Otros'>('Otros');
+  const [precio, setPrecio] = useState(0);
+  const [cantidad, setCantidad] = useState(0);
+  const [fechaVencimiento, setFechaVencimiento] = useState<Date | undefined>(new Date());
+  const [numeroLote, setNumeroLote] = useState('');
+
+  useEffect(() => {
+    if (producto) {
+      setNombre(producto.nombre);
+      setCategoria(producto.categoria);
+      setPrecio(producto.precio);
+      setCantidad(producto.cantidad);
+      setFechaVencimiento(producto.fechaVencimiento);
+      setNumeroLote(producto.numeroLote);
+    } else {
+      setNombre('');
+      setCategoria('Otros');
+      setPrecio(0);
+      setCantidad(0);
+      setFechaVencimiento(new Date());
+      setNumeroLote('');
+    }
+  }, [producto]);
+
+  const handleEnviar = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!fechaVencimiento) return;
+    const datosProducto = { nombre, categoria, precio, cantidad, fechaVencimiento, numeroLote };
+
+    if (producto) {
+      onActualizar({ ...datosProducto, id: producto.id });
+    } else {
+      onAgregar(datosProducto);
+    }
+  };
+
+  return (
+    <form onSubmit={handleEnviar}>
+      <DialogHeader>
+        <DialogTitle>{producto ? 'Editar Producto' : 'Registrar Producto'}</DialogTitle>
+      </DialogHeader>
+      <div className="grid gap-4 py-4">
+        <div className="space-y-2">
+            <label htmlFor="name">Nombre</label>
+            <Input id="name" value={nombre} onChange={e => setNombre(e.target.value)} required />
+        </div>
+        <div className="space-y-2">
+            <label htmlFor="category">Categoría</label>
+            <select id="category" value={categoria} onChange={e => setCategoria(e.target.value as any)} className="w-full flex h-10 rounded-md border border-input bg-background px-3 py-2 text-sm">
+                <option>Analgésicos</option>
+                <option>Antibióticos</option>
+                <option>Vitaminas</option>
+                <option>Dermatología</option>
+                <option>Otros</option>
+            </select>
+        </div>
+         <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-2">
+                <label htmlFor="price">Precio</label>
+                <Input id="price" type="number" value={precio} onChange={e => setPrecio(parseFloat(e.target.value))} required />
+            </div>
+            <div className="space-y-2">
+                <label htmlFor="quantity">Cantidad</label>
+                <Input id="quantity" type="number" value={cantidad} onChange={e => setCantidad(parseInt(e.target.value, 10))} required />
+            </div>
+        </div>
+        <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-2">
+                <label>Fecha de Vencimiento</label>
+                <Popover>
+                    <PopoverTrigger asChild>
+                        <Button variant={"outline"} className="w-full justify-start text-left font-normal">
+                            <CalendarIcon className="mr-2 h-4 w-4" />
+                            {fechaVencimiento ? format(fechaVencimiento, "PPP", { locale: es }) : <span>Elige una fecha</span>}
+                        </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-auto p-0">
+                        <Calendar mode="single" selected={fechaVencimiento} onSelect={setFechaVencimiento} initialFocus />
+                    </PopoverContent>
+                </Popover>
+            </div>
+            <div className="space-y-2">
+                <label htmlFor="lotNumber">Número de Lote</label>
+                <Input id="lotNumber" value={numeroLote} onChange={e => setNumeroLote(e.target.value)} required />
+            </div>
+        </div>
+      </div>
+      <DialogFooter>
+        <DialogClose asChild>
+          <Button type="button" variant="secondary">
+            Cancelar
+          </Button>
+        </DialogClose>
+        <Button type="submit">Guardar Cambios</Button>
+      </DialogFooter>
+    </form>
+  );
+}
