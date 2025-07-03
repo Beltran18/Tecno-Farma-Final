@@ -620,9 +620,9 @@ function FormularioProducto({
     const datosProducto = { 
         nombre, 
         categoria, 
-        costo: Number(costo),
-        precio: Number(precio), 
-        descuento: Number(descuento),
+        costo: Number(costo || 0),
+        precio: Number(precio),
+        descuento: Number(descuento || 0),
         cantidad: Number(cantidad),
         fechaVencimiento, 
         numeroLote,
