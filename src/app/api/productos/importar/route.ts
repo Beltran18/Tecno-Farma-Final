@@ -50,9 +50,11 @@ export async function POST(request: NextRequest) {
         proveedorId: proveedorId,
         proveedorNombre: proveedorNombre,
         descuento: record.descuento ? parseFloat(record.descuento) : 0,
+        fechaInicioGarantia: record.fechaInicioGarantia ? new Date(record.fechaInicioGarantia) : undefined,
+        fechaFinGarantia: record.fechaFinGarantia ? new Date(record.fechaFinGarantia) : undefined,
       };
 
-      if (isNaN(nuevoProductoData.costo) || isNaN(nuevoProductoData.precio) || isNaN(nuevoProductoData.cantidad) || isNaN(nuevoProductoData.fechaVencimiento.getTime()) || (nuevoProductoData.descuento && isNaN(nuevoProductoData.descuento))) {
+      if (isNaN(nuevoProductoData.costo) || isNaN(nuevoProductoData.precio) || isNaN(nuevoProductoData.cantidad) || isNaN(nuevoProductoData.fechaVencimiento.getTime()) || (nuevoProductoData.descuento && isNaN(nuevoProductoData.descuento)) || (nuevoProductoData.fechaInicioGarantia && isNaN(nuevoProductoData.fechaInicioGarantia.getTime())) || (nuevoProductoData.fechaFinGarantia && isNaN(nuevoProductoData.fechaFinGarantia.getTime()))) {
           console.warn('Registro CSV omitido por datos inválidos:', record);
           continue;
       }

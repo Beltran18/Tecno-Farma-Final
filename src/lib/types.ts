@@ -10,6 +10,8 @@ export interface Producto {
   proveedorId?: string;
   proveedorNombre?: string;
   descuento?: number;
+  fechaInicioGarantia?: Date;
+  fechaFinGarantia?: Date;
 }
 
 export interface Categoria {

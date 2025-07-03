@@ -253,7 +253,7 @@ export function ClienteProductos({ productosIniciales, categoriasIniciales, prov
         return;
     }
 
-    const headers = ['nombre', 'categoria', 'costo', 'precio', 'descuento', 'cantidad', 'fechaVencimiento', 'numeroLote', 'proveedorNombre'];
+    const headers = ['nombre', 'categoria', 'costo', 'precio', 'descuento', 'cantidad', 'fechaVencimiento', 'numeroLote', 'proveedorNombre', 'fechaInicioGarantia', 'fechaFinGarantia'];
     const csvRows = [
       headers.join(','),
       ...productos.map(p => [
@@ -266,6 +266,8 @@ export function ClienteProductos({ productosIniciales, categoriasIniciales, prov
         format(new Date(p.fechaVencimiento), 'yyyy-MM-dd'),
         `"${p.numeroLote.replace(/"/g, '""')}"`,
         `"${(p.proveedorNombre || '').replace(/"/g, '""')}"`,
+        p.fechaInicioGarantia ? format(new Date(p.fechaInicioGarantia), 'yyyy-MM-dd') : '',
+        p.fechaFinGarantia ? format(new Date(p.fechaFinGarantia), 'yyyy-MM-dd') : '',
       ].join(','))
     ];
 
@@ -309,42 +311,6 @@ export function ClienteProductos({ productosIniciales, categoriasIniciales, prov
   const abrirDialogoHistorialVentas = (producto: Producto) => {
     setProductoParaHistorialVentas(producto);
     setSalesHistoryDialogOpen(true);
-  };
-
-  const handleRegistrarSalida = async (cantidadSalida: number) => {
-    if (!productoParaSalida) return;
-
-    try {
-      const response = await fetch(`/api/productos/${productoParaSalida.id}/salida`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ cantidad: cantidadSalida }),
-      });
-
-      const data = await response.json();
-      if (!response.ok) {
-        throw new Error(data.message || 'Error al registrar la salida');
-      }
-
-      const productoActualizado = {
-        ...data,
-        fechaVencimiento: new Date(data.fechaVencimiento),
-      };
-
-      setProductos(productos.map(p => p.id === productoActualizado.id ? productoActualizado : p));
-      setSalidaDialogOpen(false);
-      setProductoParaSalida(null);
-      notificacion({
-        title: 'Éxito',
-        description: `Se registró la salida de ${cantidadSalida} unidades.`,
-      });
-    } catch (error: any) {
-      notificacion({
-        title: 'Error',
-        description: error.message,
-        variant: 'destructive',
-      });
-    }
   };
   
   return (
@@ -487,7 +453,7 @@ export function ClienteProductos({ productosIniciales, categoriasIniciales, prov
           <DialogHeader>
             <DialogTitle>Importar Productos desde CSV</DialogTitle>
             <DialogDescription>
-              El archivo debe tener las columnas: nombre, categoria, costo, precio, descuento, cantidad, fechaVencimiento (AAAA-MM-DD), numeroLote, proveedorNombre (opcional).
+              El archivo debe tener las columnas: nombre, categoria, costo, precio, descuento, cantidad, fechaVencimiento (AAAA-MM-DD), numeroLote, proveedorNombre (opcional), fechaInicioGarantia (opcional), fechaFinGarantia (opcional).
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4 py-4">
@@ -567,6 +533,8 @@ function FormularioProducto({
   const [cantidad, setCantidad] = useState(0);
   const [fechaVencimiento, setFechaVencimiento] = useState<Date | undefined>(new Date());
   const [numeroLote, setNumeroLote] = useState('');
+  const [fechaInicioGarantia, setFechaInicioGarantia] = useState<Date | undefined>();
+  const [fechaFinGarantia, setFechaFinGarantia] = useState<Date | undefined>();
 
   useEffect(() => {
     if (producto) {
@@ -579,6 +547,8 @@ function FormularioProducto({
       setFechaVencimiento(new Date(producto.fechaVencimiento));
       setNumeroLote(producto.numeroLote);
       setProveedorId(producto.proveedorId || '');
+      setFechaInicioGarantia(producto.fechaInicioGarantia ? new Date(producto.fechaInicioGarantia) : undefined);
+      setFechaFinGarantia(producto.fechaFinGarantia ? new Date(producto.fechaFinGarantia) : undefined);
     } else {
       setNombre('');
       setCategoria(categorias.length > 0 ? categorias[0].nombre : '');
@@ -589,6 +559,8 @@ function FormularioProducto({
       setFechaVencimiento(new Date());
       setNumeroLote('');
       setProveedorId('');
+      setFechaInicioGarantia(undefined);
+      setFechaFinGarantia(undefined);
     }
   }, [producto, categorias, proveedores]);
 
@@ -609,6 +581,8 @@ function FormularioProducto({
         numeroLote,
         proveedorId: proveedorSeleccionado?.id,
         proveedorNombre: proveedorSeleccionado?.nombre,
+        fechaInicioGarantia,
+        fechaFinGarantia,
     };
 
     if (producto) {
@@ -685,6 +659,36 @@ function FormularioProducto({
                     <Calendar mode="single" selected={fechaVencimiento} onSelect={setFechaVencimiento} initialFocus />
                 </PopoverContent>
             </Popover>
+        </div>
+        <div className="grid grid-cols-2 gap-4">
+          <div className="space-y-2">
+              <label>Inicio Garantía (Opcional)</label>
+              <Popover>
+                  <PopoverTrigger asChild>
+                      <Button variant={"outline"} className="w-full justify-start text-left font-normal">
+                          <CalendarIcon className="mr-2 h-4 w-4" />
+                          {fechaInicioGarantia ? format(fechaInicioGarantia, "PPP", { locale: es }) : <span>Elige una fecha</span>}
+                      </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-auto p-0">
+                      <Calendar mode="single" selected={fechaInicioGarantia} onSelect={setFechaInicioGarantia} initialFocus />
+                  </PopoverContent>
+              </Popover>
+          </div>
+          <div className="space-y-2">
+              <label>Fin Garantía (Opcional)</label>
+              <Popover>
+                  <PopoverTrigger asChild>
+                      <Button variant={"outline"} className="w-full justify-start text-left font-normal">
+                          <CalendarIcon className="mr-2 h-4 w-4" />
+                          {fechaFinGarantia ? format(fechaFinGarantia, "PPP", { locale: es }) : <span>Elige una fecha</span>}
+                      </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-auto p-0">
+                      <Calendar mode="single" selected={fechaFinGarantia} onSelect={setFechaFinGarantia} initialFocus />
+                  </PopoverContent>
+              </Popover>
+          </div>
         </div>
       </div>
       <DialogFooter>
