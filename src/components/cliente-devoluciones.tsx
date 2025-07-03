@@ -25,11 +25,27 @@ import {
   DialogClose,
   DialogDescription,
 } from '@/components/ui/dialog';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog"
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
-import { PlusCircle } from 'lucide-react';
+import { PlusCircle, MoreHorizontal, Trash2 } from 'lucide-react';
 import { format } from 'date-fns';
 import { type DevolucionProveedor, type Producto } from '@/lib/types';
 import { usarNotificacion } from '@/hooks/usar-notificacion';
@@ -42,6 +58,7 @@ interface ClienteDevolucionesProps {
 export function ClienteDevoluciones({ devolucionesIniciales, productosInventario }: ClienteDevolucionesProps) {
   const [devoluciones, setDevoluciones] = useState<DevolucionProveedor[]>(devolucionesIniciales);
   const [formularioAbierto, setFormularioAbierto] = useState(false);
+  const [devolucionParaEliminar, setDevolucionParaEliminar] = useState<string | null>(null);
   const { notificacion } = usarNotificacion();
 
   const handleCrearDevolucion = async (devolucionData: { productoId: string; cantidadDevuelta: number; motivo: string; }) => {
@@ -73,6 +90,35 @@ export function ClienteDevoluciones({ devolucionesIniciales, productosInventario
     }
   };
   
+  const handleEliminarDevolucion = async () => {
+    if (!devolucionParaEliminar) return;
+
+    try {
+      const response = await fetch(`/api/devoluciones/${devolucionParaEliminar}`, {
+        method: 'DELETE',
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.message || 'Error al eliminar la devolución');
+      }
+
+      setDevoluciones(prev => prev.filter(d => d.id !== devolucionParaEliminar));
+      notificacion({
+        title: 'Éxito',
+        description: 'Devolución eliminada correctamente.',
+      });
+    } catch (error: any) {
+      notificacion({
+        title: 'Error',
+        description: error.message,
+        variant: 'destructive',
+      });
+    } finally {
+        setDevolucionParaEliminar(null);
+    }
+  };
+
   return (
     <>
       <Card>
@@ -100,6 +146,7 @@ export function ClienteDevoluciones({ devolucionesIniciales, productosInventario
                   <TableHead>Proveedor</TableHead>
                   <TableHead className="text-right">Cantidad</TableHead>
                   <TableHead>Motivo</TableHead>
+                  <TableHead><span className="sr-only">Acciones</span></TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -111,11 +158,26 @@ export function ClienteDevoluciones({ devolucionesIniciales, productosInventario
                       <TableCell>{devolucion.proveedorNombre}</TableCell>
                       <TableCell className="text-right">{devolucion.cantidadDevuelta}</TableCell>
                       <TableCell className="text-sm text-muted-foreground truncate" style={{maxWidth: '300px'}}>{devolucion.motivo}</TableCell>
+                       <TableCell className="text-right">
+                         <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                              <Button size="icon" variant="ghost">
+                                <MoreHorizontal className="h-4 w-4" />
+                              </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent>
+                              <DropdownMenuItem onSelect={() => setDevolucionParaEliminar(devolucion.id)} className="text-destructive">
+                                <Trash2 className="mr-2 h-4 w-4" />
+                                Eliminar
+                              </DropdownMenuItem>
+                            </DropdownMenuContent>
+                          </DropdownMenu>
+                       </TableCell>
                     </TableRow>
                   ))
                 ) : (
                   <TableRow>
-                    <TableCell colSpan={5} className="text-center h-24">
+                    <TableCell colSpan={6} className="text-center h-24">
                       No hay devoluciones registradas.
                     </TableCell>
                   </TableRow>
@@ -135,6 +197,22 @@ export function ClienteDevoluciones({ devolucionesIniciales, productosInventario
           />
         </DialogContent>
       </Dialog>
+      <AlertDialog open={!!devolucionParaEliminar} onOpenChange={(open) => !open && setDevolucionParaEliminar(null)}>
+        <AlertDialogContent>
+            <AlertDialogHeader>
+                <AlertDialogTitle>¿Estás seguro?</AlertDialogTitle>
+                <AlertDialogDescription>
+                    Esta acción eliminará permanentemente el registro de esta devolución. No afectará el stock del producto. Esta acción no se puede deshacer.
+                </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+                <AlertDialogCancel onClick={() => setDevolucionParaEliminar(null)}>No, volver</AlertDialogCancel>
+                <AlertDialogAction onClick={handleEliminarDevolucion}>
+                    Sí, eliminar
+                </AlertDialogAction>
+            </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </>
   );
 }

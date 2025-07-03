@@ -61,6 +61,7 @@ export function ClienteRecetas({ recetasIniciales, productosInventario }: Client
   const [recetas, setRecetas] = useState<RecetaMedica[]>(recetasIniciales);
   const [formularioAbierto, setFormularioAbierto] = useState(false);
   const [recetaParaDispensar, setRecetaParaDispensar] = useState<RecetaMedica | null>(null);
+  const [recetaParaEliminar, setRecetaParaEliminar] = useState<RecetaMedica | null>(null);
   const { notificacion } = usarNotificacion();
 
   const handleAgregarReceta = async (recetaData: Omit<RecetaMedica, 'id' | 'estado'>) => {
@@ -123,6 +124,24 @@ export function ClienteRecetas({ recetasIniciales, productosInventario }: Client
     }
   };
   
+  const handleEliminarReceta = async () => {
+    if (!recetaParaEliminar) return;
+
+    try {
+        const response = await fetch(`/api/recetas/${recetaParaEliminar.id}`, { method: 'DELETE' });
+        if (!response.ok) {
+            const error = await response.json();
+            throw new Error(error.message || 'Error al eliminar la receta');
+        }
+        setRecetas(recetas.filter(r => r.id !== recetaParaEliminar.id));
+        notificacion({ title: 'Éxito', description: 'Receta eliminada correctamente.' });
+    } catch (error: any) {
+        notificacion({ title: 'Error', description: error.message, variant: 'destructive' });
+    } finally {
+        setRecetaParaEliminar(null);
+    }
+  };
+
   return (
     <>
       <Card>
@@ -170,21 +189,25 @@ export function ClienteRecetas({ recetasIniciales, productosInventario }: Client
                         </Badge>
                       </TableCell>
                        <TableCell className="text-right">
-                         {receta.estado === 'Pendiente' && (
-                            <DropdownMenu>
-                                <DropdownMenuTrigger asChild>
-                                    <Button size="icon" variant="ghost">
-                                        <MoreHorizontal className="h-4 w-4" />
-                                    </Button>
-                                </DropdownMenuTrigger>
-                                <DropdownMenuContent>
+                         <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                                <Button size="icon" variant="ghost">
+                                    <MoreHorizontal className="h-4 w-4" />
+                                </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent>
+                                {receta.estado === 'Pendiente' && (
                                     <DropdownMenuItem onSelect={() => setRecetaParaDispensar(receta)}>
                                         <ClipboardCheck className="mr-2 h-4 w-4" />
                                         Dispensar Receta
                                     </DropdownMenuItem>
-                                </DropdownMenuContent>
-                            </DropdownMenu>
-                         )}
+                                )}
+                                <DropdownMenuItem onSelect={() => setRecetaParaEliminar(receta)} className="text-destructive">
+                                    <Trash2 className="mr-2 h-4 w-4" />
+                                    Eliminar
+                                </DropdownMenuItem>
+                            </DropdownMenuContent>
+                        </DropdownMenu>
                        </TableCell>
                     </TableRow>
                   ))
@@ -225,6 +248,21 @@ export function ClienteRecetas({ recetasIniciales, productosInventario }: Client
                 <AlertDialogAction onClick={handleDispensarReceta}>
                     Sí, dispensar
                 </AlertDialogAction>
+            </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+      
+      <AlertDialog open={!!recetaParaEliminar} onOpenChange={(open) => !open && setRecetaParaEliminar(null)}>
+        <AlertDialogContent>
+            <AlertDialogHeader>
+                <AlertDialogTitle>¿Estás seguro de eliminar esta receta?</AlertDialogTitle>
+                <AlertDialogDescription>
+                    Esta acción es permanente y no se puede deshacer. No afectará el stock del inventario, incluso si ya fue dispensada.
+                </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+                <AlertDialogCancel onClick={() => setRecetaParaEliminar(null)}>Cancelar</AlertDialogCancel>
+                <AlertDialogAction onClick={handleEliminarReceta}>Sí, eliminar</AlertDialogAction>
             </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>

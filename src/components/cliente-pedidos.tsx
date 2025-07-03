@@ -62,6 +62,7 @@ export function ClientePedidos({ pedidosIniciales, productosInventario, proveedo
   const [pedidos, setPedidos] = useState<PedidoReposicion[]>(pedidosIniciales);
   const [formularioAbierto, setFormularioAbierto] = useState(false);
   const [pedidoParaConfirmar, setPedidoParaConfirmar] = useState<{ id: string, estado: EstadoPedido } | null>(null);
+  const [pedidoParaEliminar, setPedidoParaEliminar] = useState<string | null>(null);
   const [isClient, setIsClient] = useState(false);
   
   const { notificacion } = usarNotificacion();
@@ -142,6 +143,30 @@ export function ClientePedidos({ pedidosIniciales, productosInventario, proveedo
     }
   };
   
+  const handleEliminarPedido = async () => {
+    if (!pedidoParaEliminar) return;
+    try {
+        const response = await fetch(`/api/pedidos/${pedidoParaEliminar}`, { method: 'DELETE' });
+        if (!response.ok) {
+            const error = await response.json();
+            throw new Error(error.message || 'No se pudo eliminar el pedido');
+        }
+        setPedidos(pedidos.filter(p => p.id !== pedidoParaEliminar));
+        notificacion({
+            title: 'Éxito',
+            description: 'El pedido ha sido eliminado.',
+        });
+    } catch (error: any) {
+        notificacion({
+            title: 'Error',
+            description: error.message,
+            variant: 'destructive',
+        });
+    } finally {
+        setPedidoParaEliminar(null);
+    }
+  };
+
   return (
     <>
       <Card>
@@ -189,25 +214,31 @@ export function ClientePedidos({ pedidosIniciales, productosInventario, proveedo
                         </Badge>
                       </TableCell>
                        <TableCell className="text-right">
-                         {pedido.estado === EstadoPedido.PENDIENTE && (
-                            <DropdownMenu>
-                                <DropdownMenuTrigger asChild>
-                                    <Button size="icon" variant="ghost">
-                                        <MoreHorizontal className="h-4 w-4" />
-                                    </Button>
-                                </DropdownMenuTrigger>
-                                <DropdownMenuContent>
-                                    <DropdownMenuItem onSelect={() => setPedidoParaConfirmar({id: pedido.id, estado: EstadoPedido.COMPLETADO})}>
-                                        <CheckCircle className="mr-2 h-4 w-4" />
-                                        Marcar como Completado
-                                    </DropdownMenuItem>
-                                    <DropdownMenuItem onSelect={() => setPedidoParaConfirmar({id: pedido.id, estado: EstadoPedido.CANCELADO})} className="text-destructive">
-                                        <XCircle className="mr-2 h-4 w-4" />
-                                        Cancelar Pedido
-                                    </DropdownMenuItem>
-                                </DropdownMenuContent>
-                            </DropdownMenu>
-                         )}
+                         <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                                <Button size="icon" variant="ghost">
+                                    <MoreHorizontal className="h-4 w-4" />
+                                </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent>
+                                {pedido.estado === EstadoPedido.PENDIENTE && (
+                                    <>
+                                        <DropdownMenuItem onSelect={() => setPedidoParaConfirmar({id: pedido.id, estado: EstadoPedido.COMPLETADO})}>
+                                            <CheckCircle className="mr-2 h-4 w-4" />
+                                            Marcar como Completado
+                                        </DropdownMenuItem>
+                                        <DropdownMenuItem onSelect={() => setPedidoParaConfirmar({id: pedido.id, estado: EstadoPedido.CANCELADO})} className="text-destructive">
+                                            <XCircle className="mr-2 h-4 w-4" />
+                                            Cancelar Pedido
+                                        </DropdownMenuItem>
+                                    </>
+                                )}
+                                <DropdownMenuItem onSelect={() => setPedidoParaEliminar(pedido.id)} className="text-destructive">
+                                    <Trash2 className="mr-2 h-4 w-4" />
+                                    Eliminar
+                                </DropdownMenuItem>
+                            </DropdownMenuContent>
+                        </DropdownMenu>
                        </TableCell>
                     </TableRow>
                   ))
@@ -251,6 +282,26 @@ export function ClientePedidos({ pedidosIniciales, productosInventario, proveedo
                 <AlertDialogAction onClick={handleActualizarEstado}>
                     Sí, continuar
                 </AlertDialogAction>
+            </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      <AlertDialog open={!!pedidoParaEliminar} onOpenChange={(open) => !open && setPedidoParaEliminar(null)}>
+        <AlertDialogContent>
+            <AlertDialogHeader>
+                <AlertDialogTitle>¿Estás seguro de eliminar el pedido?</AlertDialogTitle>
+                <AlertDialogDescription>
+                    Esta acción eliminará permanentemente el registro de este pedido.
+                    {pedidos.find(p => p.id === pedidoParaEliminar)?.estado === 'Completado'
+                        ? ' El stock de los productos ya fue actualizado y no se revertirá.'
+                        : ' No afectará el stock de ningún producto.'
+                    }
+                    {' '}Esta acción no se puede deshacer.
+                </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+                <AlertDialogCancel onClick={() => setPedidoParaEliminar(null)}>Cancelar</AlertDialogCancel>
+                <AlertDialogAction onClick={handleEliminarPedido}>Sí, eliminar</AlertDialogAction>
             </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>

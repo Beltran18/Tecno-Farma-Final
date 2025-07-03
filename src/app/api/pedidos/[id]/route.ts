@@ -1,5 +1,5 @@
 import { type NextRequest, NextResponse } from 'next/server';
-import { updatePedidoStatus } from '@/services/pedido-service';
+import { updatePedidoStatus, deletePedido } from '@/services/pedido-service';
 import { EstadoPedido } from '@/lib/types';
 
 export async function PUT(
@@ -22,6 +22,25 @@ export async function PUT(
     return NextResponse.json(pedidoActualizado);
   } catch (error: any) {
     console.error(`Error al actualizar el estado del pedido ${params.id}:`, error);
+    return new NextResponse(JSON.stringify({ message: error.message || 'Error interno del servidor' }), { status: 500, headers: { 'Content-Type': 'application/json' } });
+  }
+}
+
+
+export async function DELETE(
+  request: NextRequest,
+  { params }: { params: { id: string } }
+) {
+  try {
+    const fueEliminado = await deletePedido(params.id);
+
+    if (!fueEliminado) {
+      return new NextResponse(JSON.stringify({ message: 'Pedido no encontrado' }), { status: 404, headers: { 'Content-Type': 'application/json' } });
+    }
+
+    return new NextResponse(null, { status: 204 });
+  } catch (error: any) {
+    console.error(`Error al eliminar el pedido ${params.id}:`, error);
     return new NextResponse(JSON.stringify({ message: error.message || 'Error interno del servidor' }), { status: 500, headers: { 'Content-Type': 'application/json' } });
   }
 }

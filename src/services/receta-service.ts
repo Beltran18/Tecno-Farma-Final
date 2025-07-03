@@ -84,3 +84,13 @@ export async function dispenseReceta(recetaId: string): Promise<RecetaMedica> {
   recetas[recetaIndex] = recetaActualizada;
   return recetaActualizada;
 }
+
+export async function deleteReceta(id: string): Promise<boolean> {
+    const recetaIndex = recetas.findIndex(r => r.id === id);
+    if (recetaIndex === -1) {
+        return false;
+    }
+    // Al eliminar una receta NO se restaura el stock. Es una acción para limpiar registros.
+    recetas.splice(recetaIndex, 1);
+    return true;
+}

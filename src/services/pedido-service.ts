@@ -74,3 +74,17 @@ export async function updatePedidoStatus(id: string, estado: EstadoPedido): Prom
   pedidos[index] = pedidoActualizado;
   return pedidoActualizado;
 }
+
+export async function deletePedido(id: string): Promise<boolean> {
+  const pedidoIndex = pedidos.findIndex(p => p.id === id);
+  if (pedidoIndex === -1) {
+    return false;
+  }
+  const pedido = pedidos[pedidoIndex];
+  if (pedido.estado === EstadoPedido.PENDIENTE) {
+    // Optionally, prevent deletion of pending orders. For now, we allow it.
+    // throw new Error('No se pueden eliminar pedidos pendientes. Primero debes cancelarlo.');
+  }
+  pedidos.splice(pedidoIndex, 1);
+  return true;
+}

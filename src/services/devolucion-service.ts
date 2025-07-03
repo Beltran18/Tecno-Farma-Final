@@ -46,3 +46,13 @@ export async function createDevolucion(data: {
   devoluciones.unshift(nuevaDevolucion);
   return nuevaDevolucion;
 }
+
+export async function deleteDevolucion(id: string): Promise<boolean> {
+  const index = devoluciones.findIndex(d => d.id === id);
+  if (index === -1) {
+    return false;
+  }
+  // Al eliminar una devolución NO se restaura el stock. Es una acción para limpiar registros.
+  devoluciones.splice(index, 1);
+  return true;
+}
