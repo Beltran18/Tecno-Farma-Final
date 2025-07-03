@@ -34,7 +34,7 @@ export function ClienteTrazabilidad({ movimientosIniciales }: ClienteTrazabilida
   const movimientosFiltrados = useMemo(() => {
     if (!loteActual) return [];
     return movimientosIniciales.filter(
-      (m) => m.numeroLote.toLowerCase() === loteActual.toLowerCase()
+      (m) => m.numeroLote && m.numeroLote.toLowerCase() === loteActual.toLowerCase()
     );
   }, [movimientosIniciales, loteActual]);
 
