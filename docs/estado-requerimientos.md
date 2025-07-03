@@ -51,7 +51,7 @@ Este documento realiza un seguimiento del progreso de la implementación de los 
 | **RF038** | El sistema debe permitir al administrador registrar la trazabilidad completa de los lotes de medicamentos para cumplir con regulaciones sanitarias. | ❌ **Pendiente** | |
 | **RF039** | El sistema debe permitir al administrador configurar las alertas para la revisión de productos no vendidos o de lento movimiento. | ✅ **Completado** | Se pueden configurar los días para considerar un producto como de "lento movimiento" y se listan en las alertas. |
 | **RF040** | El sistema debe sugerir reposiciones cuando un producto esté por debajo del stock mínimo definido. | ✅ **Completado** | En la sección de alertas de stock bajo, se ha añadido un botón para crear un pedido de reposición directamente. |
-| **RF041** | El sistema debe permitir al administrador realizar la creación de paquetes o kits de productos, gestionando su inventario como una unidad. | ❌ **Pendiente** | |
+| **RF041** | El sistema debe permitir al administrador realizar la creación de paquetes o kits de productos, gestionando su inventario como una unidad. | ✅ **Completado** | Se implementó la gestión de kits, permitiendo crear, vender y eliminar. La venta de un kit descuenta el stock de sus componentes. |
 | **RF042** | El sistema debe permitir al administrador incluir medidas de seguridad para la protección de datos sensibles, incluyendo cifrado de datos y copias de seguridad automáticas. | ❌ **Pendiente** | |
 | **RF043** | El sistema debe mostrar un resumen de costos y ventas basado en los movimientos del inventario. | ❌ **Pendiente** | |
 | **RF044** | El sistema debe permitir a los usuarios registrarse proporcionando nombre, correo y contraseña. | ❌ **Pendiente** | |

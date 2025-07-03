@@ -29,7 +29,7 @@ import {
   SidebarTrigger,
 } from '@/components/ui/sidebar';
 import { Button } from '@/components/ui/button';
-import { Home, User, LogOut, Settings, Tag, Truck, CalendarDays, LifeBuoy, FileText, BookOpenCheck, NotebookPen, ClipboardList, Undo2 } from 'lucide-react';
+import { Home, User, LogOut, Settings, Tag, Truck, CalendarDays, LifeBuoy, FileText, BookOpenCheck, NotebookPen, ClipboardList, Undo2, Boxes } from 'lucide-react';
 import { Logo } from '@/components/logo';
 import { usarNotificacion } from '@/hooks/usar-notificacion';
 
@@ -61,6 +61,7 @@ export default function DisposicionPanel({
     if (pathname.startsWith('/panel/recetas')) return 'Gestión de Recetas';
     if (pathname.startsWith('/panel/pedidos')) return 'Gestión de Pedidos';
     if (pathname.startsWith('/panel/devoluciones')) return 'Devoluciones a Proveedores';
+    if (pathname.startsWith('/panel/kits')) return 'Kits y Paquetes';
     return 'TecnoFarma';
   };
   
@@ -107,6 +108,12 @@ export default function DisposicionPanel({
               <SidebarMenuButton href="/panel/devoluciones" tooltip="Devoluciones" isActive={pathname.startsWith('/panel/devoluciones')}>
                 <Undo2 />
                 Devoluciones
+              </SidebarMenuButton>
+            </SidebarMenuItem>
+            <SidebarMenuItem>
+              <SidebarMenuButton href="/panel/kits" tooltip="Kits" isActive={pathname.startsWith('/panel/kits')}>
+                <Boxes />
+                Kits y Paquetes
               </SidebarMenuButton>
             </SidebarMenuItem>
             <SidebarMenuItem>

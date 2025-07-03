@@ -32,6 +32,7 @@ export enum TipoMovimiento {
   DISPENSADO_RECETA = 'Dispensado por Receta',
   ENTRADA_PEDIDO = 'Entrada por Pedido',
   DEVOLUCION_PROVEEDOR = 'Devolución a Proveedor',
+  VENTA_KIT = 'Venta de Kit',
 }
 
 export interface MovimientoInventario {
@@ -90,4 +91,17 @@ export interface DevolucionProveedor {
   proveedorNombre: string;
   cantidadDevuelta: number;
   motivo: string;
+}
+
+export interface ProductoComponente {
+  productoId: string;
+  productoNombre: string;
+  cantidad: number;
+}
+
+export interface Kit {
+  id: string;
+  nombre: string;
+  precio: number;
+  componentes: ProductoComponente[];
 }
