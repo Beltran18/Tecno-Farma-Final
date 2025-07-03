@@ -155,21 +155,21 @@ export function ClientePanel({ productosIniciales, movimientosIniciales }: Clien
 
   
   return (
-    <Tabs defaultValue="panel" className="space-y-4" suppressHydrationWarning>
+    <Tabs defaultValue="panel" className="space-y-4">
       <TabsList>
         <TabsTrigger value="panel">Panel de Control</TabsTrigger>
         <TabsTrigger value="alerts">Alertas</TabsTrigger>
       </TabsList>
 
-      <TabsContent value="panel" suppressHydrationWarning>
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4" suppressHydrationWarning>
+      <TabsContent value="panel">
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">Valor Total del Inventario</CardTitle>
               <DollarSign className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold" suppressHydrationWarning>
+              <div className="text-2xl font-bold">
                  {isClient ? new Intl.NumberFormat('es-CO', {
                   style: 'currency',
                   currency: 'COP',
@@ -188,7 +188,7 @@ export function ClientePanel({ productosIniciales, movimientosIniciales }: Clien
               <Package className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold" suppressHydrationWarning>{isClient ? totalUnidades.toLocaleString('es-CO') : '0'}</div>
+              <div className="text-2xl font-bold">{isClient ? totalUnidades.toLocaleString('es-CO') : '0'}</div>
               <p className="text-xs text-muted-foreground">
                 Sumatoria de todos los productos
               </p>
@@ -200,7 +200,7 @@ export function ClientePanel({ productosIniciales, movimientosIniciales }: Clien
               <AlertTriangle className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold" suppressHydrationWarning>{alertasStockBajo.length}</div>
+              <div className="text-2xl font-bold">{alertasStockBajo.length}</div>
               <p className="text-xs text-muted-foreground">
                 Umbral: {umbralStockBajo} unidades
               </p>
@@ -212,14 +212,14 @@ export function ClientePanel({ productosIniciales, movimientosIniciales }: Clien
               <CalendarOff className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold" suppressHydrationWarning>{alertasVencimiento.length}</div>
+              <div className="text-2xl font-bold">{alertasVencimiento.length}</div>
               <p className="text-xs text-muted-foreground">
                 En los próximos {umbralDiasVencimiento} días
               </p>
             </CardContent>
           </Card>
         </div>
-        <div className="mt-4 grid grid-cols-1 gap-4 lg:grid-cols-2" suppressHydrationWarning>
+        <div className="mt-4 grid grid-cols-1 gap-4 lg:grid-cols-2">
             <Card>
                 <CardHeader>
                     <CardTitle>Distribución por Categoría</CardTitle>
@@ -243,7 +243,7 @@ export function ClientePanel({ productosIniciales, movimientosIniciales }: Clien
                       </PieChart>
                     </ChartContainer>
                   ) : (
-                    <div className="flex items-center justify-center h-[250px]" suppressHydrationWarning>
+                    <div className="flex items-center justify-center h-[250px]">
                       <p className="text-sm text-muted-foreground">No hay datos para mostrar el gráfico.</p>
                     </div>
                   )}
@@ -257,24 +257,24 @@ export function ClientePanel({ productosIniciales, movimientosIniciales }: Clien
                     </CardDescription>
                 </CardHeader>
                 <CardContent>
-                    <div className="space-y-4" suppressHydrationWarning>
+                    <div className="space-y-4">
                         {productosRecientes.length > 0 ? (
                             productosRecientes.map(producto => (
-                                <div key={producto.id} className="flex items-center" suppressHydrationWarning>
-                                    <div className="p-2 bg-muted rounded-full mr-4" suppressHydrationWarning>
+                                <div key={producto.id} className="flex items-center">
+                                    <div className="p-2 bg-muted rounded-full mr-4">
                                         <PackagePlus className="h-5 w-5 text-muted-foreground" />
                                     </div>
-                                    <div className="flex-grow" suppressHydrationWarning>
+                                    <div className="flex-grow">
                                         <p className="text-sm font-medium">{producto.nombre}</p>
                                         <p className="text-xs text-muted-foreground">{producto.categoria} - Lote: {producto.numeroLote}</p>
                                     </div>
-                                    <div className="text-sm text-muted-foreground" suppressHydrationWarning>
+                                    <div className="text-sm text-muted-foreground">
                                         {isClient ? format(new Date(producto.fechaVencimiento), 'dd/MM/yy') : ''}
                                     </div>
                                 </div>
                             ))
                         ) : (
-                            <div className="flex items-center justify-center h-[250px]" suppressHydrationWarning>
+                            <div className="flex items-center justify-center h-[250px]">
                                 <p className="text-sm text-muted-foreground">No hay productos recientes.</p>
                              </div>
                         )}
@@ -284,7 +284,7 @@ export function ClientePanel({ productosIniciales, movimientosIniciales }: Clien
         </div>
       </TabsContent>
 
-      <TabsContent value="alerts" className="space-y-6" suppressHydrationWarning>
+      <TabsContent value="alerts" className="space-y-6">
         <Card>
           <CardHeader>
             <div className="flex items-center gap-4">

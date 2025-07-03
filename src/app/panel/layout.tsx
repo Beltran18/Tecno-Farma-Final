@@ -148,7 +148,7 @@ export default function DisposicionPanel({
                   <AvatarImage src={usuarioSimulado.photoURL || `https://placehold.co/100x100.png`} alt={usuarioSimulado.displayName || 'Usuario'} />
                   <AvatarFallback>{usuarioSimulado.email?.charAt(0).toUpperCase() || 'U'}</AvatarFallback>
                 </Avatar>
-                <div className="text-left w-full overflow-hidden" suppressHydrationWarning>
+                <div className="text-left w-full overflow-hidden">
                   <p className="text-sm font-medium truncate">{usuarioSimulado.displayName || 'Usuario'}</p>
                   <p className="text-xs text-muted-foreground truncate">{usuarioSimulado.email}</p>
                 </div>

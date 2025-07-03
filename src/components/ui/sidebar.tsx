@@ -147,7 +147,6 @@ const SidebarProvider = React.forwardRef<
               className
             )}
             ref={ref}
-            suppressHydrationWarning
             {...props}
           >
             {children}
@@ -188,7 +187,6 @@ const Sidebar = React.forwardRef<
             className
           )}
           ref={ref}
-          suppressHydrationWarning
           {...props}
         >
           {children}
@@ -209,10 +207,9 @@ const Sidebar = React.forwardRef<
               } as React.CSSProperties
             }
             side={side}
-            suppressHydrationWarning
           >
             <SheetTitle className="sr-only">Menu</SheetTitle>
-            <div className="flex h-full w-full flex-col" suppressHydrationWarning>{children}</div>
+            <div className="flex h-full w-full flex-col">{children}</div>
           </SheetContent>
         </Sheet>
       )
@@ -226,11 +223,9 @@ const Sidebar = React.forwardRef<
         data-collapsible={state === "collapsed" ? collapsible : ""}
         data-variant={variant}
         data-side={side}
-        suppressHydrationWarning
       >
         {/* This is what handles the sidebar gap on desktop */}
         <div
-          suppressHydrationWarning
           className={cn(
             "duration-200 relative h-svh w-[--sidebar-width] bg-transparent transition-[width] ease-linear",
             "group-data-[collapsible=offcanvas]:w-0",
@@ -241,7 +236,6 @@ const Sidebar = React.forwardRef<
           )}
         />
         <div
-          suppressHydrationWarning
           className={cn(
             "duration-200 fixed inset-y-0 z-10 hidden h-svh w-[--sidebar-width] transition-[left,right,width] ease-linear md:flex",
             side === "left"
@@ -257,7 +251,6 @@ const Sidebar = React.forwardRef<
         >
           <div
             data-sidebar="sidebar"
-            suppressHydrationWarning
             className="flex h-full w-full flex-col bg-sidebar group-data-[variant=floating]:rounded-lg group-data-[variant=floating]:border group-data-[variant=floating]:border-sidebar-border group-data-[variant=floating]:shadow"
           >
             {children}
@@ -336,7 +329,6 @@ const SidebarInset = React.forwardRef<
         "peer-data-[variant=inset]:min-h-[calc(100svh-theme(spacing.4))] md:peer-data-[variant=inset]:m-2 md:peer-data-[state=collapsed]:peer-data-[variant=inset]:ml-2 md:peer-data-[variant=inset]:ml-0 md:peer-data-[variant=inset]:rounded-xl md:peer-data-[variant=inset]:shadow",
         className
       )}
-      suppressHydrationWarning
       {...props}
     />
   )
@@ -370,7 +362,6 @@ const SidebarHeader = React.forwardRef<
       ref={ref}
       data-sidebar="header"
       className={cn("flex flex-col gap-2 p-2", className)}
-      suppressHydrationWarning
       {...props}
     />
   )
@@ -386,7 +377,6 @@ const SidebarFooter = React.forwardRef<
       ref={ref}
       data-sidebar="footer"
       className={cn("flex flex-col gap-2 p-2", className)}
-      suppressHydrationWarning
       {...props}
     />
   )
@@ -420,7 +410,6 @@ const SidebarContent = React.forwardRef<
         "flex min-h-0 flex-1 flex-col gap-2 overflow-auto group-data-[collapsible=icon]:overflow-hidden",
         className
       )}
-      suppressHydrationWarning
       {...props}
     />
   )
@@ -436,7 +425,6 @@ const SidebarGroup = React.forwardRef<
       ref={ref}
       data-sidebar="group"
       className={cn("relative flex w-full min-w-0 flex-col p-2", className)}
-      suppressHydrationWarning
       {...props}
     />
   )
@@ -458,7 +446,6 @@ const SidebarGroupLabel = React.forwardRef<
         "group-data-[collapsible=icon]:-mt-8 group-data-[collapsible=icon]:opacity-0",
         className
       )}
-      suppressHydrationWarning
       {...props}
     />
   )
@@ -496,7 +483,6 @@ const SidebarGroupContent = React.forwardRef<
     ref={ref}
     data-sidebar="group-content"
     className={cn("w-full text-sm", className)}
-    suppressHydrationWarning
     {...props}
   />
 ))
@@ -510,7 +496,6 @@ const SidebarMenu = React.forwardRef<
     ref={ref}
     data-sidebar="menu"
     className={cn("flex w-full min-w-0 flex-col gap-1 p-2", className)}
-    suppressHydrationWarning
     {...props}
   />
 ))
@@ -524,7 +509,6 @@ const SidebarMenuItem = React.forwardRef<
     ref={ref}
     data-sidebar="menu-item"
     className={cn("group/menu-item relative", className)}
-    suppressHydrationWarning
     {...props}
   />
 ))
@@ -693,7 +677,6 @@ const SidebarMenuSkeleton = React.forwardRef<
       ref={ref}
       data-sidebar="menu-skeleton"
       className={cn("rounded-md h-8 flex gap-2 px-2 items-center", className)}
-      suppressHydrationWarning
       {...props}
     >
       {showIcon && (
@@ -728,7 +711,6 @@ const SidebarMenuSub = React.forwardRef<
       "group-data-[collapsible=icon]:hidden",
       className
     )}
-    suppressHydrationWarning
     {...props}
   />
 ))
@@ -737,7 +719,7 @@ SidebarMenuSub.displayName = "SidebarMenuSub"
 const SidebarMenuSubItem = React.forwardRef<
   HTMLLIElement,
   React.ComponentProps<"li">
->(({ ...props }, ref) => <li ref={ref} suppressHydrationWarning {...props} />)
+>(({ ...props }, ref) => <li ref={ref} {...props} />)
 SidebarMenuSubItem.displayName = "SidebarMenuSubItem"
 
 const SidebarMenuSubButton = React.forwardRef<
