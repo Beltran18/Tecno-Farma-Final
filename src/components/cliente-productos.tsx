@@ -43,7 +43,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
-import { MoreHorizontal, PlusCircle, Search, Calendar as CalendarIcon, Upload, Download, Printer, MinusCircle, History, Trash2 } from 'lucide-react';
+import { MoreHorizontal, PlusCircle, Search, Calendar as CalendarIcon, Upload, Download, Printer, MinusCircle, History, Trash2, DollarSign } from 'lucide-react';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Calendar } from '@/components/ui/calendar';
 import { format, isBefore } from 'date-fns';
@@ -73,6 +73,8 @@ export function ClienteProductos({ productosIniciales, categoriasIniciales, prov
   const [productoParaSalida, setProductoParaSalida] = useState<Producto | null>(null);
   const [historyDialogOpen, setHistoryDialogOpen] = useState(false);
   const [productoParaHistorial, setProductoParaHistorial] = useState<Producto | null>(null);
+  const [salesHistoryDialogOpen, setSalesHistoryDialogOpen] = useState(false);
+  const [productoParaHistorialVentas, setProductoParaHistorialVentas] = useState<Producto | null>(null);
   const [productoParaEliminar, setProductoParaEliminar] = useState<Producto | null>(null);
 
 
@@ -304,6 +306,11 @@ export function ClienteProductos({ productosIniciales, categoriasIniciales, prov
     setHistoryDialogOpen(true);
   };
 
+  const abrirDialogoHistorialVentas = (producto: Producto) => {
+    setProductoParaHistorialVentas(producto);
+    setSalesHistoryDialogOpen(true);
+  };
+
   const handleRegistrarSalida = async (cantidadSalida: number) => {
     if (!productoParaSalida) return;
 
@@ -441,6 +448,10 @@ export function ClienteProductos({ productosIniciales, categoriasIniciales, prov
                             <History className="mr-2 h-4 w-4" />
                             <span>Ver Historial</span>
                           </DropdownMenuItem>
+                          <DropdownMenuItem onSelect={() => abrirDialogoHistorialVentas(producto)}>
+                            <DollarSign className="mr-2 h-4 w-4" />
+                            <span>Historial de Ventas</span>
+                          </DropdownMenuItem>
                           <DropdownMenuItem onSelect={() => router.push(`/panel/imprimir-etiqueta/${producto.id}`)}>
                             <Printer className="mr-2 h-4 w-4" />
                             <span>Imprimir Etiqueta</span>
@@ -508,6 +519,12 @@ export function ClienteProductos({ productosIniciales, categoriasIniciales, prov
         producto={productoParaHistorial}
         open={historyDialogOpen}
         onOpenChange={setHistoryDialogOpen}
+      />
+
+      <HistorialVentasDialog
+        producto={productoParaHistorialVentas}
+        open={salesHistoryDialogOpen}
+        onOpenChange={setSalesHistoryDialogOpen}
       />
 
       <AlertDialog open={!!productoParaEliminar} onOpenChange={(open) => !open && setProductoParaEliminar(null)}>
@@ -803,6 +820,82 @@ function HistorialProductoDialog({ producto, open, onOpenChange }: { producto: P
             </Table>
           ) : (
             <p className="py-8 text-center text-sm text-muted-foreground">No hay movimientos registrados para este producto.</p>
+          )}
+        </div>
+        <DialogFooter>
+            <DialogClose asChild>
+                <Button type="button" variant="outline">Cerrar</Button>
+            </DialogClose>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+function HistorialVentasDialog({ producto, open, onOpenChange }: { producto: Producto | null, open: boolean, onOpenChange: (open: boolean) => void }) {
+  const [historial, setHistorial] = useState<MovimientoInventario[]>([]);
+  const [cargando, setCargando] = useState(false);
+  const tiposVenta = useMemo(() => [TipoMovimiento.SALIDA_MANUAL, TipoMovimiento.DISPENSADO_RECETA, TipoMovimiento.VENTA_KIT], []);
+
+  useEffect(() => {
+    if (open && producto) {
+      const fetchHistorial = async () => {
+        setCargando(true);
+        try {
+          const response = await fetch(`/api/movimientos/${producto.id}`);
+          if (!response.ok) throw new Error('No se pudo cargar el historial de ventas');
+          const data = await response.json();
+          setHistorial(data.filter((m: MovimientoInventario) => tiposVenta.includes(m.tipo)));
+        } catch (error) {
+          console.error(error);
+          setHistorial([]);
+        } finally {
+          setCargando(false);
+        }
+      };
+      fetchHistorial();
+    }
+  }, [open, producto, tiposVenta]);
+
+  if (!producto) return null;
+
+  const precioVenta = producto.descuento ? producto.precio * (1 - producto.descuento / 100) : producto.precio;
+
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="sm:max-w-4xl">
+        <DialogHeader>
+          <DialogTitle>Historial de Ventas</DialogTitle>
+          <DialogDescription>Producto: {producto.nombre} - Lote: {producto.numeroLote}</DialogDescription>
+        </DialogHeader>
+        <div className="max-h-[60vh] overflow-y-auto pr-4">
+          {cargando ? (
+            <p className="py-8 text-center text-sm text-muted-foreground">Cargando historial de ventas...</p>
+          ) : historial.length > 0 ? (
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Fecha</TableHead>
+                  <TableHead>Tipo de Venta</TableHead>
+                  <TableHead className='text-right'>Cantidad</TableHead>
+                  <TableHead className='text-right'>Precio Unitario</TableHead>
+                  <TableHead className='text-right'>Total Venta</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {historial.map((mov) => (
+                  <TableRow key={mov.id}>
+                    <TableCell>{format(new Date(mov.fecha), 'dd/MM/yy HH:mm')}</TableCell>
+                    <TableCell><Badge variant="secondary">{mov.tipo}</Badge></TableCell>
+                    <TableCell className='text-right'>{mov.cantidadMovida}</TableCell>
+                    <TableCell className='text-right'>{new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', minimumFractionDigits: 0 }).format(precioVenta)}</TableCell>
+                    <TableCell className='text-right font-medium'>{new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', minimumFractionDigits: 0 }).format(precioVenta * mov.cantidadMovida)}</TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          ) : (
+            <p className="py-8 text-center text-sm text-muted-foreground">No hay historial de ventas para este producto.</p>
           )}
         </div>
         <DialogFooter>
