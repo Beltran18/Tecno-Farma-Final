@@ -166,7 +166,7 @@ export function ClienteAnalisis({ productos, movimientos }: { productos: Product
         <Card>
           <CardHeader>
             <CardTitle>Ganancia por Categoría</CardTitle>
-            <CardDescription>Visualización de la ganancia generada por cada categoría.</CardDescription>
+            <CardDescription>Suma de la ganancia total de todos los productos vendidos en cada categoría.</CardDescription>
           </CardHeader>
           <CardContent>
             {analisis.datosGrafico.length > 0 ? (
