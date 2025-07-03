@@ -1,8 +1,8 @@
 'use client';
 
+import React, { useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
-import React from 'react';
 import {
   Avatar,
   AvatarFallback,
@@ -29,11 +29,11 @@ import {
   SidebarTrigger,
 } from '@/components/ui/sidebar';
 import { Button } from '@/components/ui/button';
-import { Home, User, LogOut, Settings, Tag, Truck, CalendarDays, LifeBuoy, FileText, BookOpenCheck, NotebookPen, ClipboardList, Undo2, Boxes, BarChart3, PackageSearch, UsersRound } from 'lucide-react';
+import { Home, User, LogOut, Settings, Tag, Truck, CalendarDays, LifeBuoy, FileText, BookOpenCheck, NotebookPen, ClipboardList, Undo2, Boxes, BarChart3, PackageSearch, UsersRound, Loader2 } from 'lucide-react';
 import { Logo } from '@/components/logo';
-import { usarNotificacion } from '@/hooks/usar-notificacion';
 import { RolEmpleado } from '@/lib/types';
 import { Badge } from '@/components/ui/badge';
+import { useAuth } from '@/context/auth-provider';
 
 
 export default function DisposicionPanel({
@@ -43,14 +43,16 @@ export default function DisposicionPanel({
 }) {
   const router = useRouter();
   const pathname = usePathname();
-  const { notificacion } = usarNotificacion();
+  const { user, isLoading, logout } = useAuth();
+
+  useEffect(() => {
+    if (!isLoading && !user) {
+      router.replace('/');
+    }
+  }, [isLoading, user, router]);
 
   const handleLogout = () => {
-    notificacion({
-      title: 'Sesión Cerrada',
-      description: 'Has cerrado la sesión simulada.',
-    });
-    router.push('/');
+    logout();
   };
 
   const getTitle = () => {
@@ -71,15 +73,15 @@ export default function DisposicionPanel({
     return 'TecnoFarma';
   };
   
-  // Datos de usuario simulados para desarrollo
-  const usuarioSimulado = {
-    email: 'admin@tecnofarma.com',
-    displayName: 'Administrador de Prueba',
-    photoURL: null,
-    rol: RolEmpleado.ADMINISTRADOR, // Cambia a RolEmpleado.EMPLEADO para probar la vista restringida
-  };
-
-  const esAdmin = usuarioSimulado.rol === RolEmpleado.ADMINISTRADOR;
+  if (isLoading || !user) {
+    return (
+      <div className="flex h-screen w-full items-center justify-center bg-background">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    );
+  }
+  
+  const esAdmin = user.rol === RolEmpleado.ADMINISTRADOR;
 
   return (
     <SidebarProvider>
@@ -194,14 +196,14 @@ export default function DisposicionPanel({
             <DropdownMenuTrigger asChild>
               <Button variant="ghost" className="h-auto w-full justify-start gap-2 p-2" suppressHydrationWarning>
                 <Avatar className="h-8 w-8">
-                  <AvatarImage src={usuarioSimulado.photoURL || `https://placehold.co/100x100.png`} alt={usuarioSimulado.displayName || 'Usuario'} />
-                  <AvatarFallback>{usuarioSimulado.email?.charAt(0).toUpperCase() || 'U'}</AvatarFallback>
+                  <AvatarImage src={`https://placehold.co/100x100.png`} alt={user.nombre} />
+                  <AvatarFallback>{user.email?.charAt(0).toUpperCase() || 'U'}</AvatarFallback>
                 </Avatar>
                 <div className="text-left w-full overflow-hidden" suppressHydrationWarning>
-                  <p className="text-sm font-medium truncate">{usuarioSimulado.displayName || 'Usuario'}</p>
+                  <p className="text-sm font-medium truncate">{user.nombre}</p>
                    <div className="flex items-center gap-2">
-                    <p className="text-xs text-muted-foreground truncate">{usuarioSimulado.email}</p>
-                    <Badge variant={esAdmin ? 'default' : 'secondary'} className="h-4 px-1.5 text-[10px]">{usuarioSimulado.rol}</Badge>
+                    <p className="text-xs text-muted-foreground truncate">{user.email}</p>
+                    <Badge variant={esAdmin ? 'default' : 'secondary'} className="h-4 px-1.5 text-[10px]">{user.rol}</Badge>
                   </div>
                 </div>
               </Button>
