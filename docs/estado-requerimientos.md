@@ -43,7 +43,7 @@ Este documento realiza un seguimiento del progreso de la implementación de los 
 | **RF030** | El sistema debe permitir al administrador generar reportes de compras a proveedores, incluyendo cantidades, fechas y costos. | ❌ **Pendiente** | |
 | **RF031** | El sistema debe permitir al administrador registrar y gestionar las devoluciones de productos a proveedores. | ❌ **Pendiente** | |
 | **RF032** | El sistema debe permitir al administrador dar soporte a la configuración de múltiples empleados con diferentes niveles de acceso y permisos. | ❌ **Pendiente** | |
-| **RF033** | El sistema debe permitir al administrador dar autenticación de usuario para acceder a cualquier funcionalidad de gestión de inventario. | ✅ **Completado** | Se implementó la autenticación con Firebase (Email/Contraseña) para todas las rutas del panel. |
+| **RF033** | El sistema debe permitir al administrador dar autenticación de usuario para acceder a cualquier funcionalidad de gestión de inventario. | ❌ **Pendiente** | |
 | **RF034** | El sistema debe registrar y mostrar el historial de cambios de cada producto en el inventario. | ✅ **Completado** | Implementado como parte del historial de transacciones (RF027). |
 | **RF035** | El sistema debe permitir al administrador gestionar categorías de productos para una organización eficiente del inventario. | ✅ **Completado** | Implementada página de gestión de categorías (crear/eliminar). |
 | **RF036** | El sistema debe permitir al administrador configurar notificaciones automáticas por correo electrónico para alertas críticas de inventario. | ❌ **Pendiente** | |
@@ -54,11 +54,11 @@ Este documento realiza un seguimiento del progreso de la implementación de los 
 | **RF041** | El sistema debe permitir al administrador realizar la creación de paquetes o kits de productos, gestionando su inventario como una unidad. | ❌ **Pendiente** | |
 | **RF042** | El sistema debe permitir al administrador incluir medidas de seguridad para la protección de datos sensibles, incluyendo cifrado de datos y copias de seguridad automáticas. | ❌ **Pendiente** | |
 | **RF043** | El sistema debe mostrar un resumen de costos y ventas basado en los movimientos del inventario. | ❌ **Pendiente** | |
-| **RF044** | El sistema debe permitir a los usuarios registrarse proporcionando nombre, correo y contraseña. | ✅ **Completado** | Se implementó el registro de usuarios con Firebase Authentication. |
-| **RF045** | El sistema debe permitir a los usuarios iniciar sesión utilizando su correo y contraseña. | ✅ **Completado** | Se implementó el inicio de sesión con Firebase Authentication. |
-| **RF046** | El sistema debe permitir a los usuarios validar credenciales y proteger el acceso a las funcionalidades mediante sesión. | ✅ **Completado** | Las rutas del panel `/panel/*` están protegidas. Solo usuarios autenticados pueden acceder. |
-| **RF047** | El sistema debe permitir a los usuarios la recuperación de contraseña por correo electrónico. | ✅ **Completado** | Se implementó la funcionalidad de recuperación de contraseña con Firebase. |
-| **RF048** | El sistema debe permitir a los usuarios mantener las sesiones activas hasta que los usuarios cierren sesión manualmente o expire el tiempo definido. | ✅ **Completado** | Firebase Authentication gestiona la persistencia de la sesión automáticamente. |
-| **RF049** | El sistema debe mostrar a los usuarios mensajes de error amigables en caso de credenciales inválidas u otros errores de autenticación. | ✅ **Completado** | Se muestran notificaciones claras para errores comunes de autenticación (ej. contraseña incorrecta, email en uso). |
+| **RF044** | El sistema debe permitir a los usuarios registrarse proporcionando nombre, correo y contraseña. | ❌ **Pendiente** | |
+| **RF045** | El sistema debe permitir a los usuarios iniciar sesión utilizando su correo y contraseña. | ❌ **Pendiente** | |
+| **RF046** | El sistema debe permitir a los usuarios validar credenciales y proteger el acceso a las funcionalidades mediante sesión. | ❌ **Pendiente** | |
+| **RF047** | El sistema debe permitir a los usuarios la recuperación de contraseña por correo electrónico. | ❌ **Pendiente** | |
+| **RF048** | El sistema debe permitir a los usuarios mantener las sesiones activas hasta que los usuarios cierren sesión manualmente o expire el tiempo definido. | ❌ **Pendiente** | |
+| **RF049** | El sistema debe mostrar a los usuarios mensajes de error amigables en caso de credenciales inválidas u otros errores de autenticación. | ❌ **Pendiente** | |
 | **RF050** | El sistema deberá permitir al administrador crear la cuenta administrador. | ❌ **Pendiente** | |
 | **RF051** | El sistema deberá permitir al administrador crear cuentas de empleados. | ❌ **Pendiente** | |

@@ -2,9 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
-import React, { useState, useEffect } from 'react';
-import { onAuthStateChanged, signOut, type User as FirebaseUser } from 'firebase/auth';
-import { auth } from '@/lib/firebase';
+import React from 'react';
 import {
   Avatar,
   AvatarFallback,
@@ -31,7 +29,7 @@ import {
   SidebarTrigger,
 } from '@/components/ui/sidebar';
 import { Button } from '@/components/ui/button';
-import { Home, User, LogOut, Settings, Tag, Truck, CalendarDays, LifeBuoy, FileText, BookOpenCheck, Loader2 } from 'lucide-react';
+import { Home, User, LogOut, Settings, Tag, Truck, CalendarDays, LifeBuoy, FileText, BookOpenCheck } from 'lucide-react';
 import { Logo } from '@/components/logo';
 import { usarNotificacion } from '@/hooks/usar-notificacion';
 
@@ -43,58 +41,13 @@ export default function DisposicionPanel({
   const router = useRouter();
   const pathname = usePathname();
   const { notificacion } = usarNotificacion();
-  const [usuario, setUsuario] = useState<FirebaseUser | null>(null);
-  const [cargando, setCargando] = useState(true);
 
-  useEffect(() => {
-    // Si Firebase está configurado, usamos el sistema de autenticación real.
-    if (auth) {
-      const unsubscribe = onAuthStateChanged(auth, (user) => {
-        if (user) {
-          setUsuario(user);
-        } else {
-          // Si no hay usuario, lo redirigimos a la página de inicio de sesión.
-          router.push('/');
-        }
-        setCargando(false);
-      });
-
-      return () => unsubscribe();
-    } else {
-      // Si Firebase no está configurado, simulamos un usuario para permitir
-      // el acceso al panel en modo de desarrollo y evitamos un crash.
-      setUsuario({
-        email: 'desarrollo@tecnofarma.com',
-        displayName: 'Modo Desarrollo',
-        uid: 'dev-user-placeholder'
-      } as FirebaseUser);
-      setCargando(false);
-    }
-  }, [router]);
-
-  const handleLogout = async () => {
-    if (!auth) {
-      notificacion({
-        title: 'Modo Desarrollo',
-        description: 'La autenticación de Firebase no está configurada. Saliendo al inicio.',
-      });
-      router.push('/');
-      return;
-    }
-    try {
-      await signOut(auth);
-      router.push('/');
-       notificacion({
-        title: 'Sesión Cerrada',
-        description: 'Has cerrado sesión exitosamente.',
-      });
-    } catch (error) {
-       notificacion({
-        title: 'Error',
-        description: 'No se pudo cerrar la sesión.',
-        variant: 'destructive',
-      });
-    }
+  const handleLogout = () => {
+    notificacion({
+      title: 'Sesión Cerrada',
+      description: 'Has cerrado la sesión simulada.',
+    });
+    router.push('/');
   };
 
   const getTitle = () => {
@@ -108,17 +61,12 @@ export default function DisposicionPanel({
     return 'TecnoFarma';
   };
   
-  if (cargando) {
-    return (
-        <div className="flex min-h-screen w-full items-center justify-center">
-            <Loader2 className="h-10 w-10 animate-spin text-primary" />
-        </div>
-    );
-  }
-
-  if (!usuario) {
-    return null; // O un componente de redirección
-  }
+  // Datos de usuario simulados para desarrollo
+  const usuarioSimulado = {
+    email: 'usuario@ejemplo.com',
+    displayName: 'Usuario de Prueba',
+    photoURL: null,
+  };
 
   return (
     <SidebarProvider>
@@ -177,12 +125,12 @@ export default function DisposicionPanel({
             <DropdownMenuTrigger asChild>
               <Button variant="ghost" className="h-auto w-full justify-start gap-2 p-2">
                 <Avatar className="h-8 w-8">
-                  <AvatarImage src={usuario.photoURL || `https://placehold.co/100x100.png`} alt={usuario.displayName || 'Usuario'} />
-                  <AvatarFallback>{usuario.email?.charAt(0).toUpperCase() || 'U'}</AvatarFallback>
+                  <AvatarImage src={usuarioSimulado.photoURL || `https://placehold.co/100x100.png`} alt={usuarioSimulado.displayName || 'Usuario'} />
+                  <AvatarFallback>{usuarioSimulado.email?.charAt(0).toUpperCase() || 'U'}</AvatarFallback>
                 </Avatar>
                 <div className="text-left w-full overflow-hidden">
-                  <p className="text-sm font-medium truncate">{usuario.displayName || 'Usuario'}</p>
-                  <p className="text-xs text-muted-foreground truncate">{usuario.email}</p>
+                  <p className="text-sm font-medium truncate">{usuarioSimulado.displayName || 'Usuario'}</p>
+                  <p className="text-xs text-muted-foreground truncate">{usuarioSimulado.email}</p>
                 </div>
               </Button>
             </DropdownMenuTrigger>
