@@ -11,7 +11,7 @@ Este documento realiza un seguimiento del progreso de la implementación de los 
 
 | ID | Requerimiento | Estado | Notas |
 |:---|:---|:---:|:---|
-| **RF001** | El sistema debe permitir al administrador configurar descuentos por volumen o promociones en productos específicos. | ❌ **Pendiente** | |
+| **RF001** | El sistema debe permitir al administrador configurar descuentos por volumen o promociones en productos específicos. | ✅ **Completado** | Implementado con un campo de descuento porcentual en cada producto. El precio final se refleja en tablas, reportes y etiquetas. |
 | **RF002** | El sistema debe permitir al administrador realizar pedidos de reposición de stock directamente a través del sistema. | ✅ **Completado** | Implementada la creación, listado y cambio de estado de pedidos. La recepción de un pedido ("Completado") actualiza el stock automáticamente. |
 | **RF003** | El sistema debe permitir al usuario visualizar un dashboard con indicadores clave como rotación de inventario y margen de ganancia. | ✅ **Completado** | Se muestran indicadores clave (Valor total, Unidades, Alertas), gráficos de distribución y actividad reciente. Métricas más complejas como rotación o margen requieren datos adicionales. |
 | **RF004** | El sistema debe permitir al administrador y a empleados operar en plataformas de escritorio. | ❌ **Pendiente** | |
@@ -20,7 +20,7 @@ Este documento realiza un seguimiento del progreso de la implementación de los 
 | **RF007** | El sistema debe permitir al administrador gestionar las recetas médicas, incluyendo verificación de stock de los medicamentos prescritos. | ✅ **Completado** | Implementada la creación, listado y dispensación de recetas. La dispensación descuenta el stock del inventario. |
 | **RF008** | El sistema debe permitir al administrador imprimir etiquetas para los productos, incluyendo información como precio y fecha de vencimiento. | ✅ **Completado** | Se puede imprimir desde el menú de acciones de cada producto, abriendo una página dedicada con formato de impresión. |
 | **RF009** | El sistema debe permitir al administrador acceder a una vista de calendario para seguimiento de fechas de vencimiento y pedidos programados. | ✅ **Completado** | Implementada vista de calendario para fechas de vencimiento. La parte de pedidos programados aún está pendiente. |
-| **RF010** | El sistema debe permitir al administrador realizar análisis de rentabilidad de producto o categoría. | 🟡 **En Proceso** | Añadido el campo 'costo' a los productos como base para el análisis. |
+| **RF010** | El sistema debe permitir al administrador realizar análisis de rentabilidad de producto o categoría. | ✅ **Completado** | Se creó una página de Análisis con KPIs, rentabilidad por producto y por categoría. |
 | **RF011** | El sistema debe permitir al administrador realizar la gestión de garantías de productos dentro del inventario, registrando fechas de inicio y fin de la garantía. | ❌ **Pendiente** | |
 | **RF012** | El sistema debe permitir a los usuarios ingresar a una herramienta de ayuda y tutoriales para facilitar el aprendizaje de las funcionalidades del sistema. | ✅ **Completado** | Se ha creado una página de Ayuda con preguntas frecuentes y tutoriales en formato de acordeón. |
 | **RF013** | El sistema debe permitir al usuario registrar manually el estado de entrega de los pedidos en línea (pendiente, enviado, entregado). | ❌ **Pendiente** | |
@@ -53,7 +53,7 @@ Este documento realiza un seguimiento del progreso de la implementación de los 
 | **RF040** | El sistema debe sugerir reposiciones cuando un producto esté por debajo del stock mínimo definido. | ✅ **Completado** | En la sección de alertas de stock bajo, se ha añadido un botón para crear un pedido de reposición directamente. |
 | **RF041** | El sistema debe permitir al administrador realizar la creación de paquetes o kits de productos, gestionando su inventario como una unidad. | ✅ **Completado** | Se implementó la gestión de kits, permitiendo crear, vender y eliminar. La venta de un kit descuenta el stock de sus componentes. |
 | **RF042** | El sistema debe permitir al administrador incluir medidas de seguridad para la protección de datos sensibles, incluyendo cifrado de datos y copias de seguridad automáticas. | ❌ **Pendiente** | |
-| **RF043** | El sistema debe mostrar un resumen de costos y ventas basado en los movimientos del inventario. | ❌ **Pendiente** | |
+| **RF043** | El sistema debe mostrar un resumen de costos y ventas basado en los movimientos del inventario. | ✅ **Completado** | Implementado en la nueva página de Análisis de Rentabilidad. |
 | **RF044** | El sistema debe permitir a los usuarios registrarse proporcionando nombre, correo y contraseña. | ❌ **Pendiente** | |
 | **RF045** | El sistema debe permitir a los usuarios iniciar sesión utilizando su correo y contraseña. | ❌ **Pendiente** | |
 | **RF046** | El sistema debe permitir a los usuarios validar credenciales y proteger el acceso a las funcionalidades mediante sesión. | ❌ **Pendiente** | |

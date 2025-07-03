@@ -29,7 +29,7 @@ import {
   SidebarTrigger,
 } from '@/components/ui/sidebar';
 import { Button } from '@/components/ui/button';
-import { Home, User, LogOut, Settings, Tag, Truck, CalendarDays, LifeBuoy, FileText, BookOpenCheck, NotebookPen, ClipboardList, Undo2, Boxes } from 'lucide-react';
+import { Home, User, LogOut, Settings, Tag, Truck, CalendarDays, LifeBuoy, FileText, BookOpenCheck, NotebookPen, ClipboardList, Undo2, Boxes, BarChart3 } from 'lucide-react';
 import { Logo } from '@/components/logo';
 import { usarNotificacion } from '@/hooks/usar-notificacion';
 
@@ -62,6 +62,7 @@ export default function DisposicionPanel({
     if (pathname.startsWith('/panel/pedidos')) return 'Gestión de Pedidos';
     if (pathname.startsWith('/panel/devoluciones')) return 'Devoluciones a Proveedores';
     if (pathname.startsWith('/panel/kits')) return 'Kits y Paquetes';
+    if (pathname.startsWith('/panel/analisis')) return 'Análisis de Rentabilidad';
     return 'TecnoFarma';
   };
   
@@ -114,6 +115,12 @@ export default function DisposicionPanel({
               <SidebarMenuButton href="/panel/kits" tooltip="Kits" isActive={pathname.startsWith('/panel/kits')}>
                 <Boxes />
                 Kits y Paquetes
+              </SidebarMenuButton>
+            </SidebarMenuItem>
+             <SidebarMenuItem>
+              <SidebarMenuButton href="/panel/analisis" tooltip="Análisis" isActive={pathname.startsWith('/panel/analisis')}>
+                <BarChart3 />
+                Análisis
               </SidebarMenuButton>
             </SidebarMenuItem>
             <SidebarMenuItem>
