@@ -1,3 +1,4 @@
+
 'use client';
 
 import React, { useState, useEffect } from 'react';
@@ -61,9 +62,14 @@ export function ClientePedidos({ pedidosIniciales, productosInventario, proveedo
   const [pedidos, setPedidos] = useState<PedidoReposicion[]>(pedidosIniciales);
   const [formularioAbierto, setFormularioAbierto] = useState(false);
   const [pedidoParaConfirmar, setPedidoParaConfirmar] = useState<{ id: string, estado: EstadoPedido } | null>(null);
+  const [isClient, setIsClient] = useState(false);
   
   const { notificacion } = usarNotificacion();
   const searchParams = useSearchParams();
+
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
 
   useEffect(() => {
     const productoId = searchParams.get('productoId');
@@ -172,7 +178,7 @@ export function ClientePedidos({ pedidosIniciales, productosInventario, proveedo
                     <TableRow key={pedido.id}>
                       <TableCell className="font-mono text-xs">{pedido.id}</TableCell>
                       <TableCell className="font-medium">{pedido.proveedorNombre}</TableCell>
-                      <TableCell>{format(new Date(pedido.fechaPedido), 'dd/MM/yyyy')}</TableCell>
+                      <TableCell>{isClient ? format(new Date(pedido.fechaPedido), 'dd/MM/yyyy') : ''}</TableCell>
                       <TableCell>{pedido.productos.length}</TableCell>
                       <TableCell>
                         <Badge variant={
