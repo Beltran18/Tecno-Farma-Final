@@ -24,7 +24,7 @@ import {
     type ChartConfig,
 } from '@/components/ui/chart';
 import { type Producto, type MovimientoInventario, TipoMovimiento } from '@/lib/types';
-import { DollarSign, PackageMinus, TrendingUp } from 'lucide-react';
+import { DollarSign, PackageMinus, TrendingUp, BarChart3 } from 'lucide-react';
 
 const formatCurrency = (value: number) => new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', minimumFractionDigits: 0 }).format(value);
 
@@ -185,8 +185,12 @@ export function ClienteAnalisis({ productos, movimientos }: { productos: Product
                     </ResponsiveContainer>
                 </ChartContainer>
             ) : (
-                <div className="flex items-center justify-center h-[300px]">
-                    <p className="text-sm text-muted-foreground">No hay datos de ventas para mostrar el gráfico.</p>
+                <div className="flex flex-col items-center justify-center h-[300px] text-center">
+                    <BarChart3 className="h-10 w-10 text-muted-foreground mb-4" />
+                    <p className="text-sm font-semibold">Aún no hay ganancias que mostrar</p>
+                    <p className="text-sm text-muted-foreground max-w-xs">
+                        Registra una 'Salida de Producto', vende un 'Kit' o dispensa una 'Receta' para empezar a ver la rentabilidad aquí.
+                    </p>
                 </div>
             )}
           </CardContent>
