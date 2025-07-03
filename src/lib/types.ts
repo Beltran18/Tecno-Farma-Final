@@ -109,3 +109,15 @@ export interface Kit {
   precio: number;
   componentes: ProductoComponente[];
 }
+
+export enum RolEmpleado {
+  ADMINISTRADOR = 'Administrador',
+  EMPLEADO = 'Empleado',
+}
+
+export interface Empleado {
+  id: string;
+  nombre: string;
+  email: string;
+  rol: RolEmpleado;
+}

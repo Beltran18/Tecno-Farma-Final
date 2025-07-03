@@ -29,7 +29,7 @@ import {
   SidebarTrigger,
 } from '@/components/ui/sidebar';
 import { Button } from '@/components/ui/button';
-import { Home, User, LogOut, Settings, Tag, Truck, CalendarDays, LifeBuoy, FileText, BookOpenCheck, NotebookPen, ClipboardList, Undo2, Boxes, BarChart3, PackageSearch } from 'lucide-react';
+import { Home, User, LogOut, Settings, Tag, Truck, CalendarDays, LifeBuoy, FileText, BookOpenCheck, NotebookPen, ClipboardList, Undo2, Boxes, BarChart3, PackageSearch, UsersRound } from 'lucide-react';
 import { Logo } from '@/components/logo';
 import { usarNotificacion } from '@/hooks/usar-notificacion';
 
@@ -54,6 +54,7 @@ export default function DisposicionPanel({
     if (pathname === '/panel') return 'Panel de Control';
     if (pathname.startsWith('/panel/categorias')) return 'Gestión de Categorías';
     if (pathname.startsWith('/panel/proveedores')) return 'Gestión de Proveedores';
+    if (pathname.startsWith('/panel/empleados')) return 'Gestión de Empleados';
     if (pathname.startsWith('/panel/calendario')) return 'Calendario de Vencimientos';
     if (pathname.startsWith('/panel/reportes')) return 'Generación de Reportes';
     if (pathname.startsWith('/panel/ayuda')) return 'Ayuda y Tutoriales';
@@ -140,6 +141,12 @@ export default function DisposicionPanel({
               <SidebarMenuButton href="/panel/proveedores" tooltip="Proveedores" isActive={pathname.startsWith('/panel/proveedores')}>
                 <Truck />
                 Proveedores
+              </SidebarMenuButton>
+            </SidebarMenuItem>
+            <SidebarMenuItem>
+              <SidebarMenuButton href="/panel/empleados" tooltip="Empleados" isActive={pathname.startsWith('/panel/empleados')}>
+                <UsersRound />
+                Empleados
               </SidebarMenuButton>
             </SidebarMenuItem>
             <SidebarMenuItem>
