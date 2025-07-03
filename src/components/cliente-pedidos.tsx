@@ -46,7 +46,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
-import { PlusCircle, Trash2, MoreHorizontal, CheckCircle, XCircle, DollarSign, ClipboardList, Hourglass, Calendar as CalendarIcon } from 'lucide-react';
+import { PlusCircle, Trash2, MoreHorizontal, CheckCircle, XCircle, DollarSign, ClipboardList, Hourglass, Calendar as CalendarIcon, Truck } from 'lucide-react';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { type PedidoReposicion, type Producto, type Proveedor, EstadoPedido } from '@/lib/types';
@@ -187,6 +187,20 @@ export function ClientePedidos({ pedidosIniciales, productosInventario, proveedo
     }
   };
 
+  const getConfirmationMessage = () => {
+    if (!pedidoParaConfirmar) return '';
+    switch (pedidoParaConfirmar.estado) {
+      case EstadoPedido.COMPLETADO:
+        return 'Esto marcará el pedido como completado y añadirá las cantidades de los productos a tu inventario. Esta acción no se puede deshacer.';
+      case EstadoPedido.ENVIADO:
+        return "Esto marcará el pedido como enviado. No se afectará el stock hasta que se marque como 'Completado'.";
+      case EstadoPedido.CANCELADO:
+        return 'Esto cancelará el pedido. Esta acción no se puede deshacer.';
+      default:
+        return '¿Estás seguro de continuar?';
+    }
+  };
+
   return (
     <>
       <div className="grid gap-4 md:grid-cols-3 mb-6">
@@ -266,7 +280,8 @@ export function ClientePedidos({ pedidosIniciales, productosInventario, proveedo
                       </TableCell>
                       <TableCell>
                         <Badge variant={
-                            pedido.estado === EstadoPedido.PENDIENTE ? 'secondary' : 
+                            pedido.estado === EstadoPedido.PENDIENTE ? 'secondary' :
+                            pedido.estado === EstadoPedido.ENVIADO ? 'outline' :
                             pedido.estado === EstadoPedido.COMPLETADO ? 'default' : 'destructive'
                         }>
                           {pedido.estado}
@@ -282,15 +297,21 @@ export function ClientePedidos({ pedidosIniciales, productosInventario, proveedo
                             <DropdownMenuContent>
                                 {pedido.estado === EstadoPedido.PENDIENTE && (
                                     <>
-                                        <DropdownMenuItem onSelect={() => setPedidoParaConfirmar({id: pedido.id, estado: EstadoPedido.COMPLETADO})}>
-                                            <CheckCircle className="mr-2 h-4 w-4" />
-                                            Marcar como Completado
+                                        <DropdownMenuItem onSelect={() => setPedidoParaConfirmar({id: pedido.id, estado: EstadoPedido.ENVIADO})}>
+                                            <Truck className="mr-2 h-4 w-4" />
+                                            Marcar como Enviado
                                         </DropdownMenuItem>
                                         <DropdownMenuItem onSelect={() => setPedidoParaConfirmar({id: pedido.id, estado: EstadoPedido.CANCELADO})} className="text-destructive">
                                             <XCircle className="mr-2 h-4 w-4" />
                                             Cancelar Pedido
                                         </DropdownMenuItem>
                                     </>
+                                )}
+                                 {pedido.estado === EstadoPedido.ENVIADO && (
+                                    <DropdownMenuItem onSelect={() => setPedidoParaConfirmar({id: pedido.id, estado: EstadoPedido.COMPLETADO})}>
+                                        <CheckCircle className="mr-2 h-4 w-4" />
+                                        Marcar como Completado
+                                    </DropdownMenuItem>
                                 )}
                                 <DropdownMenuItem onSelect={() => setPedidoParaEliminar(pedido.id)} className="text-destructive">
                                     <Trash2 className="mr-2 h-4 w-4" />
@@ -330,10 +351,7 @@ export function ClientePedidos({ pedidosIniciales, productosInventario, proveedo
             <AlertDialogHeader>
                 <AlertDialogTitle>¿Estás seguro?</AlertDialogTitle>
                 <AlertDialogDescription>
-                    {pedidoParaConfirmar?.estado === EstadoPedido.COMPLETADO 
-                        ? "Esto marcará el pedido como completado y añadirá las cantidades de los productos a tu inventario. Esta acción no se puede deshacer."
-                        : "Esto cancelará el pedido. Esta acción no se puede deshacer."
-                    }
+                    {getConfirmationMessage()}
                 </AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter>

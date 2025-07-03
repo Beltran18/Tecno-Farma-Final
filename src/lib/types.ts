@@ -69,6 +69,7 @@ export interface RecetaMedica {
 
 export enum EstadoPedido {
   PENDIENTE = 'Pendiente',
+  ENVIADO = 'Enviado',
   COMPLETADO = 'Completado',
   CANCELADO = 'Cancelado',
 }
