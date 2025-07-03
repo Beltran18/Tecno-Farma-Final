@@ -88,7 +88,12 @@ export async function updateProduct(id: string, productData: Partial<Omit<Produc
   return productoActualizado;
 }
 
-export async function registerProductExit(id: string, cantidadSalida: number, notas?: string): Promise<Producto | null> {
+export async function registerProductExit(
+  id: string, 
+  cantidadSalida: number, 
+  notas?: string,
+  tipo: TipoMovimiento.SALIDA_MANUAL | TipoMovimiento.DISPENSADO_RECETA = TipoMovimiento.SALIDA_MANUAL
+): Promise<Producto | null> {
   const productIndex = productos.findIndex(p => p.id === id);
   if (productIndex === -1) {
     return null;
@@ -111,11 +116,11 @@ export async function registerProductExit(id: string, cantidadSalida: number, no
   await logMovement({
     productoId: id,
     productoNombre: productoActualizado.nombre,
-    tipo: TipoMovimiento.SALIDA_MANUAL,
+    tipo,
     cantidadMovida: cantidadSalida,
     stockAnterior,
     stockNuevo,
-    notas: notas || 'Salida registrada manualmente.',
+    notas: notas,
   });
 
   productos[productIndex] = productoActualizado;

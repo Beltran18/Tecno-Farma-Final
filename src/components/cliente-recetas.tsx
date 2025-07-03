@@ -25,10 +25,26 @@ import {
   DialogClose,
   DialogDescription,
 } from '@/components/ui/dialog';
+import {
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+} from "@/components/ui/alert-dialog"
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
-import { PlusCircle, Trash2, Calendar as CalendarIcon } from 'lucide-react';
+import { PlusCircle, Trash2, Calendar as CalendarIcon, MoreHorizontal, ClipboardCheck } from 'lucide-react';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Calendar } from '@/components/ui/calendar';
 import { format } from 'date-fns';
@@ -44,6 +60,7 @@ interface ClienteRecetasProps {
 export function ClienteRecetas({ recetasIniciales, productosInventario }: ClienteRecetasProps) {
   const [recetas, setRecetas] = useState<RecetaMedica[]>(recetasIniciales);
   const [formularioAbierto, setFormularioAbierto] = useState(false);
+  const [recetaParaDispensar, setRecetaParaDispensar] = useState<RecetaMedica | null>(null);
   const { notificacion } = usarNotificacion();
 
   const handleAgregarReceta = async (recetaData: Omit<RecetaMedica, 'id' | 'estado'>) => {
@@ -74,6 +91,37 @@ export function ClienteRecetas({ recetasIniciales, productosInventario }: Client
       });
     }
   };
+
+  const handleDispensarReceta = async () => {
+    if (!recetaParaDispensar) return;
+
+    try {
+        const response = await fetch(`/api/recetas/${recetaParaDispensar.id}/dispensar`, {
+            method: 'POST',
+        });
+
+        if (!response.ok) {
+            const error = await response.json();
+            throw new Error(error.message);
+        }
+
+        const recetaActualizada = await response.json();
+        setRecetas(recetas.map(r => r.id === recetaActualizada.id ? recetaActualizada : r));
+        notificacion({
+            title: 'Éxito',
+            description: `Receta dispensada. El stock ha sido actualizado.`,
+        });
+
+    } catch (error: any) {
+        notificacion({
+            title: 'Error al dispensar',
+            description: error.message || 'No se pudo completar la acción.',
+            variant: 'destructive',
+        });
+    } finally {
+        setRecetaParaDispensar(null);
+    }
+  };
   
   return (
     <>
@@ -83,7 +131,7 @@ export function ClienteRecetas({ recetasIniciales, productosInventario }: Client
             <div>
               <CardTitle>Recetas Médicas</CardTitle>
               <CardDescription>
-                Gestiona las recetas de tus pacientes.
+                Gestiona las recetas de tus pacientes y dispensa los medicamentos.
               </CardDescription>
             </div>
             <Button onClick={() => setFormularioAbierto(true)}>
@@ -102,6 +150,7 @@ export function ClienteRecetas({ recetasIniciales, productosInventario }: Client
                   <TableHead>Fecha</TableHead>
                   <TableHead>Medicamentos</TableHead>
                   <TableHead>Estado</TableHead>
+                  <TableHead><span className="sr-only">Acciones</span></TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -113,15 +162,35 @@ export function ClienteRecetas({ recetasIniciales, productosInventario }: Client
                       <TableCell>{format(new Date(receta.fechaPrescripcion), 'dd/MM/yyyy')}</TableCell>
                       <TableCell>{receta.medicamentos.length}</TableCell>
                       <TableCell>
-                        <Badge variant={receta.estado === 'Pendiente' ? 'secondary' : 'default'}>
+                        <Badge variant={
+                            receta.estado === 'Pendiente' ? 'secondary' :
+                            receta.estado === 'Dispensada' ? 'default' : 'destructive'
+                        }>
                           {receta.estado}
                         </Badge>
                       </TableCell>
+                       <TableCell className="text-right">
+                         {receta.estado === 'Pendiente' && (
+                            <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                    <Button size="icon" variant="ghost">
+                                        <MoreHorizontal className="h-4 w-4" />
+                                    </Button>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent>
+                                    <DropdownMenuItem onSelect={() => setRecetaParaDispensar(receta)}>
+                                        <ClipboardCheck className="mr-2 h-4 w-4" />
+                                        Dispensar Receta
+                                    </DropdownMenuItem>
+                                </DropdownMenuContent>
+                            </DropdownMenu>
+                         )}
+                       </TableCell>
                     </TableRow>
                   ))
                 ) : (
                   <TableRow>
-                    <TableCell colSpan={5} className="text-center h-24">
+                    <TableCell colSpan={6} className="text-center h-24">
                       No hay recetas registradas.
                     </TableCell>
                   </TableRow>
@@ -141,6 +210,24 @@ export function ClienteRecetas({ recetasIniciales, productosInventario }: Client
           />
         </DialogContent>
       </Dialog>
+      
+      <AlertDialog open={!!recetaParaDispensar} onOpenChange={(open) => !open && setRecetaParaDispensar(null)}>
+        <AlertDialogContent>
+            <AlertDialogHeader>
+                <AlertDialogTitle>¿Confirmas la dispensación?</AlertDialogTitle>
+                <AlertDialogDescription>
+                    Esta acción descontará los medicamentos de la receta del inventario.
+                    Asegúrate de haber verificado los productos y cantidades. Esta acción no se puede deshacer.
+                </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+                <AlertDialogCancel onClick={() => setRecetaParaDispensar(null)}>Cancelar</AlertDialogCancel>
+                <AlertDialogAction onClick={handleDispensarReceta}>
+                    Sí, dispensar
+                </AlertDialogAction>
+            </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </>
   );
 }

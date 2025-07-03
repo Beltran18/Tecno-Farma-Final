@@ -57,7 +57,7 @@ export interface RecetaMedica {
   doctorNombre: string;
   fechaPrescripcion: Date;
   medicamentos: MedicamentoPrescrito[];
-  estado: 'Pendiente' | 'Dispensada Parcialmente' | 'Dispensada' | 'Cancelada';
+  estado: 'Pendiente' | 'Dispensada' | 'Cancelada';
 }
 
 export enum EstadoPedido {
