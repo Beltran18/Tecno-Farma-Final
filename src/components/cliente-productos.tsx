@@ -573,10 +573,10 @@ function FormularioProducto({
   const [nombre, setNombre] = useState('');
   const [categoria, setCategoria] = useState('');
   const [proveedorId, setProveedorId] = useState('');
-  const [costo, setCosto] = useState<number | ''>('');
-  const [precio, setPrecio] = useState<number | ''>('');
-  const [descuento, setDescuento] = useState<number | ''>('');
-  const [cantidad, setCantidad] = useState<number | ''>('');
+  const [costo, setCosto] = useState('');
+  const [precio, setPrecio] = useState('');
+  const [descuento, setDescuento] = useState('');
+  const [cantidad, setCantidad] = useState('');
   const [fechaVencimiento, setFechaVencimiento] = useState<Date | undefined>(new Date());
   const [numeroLote, setNumeroLote] = useState('');
   const [fechaInicioGarantia, setFechaInicioGarantia] = useState<Date | undefined>();
@@ -586,10 +586,10 @@ function FormularioProducto({
     if (producto) {
       setNombre(producto.nombre);
       setCategoria(producto.categoria);
-      setCosto(producto.costo);
-      setPrecio(producto.precio);
-      setDescuento(producto.descuento || '');
-      setCantidad(producto.cantidad);
+      setCosto(String(producto.costo || ''));
+      setPrecio(String(producto.precio || ''));
+      setDescuento(String(producto.descuento || ''));
+      setCantidad(String(producto.cantidad || ''));
       setFechaVencimiento(new Date(producto.fechaVencimiento));
       setNumeroLote(producto.numeroLote);
       setProveedorId(producto.proveedorId || '');
@@ -619,10 +619,10 @@ function FormularioProducto({
     const datosProducto = { 
         nombre, 
         categoria, 
-        costo: Number(costo) || 0,
-        precio: Number(precio) || 0, 
-        descuento: Number(descuento) || 0,
-        cantidad: Number(cantidad) || 0, 
+        costo: parseFloat(costo) || 0,
+        precio: parseFloat(precio) || 0, 
+        descuento: parseFloat(descuento) || 0,
+        cantidad: parseInt(cantidad, 10) || 0, 
         fechaVencimiento, 
         numeroLote,
         proveedorId: proveedorSeleccionado?.id,
