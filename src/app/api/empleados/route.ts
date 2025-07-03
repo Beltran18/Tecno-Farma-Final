@@ -17,22 +17,22 @@ export async function POST(request: NextRequest) {
     const { nombre, email, rol, password } = await request.json();
 
     if (!nombre || !email || !rol || !password) {
-       return new NextResponse(JSON.stringify({ message: 'Todos los campos son requeridos' }), { status: 400, headers: { 'Content-Type': 'application/json' } });
+       return NextResponse.json({ message: 'Todos los campos son requeridos' }, { status: 400 });
     }
     
     if (!Object.values(RolEmpleado).includes(rol)) {
-        return new NextResponse(JSON.stringify({ message: 'Rol no válido' }), { status: 400, headers: { 'Content-Type': 'application/json' } });
+        return NextResponse.json({ message: 'Rol no válido' }, { status: 400 });
     }
 
     const nuevoEmpleado = await createEmployee({ nombre, email, rol, password });
 
     return NextResponse.json(nuevoEmpleado, { status: 201 });
 
-  } catch (error: any) {
+  } catch (error) {
     console.error('Error al crear el empleado:', error);
-    if (error.message.includes('Ya existe un empleado')) {
-        return new NextResponse(JSON.stringify({ message: error.message }), { status: 409, headers: { 'Content-Type': 'application/json' } });
+    if (error instanceof Error && error.message.includes('Ya existe un empleado')) {
+        return NextResponse.json({ message: error.message }, { status: 409 });
     }
-    return new NextResponse(JSON.stringify({ message: 'Error interno del servidor' }), { status: 500, headers: { 'Content-Type': 'application/json' } });
+    return NextResponse.json({ message: 'Error interno del servidor' }, { status: 500 });
   }
 }

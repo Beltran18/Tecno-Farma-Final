@@ -68,8 +68,9 @@ export async function POST(request: NextRequest) {
         productosImportados
     }, { status: 201 });
 
-  } catch (error: any) {
+  } catch (error) {
     console.error('Error en la importación de CSV:', error);
-    return NextResponse.json({ message: 'Error interno del servidor al procesar el archivo.', error: error.message }, { status: 500 });
+    const message = error instanceof Error ? error.message : 'Error interno del servidor al procesar el archivo.';
+    return NextResponse.json({ message, error: message }, { status: 500 });
   }
 }

@@ -19,11 +19,11 @@ export async function POST(req: NextRequest) {
     await session.save();
 
     return NextResponse.json(newUser, { status: 201 });
-  } catch (error: any) {
-    if (error.message.includes('Ya existe un empleado')) {
+  } catch (error) {
+    console.error('Registration error:', error);
+    if (error instanceof Error && error.message.includes('Ya existe un empleado')) {
       return NextResponse.json({ message: 'Este correo electrónico ya está en uso.' }, { status: 409 });
     }
-    console.error('Registration error:', error);
     return NextResponse.json({ message: 'Error interno del servidor' }, { status: 500 });
   }
 }

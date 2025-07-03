@@ -16,15 +16,16 @@ export async function POST(request: NextRequest) {
     const recetaData = await request.json();
 
     if (!recetaData.pacienteNombre || !recetaData.doctorNombre || !recetaData.fechaPrescripcion || !recetaData.medicamentos || recetaData.medicamentos.length === 0) {
-       return new NextResponse(JSON.stringify({ message: 'Faltan campos requeridos' }), { status: 400, headers: { 'Content-Type': 'application/json' } });
+       return NextResponse.json({ message: 'Faltan campos requeridos' }, { status: 400 });
     }
 
     const nuevaReceta = await createReceta(recetaData);
 
     return NextResponse.json(nuevaReceta, { status: 201 });
 
-  } catch (error: any) {
+  } catch (error) {
     console.error('Error al crear la receta:', error);
-    return new NextResponse(JSON.stringify({ message: error.message || 'Error interno del servidor' }), { status: 500, headers: { 'Content-Type': 'application/json' } });
+    const message = error instanceof Error ? error.message : 'Error interno del servidor';
+    return NextResponse.json({ message }, { status: 500 });
   }
 }

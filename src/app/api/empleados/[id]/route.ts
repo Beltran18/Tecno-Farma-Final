@@ -10,22 +10,22 @@ export async function PUT(
     const datosActualizados = await request.json();
     
     if (datosActualizados.rol && !Object.values(RolEmpleado).includes(datosActualizados.rol)) {
-        return new NextResponse(JSON.stringify({ message: 'Rol no válido' }), { status: 400, headers: { 'Content-Type': 'application/json' } });
+        return NextResponse.json({ message: 'Rol no válido' }, { status: 400 });
     }
 
     const empleadoActualizado = await updateEmployee(params.id, datosActualizados);
 
     if (!empleadoActualizado) {
-      return new NextResponse(JSON.stringify({ message: 'Empleado no encontrado' }), { status: 404, headers: { 'Content-Type': 'application/json' } });
+      return NextResponse.json({ message: 'Empleado no encontrado' }, { status: 404 });
     }
 
     return NextResponse.json(empleadoActualizado);
-  } catch (error: any) {
+  } catch (error) {
     console.error('Error al actualizar el empleado:', error);
-    if (error.message.includes('correo electrónico ya está en uso')) {
-        return new NextResponse(JSON.stringify({ message: error.message }), { status: 409, headers: { 'Content-Type': 'application/json' } });
+    if (error instanceof Error && error.message.includes('correo electrónico ya está en uso')) {
+        return NextResponse.json({ message: error.message }, { status: 409 });
     }
-    return new NextResponse(JSON.stringify({ message: 'Error interno del servidor' }), { status: 500, headers: { 'Content-Type': 'application/json' } });
+    return NextResponse.json({ message: 'Error interno del servidor' }, { status: 500 });
   }
 }
 
@@ -37,12 +37,13 @@ export async function DELETE(
     const fueEliminado = await deleteEmployee(params.id);
 
     if (!fueEliminado) {
-      return new NextResponse(JSON.stringify({ message: 'Empleado no encontrado' }), { status: 404, headers: { 'Content-Type': 'application/json' } });
+      return NextResponse.json({ message: 'Empleado no encontrado' }, { status: 404 });
     }
 
     return new NextResponse(null, { status: 204 });
-  } catch (error: any) {
+  } catch (error) {
     console.error('Error al eliminar el empleado:', error);
-    return new NextResponse(JSON.stringify({ message: error.message }), { status: 500, headers: { 'Content-Type': 'application/json' } });
+    const message = error instanceof Error ? error.message : 'Error interno del servidor';
+    return NextResponse.json({ message }, { status: 500 });
   }
 }

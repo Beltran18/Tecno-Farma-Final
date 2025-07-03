@@ -16,18 +16,18 @@ export async function POST(request: NextRequest) {
     const { nombre, contacto, telefono } = await request.json();
 
     if (!nombre || !contacto || !telefono) {
-       return new NextResponse(JSON.stringify({ message: 'Todos los campos son requeridos' }), { status: 400, headers: { 'Content-Type': 'application/json' } });
+       return NextResponse.json({ message: 'Todos los campos son requeridos' }, { status: 400 });
     }
 
     const nuevoProveedor = await createProveedor({ nombre, contacto, telefono });
 
     return NextResponse.json(nuevoProveedor, { status: 201 });
 
-  } catch (error: any) {
+  } catch (error) {
     console.error('Error al crear el proveedor:', error);
-    if (error.message === 'El proveedor ya existe.') {
-        return new NextResponse(JSON.stringify({ message: error.message }), { status: 409, headers: { 'Content-Type': 'application/json' } });
+    if (error instanceof Error && error.message === 'El proveedor ya existe.') {
+        return NextResponse.json({ message: error.message }, { status: 409 });
     }
-    return new NextResponse(JSON.stringify({ message: 'Error interno del servidor' }), { status: 500, headers: { 'Content-Type': 'application/json' } });
+    return NextResponse.json({ message: 'Error interno del servidor' }, { status: 500 });
   }
 }

@@ -8,10 +8,11 @@ export async function POST(
   try {
     const recetaDispensada = await dispenseReceta(params.id);
     return NextResponse.json(recetaDispensada);
-  } catch (error: any) {
+  } catch (error) {
     console.error(`Error al dispensar la receta ${params.id}:`, error);
-    const status = error.message.includes('insuficiente') ? 409 : 
-                   error.message.includes('encontrada') ? 404 : 500;
-    return new NextResponse(JSON.stringify({ message: error.message || 'Error interno del servidor' }), { status, headers: { 'Content-Type': 'application/json' } });
+    const message = error instanceof Error ? error.message : 'Error interno del servidor';
+    const status = message.includes('insuficiente') ? 409 : 
+                   message.includes('encontrada') ? 404 : 500;
+    return NextResponse.json({ message }, { status });
   }
 }

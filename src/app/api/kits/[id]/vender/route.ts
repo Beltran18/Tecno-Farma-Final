@@ -9,17 +9,18 @@ export async function POST(
     const { cantidad } = await request.json();
 
     if (!cantidad || typeof cantidad !== 'number' || cantidad <= 0) {
-      return new NextResponse(JSON.stringify({ message: 'La cantidad es requerida y debe ser un número positivo.' }), { status: 400, headers: { 'Content-Type': 'application/json' } });
+      return NextResponse.json({ message: 'La cantidad es requerida y debe ser un número positivo.' }, { status: 400 });
     }
     
     await sellKit(params.id, cantidad);
 
     return NextResponse.json({ message: `Venta de ${cantidad} kit(s) registrada exitosamente.` });
 
-  } catch (error: any) {
+  } catch (error) {
     console.error('Error al registrar la venta del kit:', error);
-    const status = error.message.includes('insuficiente') ? 409 : 
-                   error.message.includes('encontrado') ? 404 : 500;
-    return new NextResponse(JSON.stringify({ message: error.message || 'Error interno del servidor' }), { status, headers: { 'Content-Type': 'application/json' } });
+    const message = error instanceof Error ? error.message : 'Error interno del servidor';
+    const status = message.includes('insuficiente') ? 409 : 
+                   message.includes('encontrado') ? 404 : 500;
+    return NextResponse.json({ message }, { status });
   }
 }

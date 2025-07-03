@@ -16,18 +16,18 @@ export async function POST(request: NextRequest) {
     const { nombre } = await request.json();
 
     if (!nombre) {
-       return new NextResponse(JSON.stringify({ message: 'El nombre es requerido' }), { status: 400, headers: { 'Content-Type': 'application/json' } });
+       return NextResponse.json({ message: 'El nombre es requerido' }, { status: 400 });
     }
 
     const nuevaCategoria = await createCategory(nombre);
 
     return NextResponse.json(nuevaCategoria, { status: 201 });
 
-  } catch (error: any) {
+  } catch (error) {
     console.error('Error al crear la categoría:', error);
-    if (error.message === 'La categoría ya existe.') {
-        return new NextResponse(JSON.stringify({ message: error.message }), { status: 409, headers: { 'Content-Type': 'application/json' } });
+    if (error instanceof Error && error.message === 'La categoría ya existe.') {
+        return NextResponse.json({ message: error.message }, { status: 409 });
     }
-    return new NextResponse(JSON.stringify({ message: 'Error interno del servidor' }), { status: 500, headers: { 'Content-Type': 'application/json' } });
+    return NextResponse.json({ message: 'Error interno del servidor' }, { status: 500 });
   }
 }
