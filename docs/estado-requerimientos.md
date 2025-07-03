@@ -62,3 +62,4 @@ Este documento realiza un seguimiento del progreso de la implementación de los 
 | **RF049** | El sistema debe mostrar a los usuarios mensajes de error amigables en caso de credenciales inválidas u otros errores de autenticación. | ❌ **Pendiente** | |
 | **RF050** | El sistema deberá permitir al administrador crear la cuenta administrador. | ❌ **Pendiente** | |
 | **RF051** | El sistema deberá permitir al administrador crear cuentas de empleados. | ❌ **Pendiente** | |
+
