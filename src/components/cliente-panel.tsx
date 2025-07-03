@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useMemo, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import {
   Tabs,
   TabsContent,
@@ -19,9 +20,10 @@ import {
   AlertDescription,
   AlertTitle,
 } from '@/components/ui/alert';
+import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { DollarSign, Package, AlertTriangle, Settings, CalendarOff, PackagePlus, TimerOff } from 'lucide-react';
+import { DollarSign, Package, AlertTriangle, Settings, CalendarOff, PackagePlus, TimerOff, PlusCircle } from 'lucide-react';
 import { format, isBefore, isWithinInterval, addDays, subDays, formatDistanceToNow } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { Pie, PieChart, Cell } from 'recharts';
@@ -47,6 +49,7 @@ export function ClientePanel({ productosIniciales, movimientosIniciales }: Clien
   const [umbralDiasLentoMovimiento, setUmbralDiasLentoMovimiento] = useState(90);
   const [alertasVencimiento, setAlertasVencimiento] = useState<Producto[]>([]);
   const [isClient, setIsClient] = useState(false);
+  const router = useRouter();
 
   useEffect(() => {
     setIsClient(true);
@@ -361,13 +364,25 @@ export function ClientePanel({ productosIniciales, movimientosIniciales }: Clien
                <div className="space-y-4">
                   {alertasStockBajo.length > 0 ? (
                      alertasStockBajo.map(producto => (
-                       <Alert key={producto.id}>
-                         <AlertTriangle className="h-4 w-4" />
-                         <AlertTitle>{producto.nombre}</AlertTitle>
-                         <AlertDescription>
-                           Stock bajo: {producto.cantidad} unidades restantes.
-                         </AlertDescription>
-                       </Alert>
+                        <div key={producto.id} className="flex items-center gap-4">
+                            <Alert className="flex-grow">
+                                <AlertTriangle className="h-4 w-4" />
+                                <AlertTitle>{producto.nombre}</AlertTitle>
+                                <AlertDescription>
+                                Stock bajo: {producto.cantidad} unidades restantes.
+                                </AlertDescription>
+                            </Alert>
+                             <Button 
+                                size="sm" 
+                                variant="outline" 
+                                onClick={() => router.push(`/panel/pedidos?productoId=${producto.id}&proveedorId=${producto.proveedorId || ''}`)}
+                                disabled={!producto.proveedorId}
+                                title={!producto.proveedorId ? "El producto debe tener un proveedor asignado para crear un pedido." : "Crear pedido de reposición"}
+                            >
+                                <PlusCircle className="mr-2 h-4 w-4"/>
+                                Crear Pedido
+                            </Button>
+                        </div>
                      ))
                   ) : <p className="text-sm text-muted-foreground">No hay alertas de stock bajo.</p>}
                </div>

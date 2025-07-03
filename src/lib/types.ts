@@ -29,6 +29,7 @@ export enum TipoMovimiento {
   AJUSTE_NEGATIVO = 'Ajuste Negativo',
   IMPORTACION_CSV = 'Importación CSV',
   DISPENSADO_RECETA = 'Dispensado por Receta',
+  ENTRADA_PEDIDO = 'Entrada por Pedido',
 }
 
 export interface MovimientoInventario {
@@ -57,4 +58,23 @@ export interface RecetaMedica {
   fechaPrescripcion: Date;
   medicamentos: MedicamentoPrescrito[];
   estado: 'Pendiente' | 'Dispensada Parcialmente' | 'Dispensada' | 'Cancelada';
+}
+
+export enum EstadoPedido {
+  PENDIENTE = 'Pendiente',
+  COMPLETADO = 'Completado',
+  CANCELADO = 'Cancelado',
+}
+
+export interface PedidoReposicion {
+  id: string;
+  fechaPedido: Date;
+  proveedorId: string;
+  proveedorNombre: string;
+  productos: {
+    productoId: string;
+    productoNombre: string;
+    cantidadPedida: number;
+  }[];
+  estado: EstadoPedido;
 }

@@ -123,6 +123,36 @@ export async function registerProductExit(id: string, cantidadSalida: number, no
   return productoActualizado;
 }
 
+export async function registerProductEntry(id: string, cantidadEntrada: number, tipo: TipoMovimiento, notas?: string): Promise<Producto | null> {
+  const productIndex = productos.findIndex(p => p.id === id);
+  if (productIndex === -1) {
+    throw new Error(`Producto con ID ${id} no encontrado para registrar entrada.`);
+  }
+
+  const productoAnterior = { ...productos[productIndex] };
+  const stockAnterior = productoAnterior.cantidad;
+  const stockNuevo = stockAnterior + cantidadEntrada;
+
+  const productoActualizado: Producto = {
+    ...productoAnterior,
+    cantidad: stockNuevo,
+  };
+  
+  await logMovement({
+    productoId: id,
+    productoNombre: productoActualizado.nombre,
+    tipo,
+    cantidadMovida: cantidadEntrada,
+    stockAnterior,
+    stockNuevo,
+    notas,
+  });
+
+  productos[productIndex] = productoActualizado;
+  console.log(`${tipo} registrada para el producto ${id}: ${cantidadEntrada} unidades.`);
+  return productoActualizado;
+}
+
 
 export async function deleteProduct(id: string): Promise<boolean> {
     // TODO: Reemplazar con la lógica para eliminar un producto de la base de datos.

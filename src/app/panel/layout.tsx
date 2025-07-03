@@ -29,7 +29,7 @@ import {
   SidebarTrigger,
 } from '@/components/ui/sidebar';
 import { Button } from '@/components/ui/button';
-import { Home, User, LogOut, Settings, Tag, Truck, CalendarDays, LifeBuoy, FileText, BookOpenCheck, NotebookPen } from 'lucide-react';
+import { Home, User, LogOut, Settings, Tag, Truck, CalendarDays, LifeBuoy, FileText, BookOpenCheck, NotebookPen, ClipboardList } from 'lucide-react';
 import { Logo } from '@/components/logo';
 import { usarNotificacion } from '@/hooks/usar-notificacion';
 
@@ -59,6 +59,7 @@ export default function DisposicionPanel({
     if (pathname.startsWith('/panel/ayuda')) return 'Ayuda y Tutoriales';
     if (pathname.startsWith('/panel/soporte')) return 'Soporte Técnico';
     if (pathname.startsWith('/panel/recetas')) return 'Gestión de Recetas';
+    if (pathname.startsWith('/panel/pedidos')) return 'Gestión de Pedidos';
     return 'TecnoFarma';
   };
   
@@ -93,6 +94,12 @@ export default function DisposicionPanel({
               <SidebarMenuButton href="/panel/recetas" tooltip="Recetas" isActive={pathname.startsWith('/panel/recetas')}>
                 <NotebookPen />
                 Recetas
+              </SidebarMenuButton>
+            </SidebarMenuItem>
+            <SidebarMenuItem>
+              <SidebarMenuButton href="/panel/pedidos" tooltip="Pedidos" isActive={pathname.startsWith('/panel/pedidos')}>
+                <ClipboardList />
+                Pedidos
               </SidebarMenuButton>
             </SidebarMenuItem>
             <SidebarMenuItem>

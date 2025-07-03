@@ -12,9 +12,9 @@ Este documento realiza un seguimiento del progreso de la implementación de los 
 | ID | Requerimiento | Estado | Notas |
 |:---|:---|:---:|:---|
 | **RF001** | El sistema debe permitir al administrador configurar descuentos por volumen o promociones en productos específicos. | ❌ **Pendiente** | |
-| **RF002** | El sistema debe permitir al administrador realizar pedidos de reposición de stock directamente a través del sistema. | ❌ **Pendiente** | |
+| **RF002** | El sistema debe permitir al administrador realizar pedidos de reposición de stock directamente a través del sistema. | ✅ **Completado** | Implementada la creación, listado y cambio de estado de pedidos. La recepción de un pedido ("Completado") actualiza el stock automáticamente. |
 | **RF003** | El sistema debe permitir al usuario visualizar un dashboard con indicadores clave como rotación de inventario y margen de ganancia. | ✅ **Completado** | Se muestran indicadores clave (Valor total, Unidades, Alertas), gráficos de distribución y actividad reciente. Métricas más complejas como rotación o margen requieren datos adicionales. |
-| **RF004** | El sistema debe permitir al administrador configurar y automatizar el envío de reportes periódicos de inventario a una dirección de correo electrónico. | ❌ **Pendiente** | |
+| **RF004** | El sistema debe permitir al administrador y a empleados operar en plataformas de escritorio. | ❌ **Pendiente** | |
 | **RF005** | El sistema debe permitir a los usuarios ingresar al soporte técnico en línea. | ✅ **Completado** | Se implementó un botón que redirige a un chat de WhatsApp para soporte directo. |
 | **RF006** | El sistema debe permitir al administrador y a empleados operar en plataformas de escritorio. | ✅ **Completado** | La aplicación es una aplicación web, accesible desde escritorio. |
 | **RF007** | El sistema debe permitir al administrador gestionar las recetas médicas, incluyendo verificación de stock de los medicamentos prescritos. | 🟡 **En Proceso** | Implementada la creación y listado de recetas. La dispensación de stock está pendiente. |
@@ -40,7 +40,7 @@ Este documento realiza un seguimiento del progreso de la implementación de los 
 | **RF027** | El sistema debe permitir a los usuarios mantener un historial de todas las transacciones de inventario, incluyendo entradas y salidas. | ✅ **Completado** | Cada creación, importación, ajuste o salida de un producto queda registrada. Se puede consultar el historial por producto. |
 | **RF028** | El sistema debe permitir al administrador gestionar proveedores, incluyendo registro, actualización y eliminación de proveedores. | ✅ **Completado** | Implementada página de gestión de proveedores con funcionalidad CRUD completa. |
 | **RF029** | El sistema debe permitir al administrador asociar productos a sus respectivos proveedores. | ✅ **Completado** | El formulario de productos ahora usa un menú desplegable para asociar proveedores existentes. |
-| **RF030** | El sistema debe permitir al administrador generar reportes de compras a proveedores, incluyendo cantidades, fechas y costos. | ❌ **Pendiente** | |
+| **RF030** | El sistema debe permitir al administrador generar reportes de compras a proveedores, incluyendo cantidades, fechas y costos. | 🟡 **En Proceso** | La página de Pedidos sirve como un listado básico. Faltan funcionalidades de reporte avanzadas como filtrado por fecha y cálculo de costos. |
 | **RF031** | El sistema debe permitir al administrador registrar y gestionar las devoluciones de productos a proveedores. | ❌ **Pendiente** | |
 | **RF032** | El sistema debe permitir al administrador dar soporte a la configuración de múltiples empleados con diferentes niveles de acceso y permisos. | ❌ **Pendiente** | |
 | **RF033** | El sistema debe permitir al administrador dar autenticación de usuario para acceder a cualquier funcionalidad de gestión de inventario. | ❌ **Pendiente** | |
@@ -50,7 +50,7 @@ Este documento realiza un seguimiento del progreso de la implementación de los 
 | **RF037** | El sistema debe permitir al usuario consultar el historial de ventas de un producto específico. | ❌ **Pendiente** | |
 | **RF038** | El sistema debe permitir al administrador registrar la trazabilidad completa de los lotes de medicamentos para cumplir con regulaciones sanitarias. | ❌ **Pendiente** | |
 | **RF039** | El sistema debe permitir al administrador configurar las alertas para la revisión de productos no vendidos o de lento movimiento. | ✅ **Completado** | Se pueden configurar los días para considerar un producto como de "lento movimiento" y se listan en las alertas. |
-| **RF040** | El sistema debe sugerir reposiciones cuando un producto esté por debajo del stock mínimo definido. | ❌ **Pendiente** | |
+| **RF040** | El sistema debe sugerir reposiciones cuando un producto esté por debajo del stock mínimo definido. | ✅ **Completado** | En la sección de alertas de stock bajo, se ha añadido un botón para crear un pedido de reposición directamente. |
 | **RF041** | El sistema debe permitir al administrador realizar la creación de paquetes o kits de productos, gestionando su inventario como una unidad. | ❌ **Pendiente** | |
 | **RF042** | El sistema debe permitir al administrador incluir medidas de seguridad para la protección de datos sensibles, incluyendo cifrado de datos y copias de seguridad automáticas. | ❌ **Pendiente** | |
 | **RF043** | El sistema debe mostrar un resumen de costos y ventas basado en los movimientos del inventario. | ❌ **Pendiente** | |
