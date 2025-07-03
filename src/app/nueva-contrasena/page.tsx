@@ -28,6 +28,7 @@ function NuevaContrasenaComponent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const token = searchParams.get('token');
+  const email = searchParams.get('email');
   const { notificacion } = usarNotificacion();
   const [isLoading, setIsLoading] = useState(false);
 
@@ -35,34 +36,55 @@ function NuevaContrasenaComponent() {
     resolver: zodResolver(nuevaContrasenaSchema),
   });
 
-  const handleReset: SubmitHandler<NuevaContrasenaSchemaType> = async (data) => {
+  const handleReset: SubmitHandler<NuevaContrasenaSchemaType> = async (formData) => {
     setIsLoading(true);
 
-    // En una aplicación real, aquí llamarías a una API para verificar el token
-    // y actualizar la contraseña en la base de datos.
-    console.log('--- SIMULACIÓN DE CAMBIO DE CONTRASEÑA ---');
-    console.log(`Token recibido: ${token}`);
-    console.log(`Nueva contraseña (simulada): ${data.password}`);
-    console.log('-------------------------------------------');
+    if (!email) {
+        notificacion({
+            title: 'Error',
+            description: 'El enlace de recuperación es inválido. Falta el correo electrónico.',
+            variant: 'destructive',
+        });
+        setIsLoading(false);
+        return;
+    }
 
-    // Simulamos un pequeño retraso de la API
-    await new Promise(resolve => setTimeout(resolve, 1000));
+    try {
+        const response = await fetch('/api/auth/update-password', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email, password: formData.password }),
+        });
 
-    setIsLoading(false);
-    
-    notificacion({
-      title: 'Contraseña Actualizada',
-      description: 'Tu contraseña ha sido cambiada exitosamente. Ahora puedes iniciar sesión.',
-    });
-    
-    router.push('/');
+        const result = await response.json();
+
+        if (!response.ok) {
+            throw new Error(result.message || 'Ocurrió un error al actualizar la contraseña.');
+        }
+        
+        notificacion({
+            title: 'Contraseña Actualizada',
+            description: 'Tu contraseña ha sido cambiada exitosamente. Ahora puedes iniciar sesión.',
+        });
+        
+        router.push('/');
+
+    } catch (error: any) {
+        notificacion({
+            title: 'Error',
+            description: error.message,
+            variant: 'destructive',
+        });
+    } finally {
+        setIsLoading(false);
+    }
   };
 
-  if (!token) {
+  if (!token || !email) {
     return (
        <main className="flex min-h-screen flex-col items-center justify-center p-4">
         <TarjetaAutenticacion
-            title="Token Inválido"
+            title="Enlace Inválido"
             description="El enlace para restablecer la contraseña no es válido o ha expirado."
             footer={
             <div className="text-center text-sm">

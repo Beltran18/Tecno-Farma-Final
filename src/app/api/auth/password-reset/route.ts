@@ -23,7 +23,7 @@ export async function POST(req: NextRequest) {
       console.log(`Para: ${user.email}`);
       console.log(`Asunto: Restablece tu contraseña de TecnoFarma`);
       console.log(`Token de restablecimiento: ${resetToken}`);
-      console.log(`Enlace (simulado): http://localhost:9002/nueva-contrasena?token=${resetToken}`);
+      console.log(`Enlace (simulado): http://localhost:9002/nueva-contrasena?token=${resetToken}&email=${encodeURIComponent(user.email)}`);
       console.log('-----------------------------------------------------------\n\n');
       console.log('NOTA: Este es un mensaje de simulación. En una aplicación real, se enviaría un correo electrónico.');
     }

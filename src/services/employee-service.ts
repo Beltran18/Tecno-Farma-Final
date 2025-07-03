@@ -9,7 +9,7 @@ function mapToEmpleado(row: any, includePassword = false): Empleado {
         email: row.email,
         rol: row.rol,
     };
-    if (includePassword) {
+    if (includePassword && row.password) {
         empleado.password = row.password;
     }
     return empleado;
@@ -80,6 +80,17 @@ export async function updateEmployee(id: string, employeeData: Partial<Omit<Empl
         }
         console.error('Error al actualizar empleado:', error);
         throw new Error('No se pudo actualizar el empleado.');
+    }
+}
+
+export async function updateEmployeePassword(email: string, newPassword: string): Promise<boolean> {
+    try {
+        const hashedPassword = await bcrypt.hash(newPassword, 10);
+        const [result] = await db.query('UPDATE empleados SET password = ? WHERE email = ?', [hashedPassword, email]);
+        return (result as any).affectedRows > 0;
+    } catch (error) {
+        console.error('Error al actualizar la contraseña del empleado:', error);
+        throw new Error('No se pudo actualizar la contraseña.');
     }
 }
 
