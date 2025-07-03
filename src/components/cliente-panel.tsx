@@ -88,7 +88,7 @@ export function ClientePanel({ productosIniciales, movimientosIniciales }: Clien
     if (!isClient) return [];
 
     const umbralFecha = subDays(new Date(), umbralDiasLentoMovimiento);
-    const tiposDeSalida = [TipoMovimiento.SALIDA_MANUAL, TipoMovimiento.DISPENSADO_RECETA];
+    const tiposDeSalida = [TipoMovimiento.SALIDA_MANUAL, TipoMovimiento.DISPENSADO_RECETA, TipoMovimiento.VENTA_KIT];
 
     const ultimoMovimientoSalida = new Map<string, Date>();
     movimientos
