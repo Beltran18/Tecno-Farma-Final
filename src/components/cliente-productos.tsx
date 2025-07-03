@@ -617,14 +617,14 @@ function FormularioProducto({
     const proveedorSeleccionado = proveedores.find(p => p.id === proveedorId);
     
     const datosProducto = { 
-        nombre, 
-        categoria, 
-        costo: parseFloat(costo) || 0,
-        precio: parseFloat(precio) || 0, 
-        descuento: parseFloat(descuento) || 0,
-        cantidad: parseInt(cantidad, 10) || 0, 
-        fechaVencimiento, 
-        numeroLote,
+        nombre: nombre, 
+        categoria: categoria, 
+        costo: Number(costo) || 0,
+        precio: Number(precio) || 0, 
+        descuento: Number(descuento) || 0,
+        cantidad: Number(cantidad) || 0,
+        fechaVencimiento: fechaVencimiento, 
+        numeroLote: numeroLote,
         proveedorId: proveedorSeleccionado?.id,
         proveedorNombre: proveedorSeleccionado?.nombre,
         fechaInicioGarantia,
@@ -671,7 +671,7 @@ function FormularioProducto({
          <div className="grid grid-cols-3 gap-4">
             <div className="space-y-2">
                 <label htmlFor="costo">Costo</label>
-                <Input id="costo" type="number" value={costo} onChange={e => setCosto(e.target.value)} required min="0" step="any" />
+                <Input id="costo" type="number" value={costo} onChange={e => setCosto(e.target.value)} min="0" step="any" placeholder="0" />
             </div>
             <div className="space-y-2">
                 <label htmlFor="price">Precio</label>
@@ -679,7 +679,7 @@ function FormularioProducto({
             </div>
             <div className="space-y-2">
                 <label htmlFor="descuento">Desc. (%)</label>
-                <Input id="descuento" type="number" value={descuento} onChange={e => setDescuento(e.target.value)} min="0" max="100" />
+                <Input id="descuento" type="number" value={descuento} onChange={e => setDescuento(e.target.value)} min="0" max="100" placeholder="0" />
             </div>
         </div>
         <div className="grid grid-cols-2 gap-4">

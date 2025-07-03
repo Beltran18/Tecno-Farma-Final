@@ -23,24 +23,19 @@ export async function createProduct(
   productData: Omit<Producto, 'id'>,
   tipo: TipoMovimiento.CREACION_INICIAL | TipoMovimiento.IMPORTACION_CSV = TipoMovimiento.CREACION_INICIAL
 ): Promise<Producto> {
-  // Capa de saneamiento de datos robusta
-  const safeCosto = parseFloat(String(productData.costo)) || 0;
-  const safePrecio = parseFloat(String(productData.precio)) || 0;
-  const safeCantidad = parseInt(String(productData.cantidad), 10) || 0;
-  const safeDescuento = parseFloat(String(productData.descuento)) || 0;
 
   const nuevoProducto: Producto = {
     id: `prod_${Date.now()}`,
-    nombre: productData.nombre,
+    nombre: String(productData.nombre),
     categoria: productData.categoria,
-    costo: safeCosto,
-    precio: safePrecio,
-    cantidad: safeCantidad,
+    costo: Number(productData.costo) || 0,
+    precio: Number(productData.precio) || 0,
+    cantidad: Number(productData.cantidad) || 0,
     fechaVencimiento: new Date(productData.fechaVencimiento),
     numeroLote: productData.numeroLote,
     proveedorId: productData.proveedorId,
     proveedorNombre: productData.proveedorNombre,
-    descuento: safeDescuento,
+    descuento: Number(productData.descuento) || 0,
     fechaInicioGarantia: productData.fechaInicioGarantia ? new Date(productData.fechaInicioGarantia) : undefined,
     fechaFinGarantia: productData.fechaFinGarantia ? new Date(productData.fechaFinGarantia) : undefined,
   };
@@ -72,19 +67,18 @@ export async function updateProduct(id: string, productData: Partial<Omit<Produc
   const productoAnterior = productos[productIndex];
   const stockAnterior = productoAnterior.cantidad;
 
-  // Saneamiento de datos para la actualización
   const productoActualizado: Producto = {
       ...productoAnterior,
       nombre: productData.nombre ?? productoAnterior.nombre,
       categoria: productData.categoria ?? productoAnterior.categoria,
-      costo: productData.costo !== undefined ? (parseFloat(String(productData.costo)) || 0) : productoAnterior.costo,
-      precio: productData.precio !== undefined ? (parseFloat(String(productData.precio)) || 0) : productoAnterior.precio,
-      cantidad: productData.cantidad !== undefined ? (parseInt(String(productData.cantidad), 10) || 0) : productoAnterior.cantidad,
+      costo: productData.costo !== undefined ? (Number(productData.costo) || 0) : productoAnterior.costo,
+      precio: productData.precio !== undefined ? (Number(productData.precio) || 0) : productoAnterior.precio,
+      cantidad: productData.cantidad !== undefined ? (Number(productData.cantidad) || 0) : productoAnterior.cantidad,
       fechaVencimiento: productData.fechaVencimiento ? new Date(productData.fechaVencimiento) : productoAnterior.fechaVencimiento,
       numeroLote: productData.numeroLote ?? productoAnterior.numeroLote,
       proveedorId: productData.proveedorId === '' ? undefined : productData.proveedorId ?? productoAnterior.proveedorId,
       proveedorNombre: productData.proveedorNombre === '' ? undefined : productData.proveedorNombre ?? productoAnterior.proveedorNombre,
-      descuento: productData.descuento !== undefined ? (parseFloat(String(productData.descuento)) || 0) : productoAnterior.descuento,
+      descuento: productData.descuento !== undefined ? (Number(productData.descuento) || 0) : productoAnterior.descuento,
       fechaInicioGarantia: productData.fechaInicioGarantia ? new Date(productData.fechaInicioGarantia) : productData.fechaInicioGarantia === null ? undefined : productoAnterior.fechaInicioGarantia,
       fechaFinGarantia: productData.fechaFinGarantia ? new Date(productData.fechaFinGarantia) : productData.fechaFinGarantia === null ? undefined : productoAnterior.fechaFinGarantia,
   };
