@@ -32,6 +32,9 @@ import { Button } from '@/components/ui/button';
 import { Home, User, LogOut, Settings, Tag, Truck, CalendarDays, LifeBuoy, FileText, BookOpenCheck, NotebookPen, ClipboardList, Undo2, Boxes, BarChart3, PackageSearch, UsersRound } from 'lucide-react';
 import { Logo } from '@/components/logo';
 import { usarNotificacion } from '@/hooks/usar-notificacion';
+import { RolEmpleado } from '@/lib/types';
+import { Badge } from '@/components/ui/badge';
+
 
 export default function DisposicionPanel({
   children,
@@ -70,10 +73,13 @@ export default function DisposicionPanel({
   
   // Datos de usuario simulados para desarrollo
   const usuarioSimulado = {
-    email: 'usuario@ejemplo.com',
-    displayName: 'Usuario de Prueba',
+    email: 'admin@tecnofarma.com',
+    displayName: 'Administrador de Prueba',
     photoURL: null,
+    rol: RolEmpleado.ADMINISTRADOR, // Cambia a RolEmpleado.EMPLEADO para probar la vista restringida
   };
+
+  const esAdmin = usuarioSimulado.rol === RolEmpleado.ADMINISTRADOR;
 
   return (
     <SidebarProvider>
@@ -119,48 +125,56 @@ export default function DisposicionPanel({
                 Kits y Paquetes
               </SidebarMenuButton>
             </SidebarMenuItem>
-             <SidebarMenuItem>
-              <SidebarMenuButton href="/panel/analisis" tooltip="Análisis" isActive={pathname.startsWith('/panel/analisis')}>
-                <BarChart3 />
-                Análisis
-              </SidebarMenuButton>
-            </SidebarMenuItem>
+             {esAdmin && (
+              <SidebarMenuItem>
+                <SidebarMenuButton href="/panel/analisis" tooltip="Análisis" isActive={pathname.startsWith('/panel/analisis')}>
+                  <BarChart3 />
+                  Análisis
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+             )}
              <SidebarMenuItem>
               <SidebarMenuButton href="/panel/trazabilidad" tooltip="Trazabilidad" isActive={pathname.startsWith('/panel/trazabilidad')}>
                 <PackageSearch />
                 Trazabilidad
               </SidebarMenuButton>
             </SidebarMenuItem>
-            <SidebarMenuItem>
-              <SidebarMenuButton href="/panel/categorias" tooltip="Categorías" isActive={pathname.startsWith('/panel/categorias')}>
-                <Tag />
-                Categorías
-              </SidebarMenuButton>
-            </SidebarMenuItem>
-            <SidebarMenuItem>
-              <SidebarMenuButton href="/panel/proveedores" tooltip="Proveedores" isActive={pathname.startsWith('/panel/proveedores')}>
-                <Truck />
-                Proveedores
-              </SidebarMenuButton>
-            </SidebarMenuItem>
-            <SidebarMenuItem>
-              <SidebarMenuButton href="/panel/empleados" tooltip="Empleados" isActive={pathname.startsWith('/panel/empleados')}>
-                <UsersRound />
-                Empleados
-              </SidebarMenuButton>
-            </SidebarMenuItem>
+            {esAdmin && (
+              <>
+                <SidebarMenuItem>
+                  <SidebarMenuButton href="/panel/categorias" tooltip="Categorías" isActive={pathname.startsWith('/panel/categorias')}>
+                    <Tag />
+                    Categorías
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+                <SidebarMenuItem>
+                  <SidebarMenuButton href="/panel/proveedores" tooltip="Proveedores" isActive={pathname.startsWith('/panel/proveedores')}>
+                    <Truck />
+                    Proveedores
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+                <SidebarMenuItem>
+                  <SidebarMenuButton href="/panel/empleados" tooltip="Empleados" isActive={pathname.startsWith('/panel/empleados')}>
+                    <UsersRound />
+                    Empleados
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+              </>
+            )}
             <SidebarMenuItem>
               <SidebarMenuButton href="/panel/calendario" tooltip="Calendario" isActive={pathname.startsWith('/panel/calendario')}>
                 <CalendarDays />
                 Calendario
               </SidebarMenuButton>
             </SidebarMenuItem>
-             <SidebarMenuItem>
-              <SidebarMenuButton href="/panel/reportes" tooltip="Reportes" isActive={pathname.startsWith('/panel/reportes')}>
-                <FileText />
-                Reportes
-              </SidebarMenuButton>
-            </SidebarMenuItem>
+             {esAdmin && (
+              <SidebarMenuItem>
+                <SidebarMenuButton href="/panel/reportes" tooltip="Reportes" isActive={pathname.startsWith('/panel/reportes')}>
+                  <FileText />
+                  Reportes
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+             )}
              <SidebarMenuItem>
               <SidebarMenuButton href="/panel/ayuda" tooltip="Ayuda" isActive={pathname.startsWith('/panel/ayuda')}>
                 <BookOpenCheck />
@@ -185,7 +199,10 @@ export default function DisposicionPanel({
                 </Avatar>
                 <div className="text-left w-full overflow-hidden" suppressHydrationWarning>
                   <p className="text-sm font-medium truncate">{usuarioSimulado.displayName || 'Usuario'}</p>
-                  <p className="text-xs text-muted-foreground truncate">{usuarioSimulado.email}</p>
+                   <div className="flex items-center gap-2">
+                    <p className="text-xs text-muted-foreground truncate">{usuarioSimulado.email}</p>
+                    <Badge variant={esAdmin ? 'default' : 'secondary'} className="h-4 px-1.5 text-[10px]">{usuarioSimulado.rol}</Badge>
+                  </div>
                 </div>
               </Button>
             </DropdownMenuTrigger>

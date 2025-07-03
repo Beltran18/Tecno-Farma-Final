@@ -42,7 +42,7 @@ Este documento realiza un seguimiento del progreso de la implementación de los 
 | **RF029** | El sistema debe permitir al administrador asociar productos a sus respectivos proveedores. | ✅ **Completado** | El formulario de productos ahora usa un menú desplegable para asociar proveedores existentes. |
 | **RF030** | El sistema debe permitir al administrador generar reportes de compras a proveedores, incluyendo cantidades, fechas y costos. | ✅ **Completado** | La página de Pedidos ahora muestra tarjetas de resumen con costos totales y una columna de costo por pedido en la tabla. |
 | **RF031** | El sistema debe permitir al administrador registrar y gestionar las devoluciones de productos a proveedores. | ✅ **Completado** | Implementada la creación y listado de devoluciones. La devolución descuenta el stock del producto. |
-| **RF032** | El sistema debe permitir al administrador dar soporte a la configuración de múltiples empleados con diferentes niveles de acceso y permisos. | 🟡 **En Proceso** | Creada la gestión (CRUD) de empleados con roles. La aplicación de permisos por rol está pendiente. |
+| **RF032** | El sistema debe permitir al administrador dar soporte a la configuración de múltiples empleados con diferentes niveles de acceso y permisos. | 🟡 **En Proceso** | Creada la gestión (CRUD) de empleados con roles. La UI ahora restringe el acceso a menús de gestión solo para administradores. La protección de rutas en el backend está pendiente de la implementación de autenticación. |
 | **RF033** | El sistema debe permitir al administrador dar autenticación de usuario para acceder a cualquier funcionalidad de gestión de inventario. | ❌ **Pendiente** | |
 | **RF034** | El sistema debe registrar y mostrar el historial de cambios de cada producto en el inventario. | ✅ **Completado** | Implementado como parte del historial de transacciones (RF027). |
 | **RF035** | El sistema debe permitir al administrador gestionar categorías de productos para una organización eficiente del inventario. | ✅ **Completado** | Implementada página de gestión de categorías (crear/eliminar). |
@@ -62,5 +62,6 @@ Este documento realiza un seguimiento del progreso de la implementación de los 
 | **RF049** | El sistema debe mostrar a los usuarios mensajes de error amigables en caso de credenciales inválidas u otros errores de autenticación. | ❌ **Pendiente** | |
 | **RF050** | El sistema deberá permitir al administrador crear la cuenta administrador. | ✅ **Completado** | El rol de Administrador puede ser asignado desde la gestión de empleados. |
 | **RF051** | El sistema deberá permitir al administrador crear cuentas de empleados. | ✅ **Completado** | Implementada la página de gestión de empleados con funcionalidad CRUD completa. |
+
 
 
