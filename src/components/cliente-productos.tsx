@@ -251,7 +251,7 @@ export function ClienteProductos({ productosIniciales, categoriasIniciales, prov
         return;
     }
 
-    const headers = ['nombre', 'categoria', 'costo', 'precio', 'cantidad', 'fechaVencimiento', 'numeroLote', 'proveedorNombre'];
+    const headers = ['nombre', 'categoria', 'costo', 'precio', 'descuento', 'cantidad', 'fechaVencimiento', 'numeroLote', 'proveedorNombre'];
     const csvRows = [
       headers.join(','),
       ...productos.map(p => [
@@ -259,6 +259,7 @@ export function ClienteProductos({ productosIniciales, categoriasIniciales, prov
         `"${p.categoria.replace(/"/g, '""')}"`,
         p.costo,
         p.precio,
+        p.descuento || 0,
         p.cantidad,
         format(new Date(p.fechaVencimiento), 'yyyy-MM-dd'),
         `"${p.numeroLote.replace(/"/g, '""')}"`,
@@ -391,18 +392,29 @@ export function ClienteProductos({ productosIniciales, categoriasIniciales, prov
               <TableBody>
                 {productosFiltrados.map((producto) => (
                   <TableRow key={producto.id}>
-                    <TableCell className="font-medium">{producto.nombre}</TableCell>
+                    <TableCell className="font-medium">
+                      {producto.nombre}
+                      {producto.descuento && producto.descuento > 0 && (
+                        <Badge variant="destructive" className="ml-2">-{producto.descuento}%</Badge>
+                      )}
+                    </TableCell>
                     <TableCell>
                       <Badge variant="outline">{producto.categoria}</Badge>
                     </TableCell>
                     <TableCell>{producto.proveedorNombre || 'N/A'}</TableCell>
                     <TableCell className="text-right">
-                      {new Intl.NumberFormat('es-CO', {
-                        style: 'currency',
-                        currency: 'COP',
-                        minimumFractionDigits: 0,
-                        maximumFractionDigits: 0,
-                      }).format(producto.precio)}
+                      {producto.descuento && producto.descuento > 0 ? (
+                        <div>
+                          <span className="font-bold">
+                            {new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', minimumFractionDigits: 0 }).format(producto.precio * (1 - producto.descuento / 100))}
+                          </span>
+                          <del className="text-xs text-muted-foreground ml-1">
+                            {new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', minimumFractionDigits: 0 }).format(producto.precio)}
+                          </del>
+                        </div>
+                      ) : (
+                        new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', minimumFractionDigits: 0 }).format(producto.precio)
+                      )}
                     </TableCell>
                     <TableCell className="text-right">{producto.cantidad}</TableCell>
                     <TableCell>
@@ -464,7 +476,7 @@ export function ClienteProductos({ productosIniciales, categoriasIniciales, prov
           <DialogHeader>
             <DialogTitle>Importar Productos desde CSV</DialogTitle>
             <DialogDescription>
-              El archivo debe tener las columnas: nombre, categoria, costo, precio, cantidad, fechaVencimiento (en formato AAAA-MM-DD), numeroLote, proveedorNombre (opcional).
+              El archivo debe tener las columnas: nombre, categoria, costo, precio, descuento, cantidad, fechaVencimiento (AAAA-MM-DD), numeroLote, proveedorNombre (opcional).
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4 py-4">
@@ -534,6 +546,7 @@ function FormularioProducto({
   const [proveedorId, setProveedorId] = useState('');
   const [costo, setCosto] = useState(0);
   const [precio, setPrecio] = useState(0);
+  const [descuento, setDescuento] = useState(0);
   const [cantidad, setCantidad] = useState(0);
   const [fechaVencimiento, setFechaVencimiento] = useState<Date | undefined>(new Date());
   const [numeroLote, setNumeroLote] = useState('');
@@ -544,6 +557,7 @@ function FormularioProducto({
       setCategoria(producto.categoria);
       setCosto(producto.costo);
       setPrecio(producto.precio);
+      setDescuento(producto.descuento || 0);
       setCantidad(producto.cantidad);
       setFechaVencimiento(new Date(producto.fechaVencimiento));
       setNumeroLote(producto.numeroLote);
@@ -553,6 +567,7 @@ function FormularioProducto({
       setCategoria(categorias.length > 0 ? categorias[0].nombre : '');
       setCosto(0);
       setPrecio(0);
+      setDescuento(0);
       setCantidad(0);
       setFechaVencimiento(new Date());
       setNumeroLote('');
@@ -571,6 +586,7 @@ function FormularioProducto({
         categoria, 
         costo,
         precio, 
+        descuento,
         cantidad, 
         fechaVencimiento, 
         numeroLote,
@@ -615,14 +631,18 @@ function FormularioProducto({
                 </select>
             </div>
         </div>
-         <div className="grid grid-cols-2 gap-4">
+         <div className="grid grid-cols-3 gap-4">
             <div className="space-y-2">
                 <label htmlFor="costo">Costo</label>
                 <Input id="costo" type="number" value={costo} onChange={e => setCosto(parseFloat(e.target.value) || 0)} required min="0" step="any" />
             </div>
             <div className="space-y-2">
-                <label htmlFor="price">Precio de Venta</label>
+                <label htmlFor="price">Precio</label>
                 <Input id="price" type="number" value={precio} onChange={e => setPrecio(parseFloat(e.target.value) || 0)} required min="0" step="any" />
+            </div>
+            <div className="space-y-2">
+                <label htmlFor="descuento">Desc. (%)</label>
+                <Input id="descuento" type="number" value={descuento} onChange={e => setDescuento(parseFloat(e.target.value) || 0)} min="0" max="100" />
             </div>
         </div>
         <div className="grid grid-cols-2 gap-4">

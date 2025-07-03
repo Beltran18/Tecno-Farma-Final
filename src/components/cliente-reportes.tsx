@@ -40,7 +40,10 @@ export function ClienteReportes({ productos }: ClienteReportesProps) {
   }, []);
 
   const { totalValorInventario, totalUnidades } = useMemo(() => {
-    const valor = productos.reduce((acc, p) => acc + p.precio * p.cantidad, 0);
+    const valor = productos.reduce((acc, p) => {
+        const precioFinal = p.descuento ? p.precio * (1 - p.descuento / 100) : p.precio;
+        return acc + precioFinal * p.cantidad;
+    }, 0);
     const unidades = productos.reduce((acc, p) => acc + p.cantidad, 0);
     return { totalValorInventario: valor, totalUnidades: unidades };
   }, [productos]);
@@ -140,35 +143,40 @@ export function ClienteReportes({ productos }: ClienteReportesProps) {
                   <TableHead>Lote</TableHead>
                   <TableHead>Vencimiento</TableHead>
                   <TableHead className="text-right">Cantidad</TableHead>
-                  <TableHead className="text-right">Precio Unit.</TableHead>
+                  <TableHead className="text-right">Desc. (%)</TableHead>
+                  <TableHead className="text-right">Precio Final</TableHead>
                   <TableHead className="text-right">Valor Total</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {productos.length > 0 ? productos.map((producto) => (
-                  <TableRow key={producto.id}>
-                    <TableCell className="font-medium">{producto.nombre}</TableCell>
-                    <TableCell>
-                      <Badge variant="outline">{producto.categoria}</Badge>
-                    </TableCell>
-                    <TableCell>{producto.proveedorNombre || 'N/A'}</TableCell>
-                    <TableCell>{producto.numeroLote}</TableCell>
-                    <TableCell>
-                       <span className={isBefore(new Date(producto.fechaVencimiento), new Date()) ? 'text-destructive font-semibold' : ''}>
-                         {format(new Date(producto.fechaVencimiento), 'dd/MM/yyyy')}
-                       </span>
-                    </TableCell>
-                    <TableCell className="text-right">{producto.cantidad}</TableCell>
-                    <TableCell className="text-right">
-                      {new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', minimumFractionDigits: 0 }).format(producto.precio)}
-                    </TableCell>
-                    <TableCell className="text-right">
-                      {new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', minimumFractionDigits: 0 }).format(producto.precio * producto.cantidad)}
-                    </TableCell>
-                  </TableRow>
-                )) : (
+                {productos.length > 0 ? productos.map((producto) => {
+                  const precioFinal = producto.descuento ? producto.precio * (1 - producto.descuento / 100) : producto.precio;
+                  return (
+                    <TableRow key={producto.id}>
+                      <TableCell className="font-medium">{producto.nombre}</TableCell>
+                      <TableCell>
+                        <Badge variant="outline">{producto.categoria}</Badge>
+                      </TableCell>
+                      <TableCell>{producto.proveedorNombre || 'N/A'}</TableCell>
+                      <TableCell>{producto.numeroLote}</TableCell>
+                      <TableCell>
+                        <span className={isBefore(new Date(producto.fechaVencimiento), new Date()) ? 'text-destructive font-semibold' : ''}>
+                          {format(new Date(producto.fechaVencimiento), 'dd/MM/yyyy')}
+                        </span>
+                      </TableCell>
+                      <TableCell className="text-right">{producto.cantidad}</TableCell>
+                      <TableCell className="text-right">{producto.descuento ? `${producto.descuento}%` : 'N/A'}</TableCell>
+                      <TableCell className="text-right">
+                        {new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', minimumFractionDigits: 0 }).format(precioFinal)}
+                      </TableCell>
+                      <TableCell className="text-right">
+                        {new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', minimumFractionDigits: 0 }).format(precioFinal * producto.cantidad)}
+                      </TableCell>
+                    </TableRow>
+                  );
+                }) : (
                   <TableRow>
-                    <TableCell colSpan={8} className="h-24 text-center">
+                    <TableCell colSpan={9} className="h-24 text-center">
                       No hay productos en el inventario.
                     </TableCell>
                   </TableRow>

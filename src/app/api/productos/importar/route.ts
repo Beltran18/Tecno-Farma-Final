@@ -49,9 +49,10 @@ export async function POST(request: NextRequest) {
         numeroLote: record.numeroLote,
         proveedorId: proveedorId,
         proveedorNombre: proveedorNombre,
+        descuento: record.descuento ? parseFloat(record.descuento) : 0,
       };
 
-      if (isNaN(nuevoProductoData.costo) || isNaN(nuevoProductoData.precio) || isNaN(nuevoProductoData.cantidad) || isNaN(nuevoProductoData.fechaVencimiento.getTime())) {
+      if (isNaN(nuevoProductoData.costo) || isNaN(nuevoProductoData.precio) || isNaN(nuevoProductoData.cantidad) || isNaN(nuevoProductoData.fechaVencimiento.getTime()) || (nuevoProductoData.descuento && isNaN(nuevoProductoData.descuento))) {
           console.warn('Registro CSV omitido por datos inválidos:', record);
           continue;
       }

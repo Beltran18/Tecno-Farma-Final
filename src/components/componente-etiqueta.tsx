@@ -7,21 +7,31 @@ import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 
 export function ComponenteEtiqueta({ producto }: { producto: Producto }) {
+    const precioFinal = producto.descuento ? producto.precio * (1 - producto.descuento / 100) : producto.precio;
+
     return (
         <div className="flex flex-col items-center justify-center py-12">
             <div id="etiqueta-imprimible" className="p-6 bg-white rounded-lg shadow-lg border w-96 printable-card">
                 <h2 className="text-2xl font-bold text-center mb-4">{producto.nombre}</h2>
-                <div className="flex justify-between items-baseline mb-4">
-                    <span className="text-lg font-semibold">Precio:</span>
+                <div className="flex justify-between items-baseline mb-2">
+                    <span className="text-lg font-semibold">{producto.descuento && producto.descuento > 0 ? "Precio Oferta:" : "Precio:"}</span>
                     <span className="text-2xl font-bold text-primary">
                         {new Intl.NumberFormat('es-CO', {
                             style: 'currency',
                             currency: 'COP',
                             minimumFractionDigits: 0,
                             maximumFractionDigits: 0,
-                        }).format(producto.precio)}
+                        }).format(precioFinal)}
                     </span>
                 </div>
+                {producto.descuento && producto.descuento > 0 && (
+                     <div className="text-right -mt-2 mb-4">
+                        <span className="text-sm text-muted-foreground">Antes: </span>
+                        <del className="text-sm text-muted-foreground">
+                            {new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', minimumFractionDigits: 0 }).format(producto.precio)}
+                        </del>
+                    </div>
+                )}
                 <div className="text-sm space-y-2 mb-6">
                     <p><span className="font-semibold">Vence:</span> {format(new Date(producto.fechaVencimiento), 'dd/MM/yyyy', { locale: es })}</p>
                     <p><span className="font-semibold">Lote:</span> {producto.numeroLote}</p>

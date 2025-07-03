@@ -9,6 +9,7 @@ export interface Producto {
   numeroLote: string;
   proveedorId?: string;
   proveedorNombre?: string;
+  descuento?: number;
 }
 
 export interface Categoria {
