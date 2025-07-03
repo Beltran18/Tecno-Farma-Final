@@ -5,27 +5,24 @@
 -- ##                        SEMESTRE 2024-1                            ##
 -- #####################################################################
 
--- Base de datos: `tecnofarmadb`
--- Este script se encarga de eliminar la base de datos si ya existe,
--- crearla de nuevo, y configurar todas las tablas necesarias.
--- Se puede ejecutar de forma segura varias veces.
+-- IMPORTANTE:
+-- 1. Asegúrate de haber creado una base de datos (ej. `tecnofarmadb`) y de haberla seleccionado.
+-- 2. Si la base de datos ya tiene tablas, es recomendable eliminarlas primero para una instalación limpia.
+-- 3. Ve a la pestaña "SQL" y pega todo el contenido de este archivo para crear las tablas correctamente.
 
-DROP DATABASE IF EXISTS `tecnofarmadb`;
-CREATE DATABASE `tecnofarmadb` CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
-USE `tecnofarmadb`;
 
 --
--- Estructura de tabla para la tabla `categorias`
+-- Estructura de la tabla `categorias`
 --
 CREATE TABLE `categorias` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
-  `nombre` varchar(100) NOT NULL,
+  `nombre` varchar(255) NOT NULL,
   PRIMARY KEY (`id`),
-  UNIQUE KEY `nombre_unico` (`nombre`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+  UNIQUE KEY `nombre` (`nombre`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
--- Estructura de tabla para la tabla `proveedores`
+-- Estructura de la tabla `proveedores`
 --
 CREATE TABLE `proveedores` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
@@ -33,17 +30,30 @@ CREATE TABLE `proveedores` (
   `contacto` varchar(255) DEFAULT NULL,
   `telefono` varchar(50) DEFAULT NULL,
   PRIMARY KEY (`id`),
-  UNIQUE KEY `nombre_unico` (`nombre`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+  UNIQUE KEY `nombre` (`nombre`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
--- Estructura de tabla para la tabla `productos`
+-- Estructura de la tabla `empleados`
+--
+CREATE TABLE `empleados` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `nombre` varchar(255) NOT NULL,
+  `email` varchar(255) NOT NULL,
+  `rol` enum('Administrador','Empleado') NOT NULL,
+  `password` varchar(255) NOT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `email` (`email`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Estructura de la tabla `productos`
 --
 CREATE TABLE `productos` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `nombre` varchar(255) NOT NULL,
-  `categoria` varchar(100) NOT NULL,
-  `costo` decimal(10,2) NOT NULL DEFAULT 0.00,
+  `categoria` varchar(255) NOT NULL,
+  `costo` decimal(10,2) DEFAULT 0.00,
   `precio` decimal(10,2) NOT NULL,
   `cantidad` int(11) NOT NULL DEFAULT 0,
   `fechaVencimiento` date NOT NULL,
@@ -56,10 +66,10 @@ CREATE TABLE `productos` (
   PRIMARY KEY (`id`),
   KEY `proveedorId` (`proveedorId`),
   CONSTRAINT `productos_ibfk_1` FOREIGN KEY (`proveedorId`) REFERENCES `proveedores` (`id`) ON DELETE SET NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
--- Estructura de tabla para la tabla `movimientos_inventario`
+-- Estructura de la tabla `movimientos_inventario`
 --
 CREATE TABLE `movimientos_inventario` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
@@ -67,31 +77,18 @@ CREATE TABLE `movimientos_inventario` (
   `productoNombre` varchar(255) NOT NULL,
   `numeroLote` varchar(100) NOT NULL,
   `fecha` timestamp NOT NULL DEFAULT current_timestamp(),
-  `tipo` enum('Creación Inicial','Salida Manual','Ajuste Positivo','Ajuste Negativo','Importación CSV','Dispensado por Receta','Entrada por Pedido','Devolución a Proveedor','Venta de Kit') NOT NULL,
+  `tipo` varchar(50) NOT NULL,
   `cantidadMovida` int(11) NOT NULL,
   `stockAnterior` int(11) NOT NULL,
   `stockNuevo` int(11) NOT NULL,
   `notas` text DEFAULT NULL,
   PRIMARY KEY (`id`),
-  KEY `productoId` (`productoId`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
-
---
--- Estructura de tabla para la tabla `empleados`
---
-CREATE TABLE `empleados` (
-  `id` int(11) NOT NULL AUTO_INCREMENT,
-  `nombre` varchar(255) NOT NULL,
-  `email` varchar(255) NOT NULL,
-  `rol` enum('Administrador','Empleado') NOT NULL,
-  `password` varchar(255) NOT NULL,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `email_unico` (`email`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+  KEY `productoId` (`productoId`),
+  CONSTRAINT `movimientos_inventario_ibfk_1` FOREIGN KEY (`productoId`) REFERENCES `productos` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
--- Estructura de tabla para la tabla `recetas`
+-- Estructura de la tabla `recetas`
 --
 CREATE TABLE `recetas` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
@@ -99,13 +96,12 @@ CREATE TABLE `recetas` (
   `doctorNombre` varchar(255) NOT NULL,
   `fechaPrescripcion` date NOT NULL,
   `medicamentos` json NOT NULL,
-  `estado` enum('Pendiente','Dispensada','Cancelada') NOT NULL,
+  `estado` enum('Pendiente','Dispensada','Cancelada') NOT NULL DEFAULT 'Pendiente',
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
--- Estructura de tabla para la tabla `pedidos`
+-- Estructura de la tabla `pedidos`
 --
 CREATE TABLE `pedidos` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
@@ -114,14 +110,14 @@ CREATE TABLE `pedidos` (
   `proveedorId` int(11) NOT NULL,
   `proveedorNombre` varchar(255) NOT NULL,
   `productos` json NOT NULL,
-  `estado` enum('Pendiente','Enviado','Completado','Cancelado') NOT NULL,
+  `estado` enum('Pendiente','Enviado','Completado','Cancelado') NOT NULL DEFAULT 'Pendiente',
   PRIMARY KEY (`id`),
   KEY `proveedorId` (`proveedorId`),
   CONSTRAINT `pedidos_ibfk_1` FOREIGN KEY (`proveedorId`) REFERENCES `proveedores` (`id`) ON DELETE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
--- Estructura de tabla para la tabla `devoluciones`
+-- Estructura de la tabla `devoluciones`
 --
 CREATE TABLE `devoluciones` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
@@ -137,10 +133,10 @@ CREATE TABLE `devoluciones` (
   KEY `proveedorId` (`proveedorId`),
   CONSTRAINT `devoluciones_ibfk_1` FOREIGN KEY (`productoId`) REFERENCES `productos` (`id`) ON DELETE CASCADE,
   CONSTRAINT `devoluciones_ibfk_2` FOREIGN KEY (`proveedorId`) REFERENCES `proveedores` (`id`) ON DELETE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
--- Estructura de tabla para la tabla `kits`
+-- Estructura de la tabla `kits`
 --
 CREATE TABLE `kits` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
@@ -148,9 +144,8 @@ CREATE TABLE `kits` (
   `precio` decimal(10,2) NOT NULL,
   `componentes` json NOT NULL,
   PRIMARY KEY (`id`),
-  UNIQUE KEY `nombre_unico` (`nombre`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
+  UNIQUE KEY `nombre` (`nombre`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
 -- DATOS INICIALES
@@ -164,6 +159,7 @@ INSERT INTO `empleados` (`id`, `nombre`, `email`, `rol`, `password`) VALUES
 (2, 'Usuario de Prueba', 'usuario@ejemplo.com', 'Empleado', '$2a$10$wT3A4h5b5i9.i.3D6J8n/e.Z2t8Y7w5f.u1i4O3p9v.b9S/g4I0Ea');
 
 --
--- AUTO_INCREMENT de las tablas
+-- Establece el siguiente ID autoincremental para empleados en 3,
+-- para que los nuevos registros no choquen con los iniciales.
 --
 ALTER TABLE `empleados` AUTO_INCREMENT = 3;
