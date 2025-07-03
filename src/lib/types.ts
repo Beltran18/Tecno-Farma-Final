@@ -2,6 +2,7 @@ export interface Producto {
   id: string;
   nombre: string;
   categoria: string;
+  costo: number;
   precio: number;
   cantidad: number;
   fechaVencimiento: Date;

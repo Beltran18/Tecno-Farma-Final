@@ -16,7 +16,7 @@ export async function POST(request: NextRequest) {
   try {
     const nuevoProductoData = await request.json();
 
-    if (!nuevoProductoData.nombre || !nuevoProductoData.categoria || nuevoProductoData.precio === undefined || nuevoProductoData.cantidad === undefined || !nuevoProductoData.fechaVencimiento || !nuevoProductoData.numeroLote) {
+    if (!nuevoProductoData.nombre || !nuevoProductoData.categoria || nuevoProductoData.costo === undefined || nuevoProductoData.precio === undefined || nuevoProductoData.cantidad === undefined || !nuevoProductoData.fechaVencimiento || !nuevoProductoData.numeroLote) {
        return new NextResponse(JSON.stringify({ message: 'Faltan campos requeridos' }), { status: 400, headers: { 'Content-Type': 'application/json' } });
     }
 

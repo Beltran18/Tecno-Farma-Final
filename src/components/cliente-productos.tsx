@@ -251,12 +251,13 @@ export function ClienteProductos({ productosIniciales, categoriasIniciales, prov
         return;
     }
 
-    const headers = ['nombre', 'categoria', 'precio', 'cantidad', 'fechaVencimiento', 'numeroLote', 'proveedorNombre'];
+    const headers = ['nombre', 'categoria', 'costo', 'precio', 'cantidad', 'fechaVencimiento', 'numeroLote', 'proveedorNombre'];
     const csvRows = [
       headers.join(','),
       ...productos.map(p => [
         `"${p.nombre.replace(/"/g, '""')}"`,
         `"${p.categoria.replace(/"/g, '""')}"`,
+        p.costo,
         p.precio,
         p.cantidad,
         format(new Date(p.fechaVencimiento), 'yyyy-MM-dd'),
@@ -463,7 +464,7 @@ export function ClienteProductos({ productosIniciales, categoriasIniciales, prov
           <DialogHeader>
             <DialogTitle>Importar Productos desde CSV</DialogTitle>
             <DialogDescription>
-              El archivo debe tener las columnas: nombre, categoria, precio, cantidad, fechaVencimiento (en formato AAAA-MM-DD), numeroLote, proveedorNombre (opcional).
+              El archivo debe tener las columnas: nombre, categoria, costo, precio, cantidad, fechaVencimiento (en formato AAAA-MM-DD), numeroLote, proveedorNombre (opcional).
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4 py-4">
@@ -531,6 +532,7 @@ function FormularioProducto({
   const [nombre, setNombre] = useState('');
   const [categoria, setCategoria] = useState('');
   const [proveedorId, setProveedorId] = useState('');
+  const [costo, setCosto] = useState(0);
   const [precio, setPrecio] = useState(0);
   const [cantidad, setCantidad] = useState(0);
   const [fechaVencimiento, setFechaVencimiento] = useState<Date | undefined>(new Date());
@@ -540,6 +542,7 @@ function FormularioProducto({
     if (producto) {
       setNombre(producto.nombre);
       setCategoria(producto.categoria);
+      setCosto(producto.costo);
       setPrecio(producto.precio);
       setCantidad(producto.cantidad);
       setFechaVencimiento(new Date(producto.fechaVencimiento));
@@ -548,6 +551,7 @@ function FormularioProducto({
     } else {
       setNombre('');
       setCategoria(categorias.length > 0 ? categorias[0].nombre : '');
+      setCosto(0);
       setPrecio(0);
       setCantidad(0);
       setFechaVencimiento(new Date());
@@ -565,6 +569,7 @@ function FormularioProducto({
     const datosProducto = { 
         nombre, 
         categoria, 
+        costo,
         precio, 
         cantidad, 
         fechaVencimiento, 
@@ -612,33 +617,37 @@ function FormularioProducto({
         </div>
          <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-                <label htmlFor="price">Precio</label>
-                <Input id="price" type="number" value={precio} onChange={e => setPrecio(parseFloat(e.target.value) || 0)} required min="0" />
+                <label htmlFor="costo">Costo</label>
+                <Input id="costo" type="number" value={costo} onChange={e => setCosto(parseFloat(e.target.value) || 0)} required min="0" step="any" />
             </div>
             <div className="space-y-2">
-                <label htmlFor="quantity">Cantidad</label>
-                <Input id="quantity" type="number" value={cantidad} onChange={e => setCantidad(parseInt(e.target.value, 10) || 0)} required min="0"/>
+                <label htmlFor="price">Precio de Venta</label>
+                <Input id="price" type="number" value={precio} onChange={e => setPrecio(parseFloat(e.target.value) || 0)} required min="0" step="any" />
             </div>
         </div>
         <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-                <label>Fecha de Vencimiento</label>
-                <Popover>
-                    <PopoverTrigger asChild>
-                        <Button variant={"outline"} className="w-full justify-start text-left font-normal">
-                            <CalendarIcon className="mr-2 h-4 w-4" />
-                            {fechaVencimiento ? format(fechaVencimiento, "PPP", { locale: es }) : <span>Elige una fecha</span>}
-                        </Button>
-                    </PopoverTrigger>
-                    <PopoverContent className="w-auto p-0">
-                        <Calendar mode="single" selected={fechaVencimiento} onSelect={setFechaVencimiento} initialFocus />
-                    </PopoverContent>
-                </Popover>
+                <label htmlFor="quantity">Cantidad</label>
+                <Input id="quantity" type="number" value={cantidad} onChange={e => setCantidad(parseInt(e.target.value, 10) || 0)} required min="0"/>
             </div>
             <div className="space-y-2">
                 <label htmlFor="lotNumber">Número de Lote</label>
                 <Input id="lotNumber" value={numeroLote} onChange={e => setNumeroLote(e.target.value)} required />
             </div>
+        </div>
+        <div className="space-y-2">
+            <label>Fecha de Vencimiento</label>
+            <Popover>
+                <PopoverTrigger asChild>
+                    <Button variant={"outline"} className="w-full justify-start text-left font-normal">
+                        <CalendarIcon className="mr-2 h-4 w-4" />
+                        {fechaVencimiento ? format(fechaVencimiento, "PPP", { locale: es }) : <span>Elige una fecha</span>}
+                    </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0">
+                    <Calendar mode="single" selected={fechaVencimiento} onSelect={setFechaVencimiento} initialFocus />
+                </PopoverContent>
+            </Popover>
         </div>
       </div>
       <DialogFooter>

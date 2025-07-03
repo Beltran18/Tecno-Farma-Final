@@ -31,7 +31,7 @@ export async function POST(request: NextRequest) {
     const productosImportados: Producto[] = [];
 
     for (const record of records) {
-      if (!record.nombre || !record.categoria || !record.precio || !record.cantidad || !record.fechaVencimiento || !record.numeroLote) {
+      if (!record.nombre || !record.categoria || !record.costo || !record.precio || !record.cantidad || !record.fechaVencimiento || !record.numeroLote) {
         console.warn('Registro CSV omitido por falta de datos:', record);
         continue;
       }
@@ -42,6 +42,7 @@ export async function POST(request: NextRequest) {
       const nuevoProductoData: Omit<Producto, 'id'> = {
         nombre: record.nombre,
         categoria: record.categoria,
+        costo: parseFloat(record.costo),
         precio: parseFloat(record.precio),
         cantidad: parseInt(record.cantidad, 10),
         fechaVencimiento: new Date(record.fechaVencimiento),
@@ -50,7 +51,7 @@ export async function POST(request: NextRequest) {
         proveedorNombre: proveedorNombre,
       };
 
-      if (isNaN(nuevoProductoData.precio) || isNaN(nuevoProductoData.cantidad) || isNaN(nuevoProductoData.fechaVencimiento.getTime())) {
+      if (isNaN(nuevoProductoData.costo) || isNaN(nuevoProductoData.precio) || isNaN(nuevoProductoData.cantidad) || isNaN(nuevoProductoData.fechaVencimiento.getTime())) {
           console.warn('Registro CSV omitido por datos inválidos:', record);
           continue;
       }
