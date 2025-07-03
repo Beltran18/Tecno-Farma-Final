@@ -1,7 +1,7 @@
 
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useSearchParams } from 'next/navigation';
 import {
   Card,
@@ -46,7 +46,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
-import { PlusCircle, Trash2, MoreHorizontal, CheckCircle, XCircle } from 'lucide-react';
+import { PlusCircle, Trash2, MoreHorizontal, CheckCircle, XCircle, DollarSign, ClipboardList, Hourglass } from 'lucide-react';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { type PedidoReposicion, type Producto, type Proveedor, EstadoPedido } from '@/lib/types';
@@ -78,6 +78,24 @@ export function ClientePedidos({ pedidosIniciales, productosInventario, proveedo
       setFormularioAbierto(true);
     }
   }, [searchParams]);
+
+  const pedidosConCosto = useMemo(() => {
+    const productosMap = new Map(productosInventario.map(p => [p.id, p.precio]));
+    return pedidos.map(pedido => {
+        const totalCosto = pedido.productos.reduce((acc, item) => {
+            const precio = productosMap.get(item.productoId) || 0;
+            return acc + (precio * item.cantidadPedida);
+        }, 0);
+        return { ...pedido, totalCosto };
+    });
+  }, [pedidos, productosInventario]);
+
+  const resumen = useMemo(() => {
+    const costoTotal = pedidosConCosto.reduce((acc, pedido) => acc + pedido.totalCosto, 0);
+    const pedidosPendientes = pedidos.filter(p => p.estado === EstadoPedido.PENDIENTE).length;
+    return { costoTotal, pedidosPendientes };
+  }, [pedidosConCosto, pedidos]);
+
 
   const handleCrearPedido = async (pedidoData: Omit<PedidoReposicion, 'id' | 'estado' | 'fechaPedido'>) => {
     try {
@@ -169,11 +187,46 @@ export function ClientePedidos({ pedidosIniciales, productosInventario, proveedo
 
   return (
     <>
+      <div className="grid gap-4 md:grid-cols-3 mb-6">
+          <Card>
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <CardTitle className="text-sm font-medium">Pedidos Totales</CardTitle>
+                  <ClipboardList className="h-4 w-4 text-muted-foreground" />
+              </CardHeader>
+              <CardContent>
+                  <div className="text-2xl font-bold">{pedidos.length}</div>
+              </CardContent>
+          </Card>
+          <Card>
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <CardTitle className="text-sm font-medium">Costo Total de Pedidos</CardTitle>
+                  <DollarSign className="h-4 w-4 text-muted-foreground" />
+              </CardHeader>
+              <CardContent>
+                  <div className="text-2xl font-bold">
+                      {isClient ? new Intl.NumberFormat('es-CO', {
+                      style: 'currency',
+                      currency: 'COP',
+                      minimumFractionDigits: 0,
+                    }).format(resumen.costoTotal) : '$...'}
+                  </div>
+              </CardContent>
+          </Card>
+          <Card>
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <CardTitle className="text-sm font-medium">Pedidos Pendientes</CardTitle>
+                  <Hourglass className="h-4 w-4 text-muted-foreground" />
+              </CardHeader>
+              <CardContent>
+                  <div className="text-2xl font-bold">{resumen.pedidosPendientes}</div>
+              </CardContent>
+          </Card>
+      </div>
       <Card>
         <CardHeader>
           <div className="flex justify-between items-center">
             <div>
-              <CardTitle>Pedidos de Reposición</CardTitle>
+              <CardTitle>Historial de Pedidos</CardTitle>
               <CardDescription>
                 Gestiona los pedidos a tus proveedores.
               </CardDescription>
@@ -193,18 +246,22 @@ export function ClientePedidos({ pedidosIniciales, productosInventario, proveedo
                   <TableHead>Proveedor</TableHead>
                   <TableHead>Fecha</TableHead>
                   <TableHead>Productos</TableHead>
+                  <TableHead className="text-right">Costo Total</TableHead>
                   <TableHead>Estado</TableHead>
                   <TableHead><span className="sr-only">Acciones</span></TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {pedidos.length > 0 ? (
-                  pedidos.map((pedido) => (
+                {pedidosConCosto.length > 0 ? (
+                  pedidosConCosto.map((pedido) => (
                     <TableRow key={pedido.id}>
                       <TableCell className="font-mono text-xs">{pedido.id}</TableCell>
                       <TableCell className="font-medium">{pedido.proveedorNombre}</TableCell>
                       <TableCell>{isClient ? format(new Date(pedido.fechaPedido), 'dd/MM/yyyy') : ''}</TableCell>
                       <TableCell>{pedido.productos.length}</TableCell>
+                      <TableCell className="text-right font-medium">
+                          {isClient ? new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', minimumFractionDigits: 0 }).format(pedido.totalCosto) : '$...'}
+                      </TableCell>
                       <TableCell>
                         <Badge variant={
                             pedido.estado === EstadoPedido.PENDIENTE ? 'secondary' : 
@@ -244,7 +301,7 @@ export function ClientePedidos({ pedidosIniciales, productosInventario, proveedo
                   ))
                 ) : (
                   <TableRow>
-                    <TableCell colSpan={6} className="text-center h-24">
+                    <TableCell colSpan={7} className="text-center h-24">
                       No hay pedidos registrados.
                     </TableCell>
                   </TableRow>
