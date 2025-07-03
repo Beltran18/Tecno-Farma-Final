@@ -2,15 +2,28 @@ import { type PedidoReposicion, EstadoPedido, TipoMovimiento } from '@/lib/types
 import { registerProductEntry } from './product-service';
 import { getAllProveedores } from './proveedor-service';
 import { getAllProducts } from './product-service';
+import db from '@/lib/db';
 
-const globalForDb = globalThis as unknown as { pedidos: PedidoReposicion[] };
-if (!globalForDb.pedidos) {
-  globalForDb.pedidos = [];
+function mapToPedido(row: any): PedidoReposicion {
+    return {
+        id: String(row.id),
+        fechaPedido: new Date(row.fechaPedido),
+        fechaEntregaEstimada: row.fechaEntregaEstimada ? new Date(row.fechaEntregaEstimada) : undefined,
+        proveedorId: String(row.proveedorId),
+        proveedorNombre: row.proveedorNombre,
+        productos: JSON.parse(row.productos || '[]'),
+        estado: row.estado,
+    };
 }
-let pedidos: PedidoReposicion[] = globalForDb.pedidos;
 
 export async function getAllPedidos(): Promise<PedidoReposicion[]> {
-  return JSON.parse(JSON.stringify(pedidos));
+  try {
+    const [rows] = await db.query('SELECT * FROM pedidos ORDER BY fechaPedido DESC');
+    return (rows as any[]).map(mapToPedido);
+  } catch (error) {
+    console.error('Error al obtener los pedidos:', error);
+    throw new Error('No se pudieron obtener los pedidos.');
+  }
 }
 
 export async function createPedido(
@@ -30,62 +43,73 @@ export async function createPedido(
 
   const productosMap = new Map(productos.map(p => [p.id, p.nombre]));
 
-  const nuevoPedido: PedidoReposicion = {
-    id: `ped_${Date.now()}`,
-    fechaPedido: new Date(),
-    fechaEntregaEstimada: data.fechaEntregaEstimada ? new Date(data.fechaEntregaEstimada) : undefined,
-    proveedorId: data.proveedorId,
-    proveedorNombre: proveedor.nombre,
-    productos: data.productos.map(p => ({
-        ...p,
-        productoNombre: productosMap.get(p.productoId) || 'Nombre no encontrado',
-    })),
-    estado: EstadoPedido.PENDIENTE,
-  };
+  const productosConNombre = data.productos.map(p => ({
+    ...p,
+    productoNombre: productosMap.get(String(p.productoId)) || 'Nombre no encontrado',
+  }));
 
-  pedidos.unshift(nuevoPedido);
-  return nuevoPedido;
+  const productosJson = JSON.stringify(productosConNombre);
+  const sql = `
+    INSERT INTO pedidos (proveedorId, proveedorNombre, productos, estado, fechaEntregaEstimada) 
+    VALUES (?, ?, ?, ?, ?)
+  `;
+  try {
+    const [result] = await db.query(sql, [
+      data.proveedorId,
+      proveedor.nombre,
+      productosJson,
+      EstadoPedido.PENDIENTE,
+      data.fechaEntregaEstimada ? new Date(data.fechaEntregaEstimada) : null,
+    ]);
+    const insertId = (result as any).insertId;
+    const [newRow] = await db.query('SELECT * FROM pedidos WHERE id = ?', [insertId]);
+    return mapToPedido((newRow as any)[0]);
+  } catch (error) {
+    console.error('Error al crear el pedido:', error);
+    throw new Error('No se pudo crear el pedido.');
+  }
 }
 
 export async function updatePedidoStatus(id: string, estado: EstadoPedido): Promise<PedidoReposicion | null> {
-  const index = pedidos.findIndex(p => p.id === id);
-  if (index === -1) {
+  const [rows] = await db.query('SELECT * FROM pedidos WHERE id = ?', [id]);
+  if ((rows as any[]).length === 0) {
     return null;
   }
+  const pedido = mapToPedido((rows as any)[0]);
 
-  const pedido = pedidos[index];
   if (pedido.estado === estado) return pedido;
 
   if (estado === EstadoPedido.COMPLETADO) {
     if (pedido.estado !== EstadoPedido.ENVIADO) {
         throw new Error("Solo se pueden completar pedidos que ya han sido marcados como 'Enviado'.");
     }
-    // Lógica para añadir stock
+    // Lógica para añadir stock (idealmente en una transacción)
     for (const item of pedido.productos) {
       await registerProductEntry(
         item.productoId,
         item.cantidadPedida,
         TipoMovimiento.ENTRADA_PEDIDO,
-        `Recepción del pedido ${pedido.id}`
+        `Recepción del pedido #${pedido.id}`
       );
     }
   }
-
-  const pedidoActualizado = { ...pedido, estado };
-  pedidos[index] = pedidoActualizado;
-  return pedidoActualizado;
+  
+  try {
+    await db.query('UPDATE pedidos SET estado = ? WHERE id = ?', [estado, id]);
+    const [updatedRows] = await db.query('SELECT * FROM pedidos WHERE id = ?', [id]);
+    return mapToPedido((updatedRows as any)[0]);
+  } catch (error) {
+    console.error(`Error al actualizar estado del pedido ${id}:`, error);
+    throw new Error('No se pudo actualizar el estado del pedido.');
+  }
 }
 
 export async function deletePedido(id: string): Promise<boolean> {
-  const pedidoIndex = pedidos.findIndex(p => p.id === id);
-  if (pedidoIndex === -1) {
-    return false;
+  try {
+    const [result] = await db.query('DELETE FROM pedidos WHERE id = ?', [id]);
+    return (result as any).affectedRows > 0;
+  } catch (error) {
+    console.error('Error al eliminar el pedido:', error);
+    throw new Error('No se pudo eliminar el pedido.');
   }
-  const pedido = pedidos[pedidoIndex];
-  if (pedido.estado === EstadoPedido.PENDIENTE) {
-    // Optionally, prevent deletion of pending orders. For now, we allow it.
-    // throw new Error('No se pueden eliminar pedidos pendientes. Primero debes cancelarlo.');
-  }
-  pedidos.splice(pedidoIndex, 1);
-  return true;
 }

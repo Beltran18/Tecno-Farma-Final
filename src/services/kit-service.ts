@@ -1,53 +1,71 @@
 import { type Kit, type ProductoComponente, TipoMovimiento } from '@/lib/types';
-import { getAllProducts, getProductById, registerProductExit } from './product-service';
+import { getProductById, registerProductExit } from './product-service';
+import db from '@/lib/db';
 
-const globalForDb = globalThis as unknown as { kits: Kit[] };
-if (!globalForDb.kits) {
-  globalForDb.kits = [];
+function mapToKit(row: any): Kit {
+    return {
+        id: String(row.id),
+        nombre: row.nombre,
+        precio: parseFloat(row.precio),
+        componentes: JSON.parse(row.componentes || '[]'),
+    };
 }
-let kits: Kit[] = globalForDb.kits;
 
 export async function getAllKits(): Promise<Kit[]> {
-  return JSON.parse(JSON.stringify(kits));
+  try {
+    const [rows] = await db.query('SELECT * FROM kits ORDER BY nombre ASC');
+    return (rows as any[]).map(mapToKit);
+  } catch (error) {
+    console.error('Error al obtener kits:', error);
+    throw new Error('No se pudieron obtener los kits.');
+  }
 }
 
 export async function createKit(data: Omit<Kit, 'id' | 'componentes'> & { componentes: Omit<ProductoComponente, 'productoNombre'>[] }): Promise<Kit> {
-  const allProducts = await getAllProducts();
-  const productMap = new Map(allProducts.map(p => [p.id, p]));
+  // Enriquecer componentes con el nombre del producto
+  const componentesCompletos: ProductoComponente[] = await Promise.all(
+    data.componentes.map(async (comp) => {
+      const producto = await getProductById(comp.productoId);
+      if (!producto) {
+        throw new Error(`El producto componente con ID ${comp.productoId} no fue encontrado.`);
+      }
+      return { ...comp, productoNombre: producto.nombre };
+    })
+  );
 
-  const componentesCompletos: ProductoComponente[] = data.componentes.map(comp => {
-    const producto = productMap.get(comp.productoId);
-    if (!producto) {
-      throw new Error(`El producto componente con ID ${comp.productoId} no fue encontrado.`);
+  const componentesJson = JSON.stringify(componentesCompletos);
+  const sql = 'INSERT INTO kits (nombre, precio, componentes) VALUES (?, ?, ?)';
+
+  try {
+    const [result] = await db.query(sql, [data.nombre, data.precio, componentesJson]);
+    const insertId = (result as any).insertId;
+    const [newRow] = await db.query('SELECT * FROM kits WHERE id = ?', [insertId]);
+    return mapToKit((newRow as any)[0]);
+  } catch (error: any) {
+    if (error.code === 'ER_DUP_ENTRY') {
+      throw new Error('Ya existe un kit con este nombre.');
     }
-    return { ...comp, productoNombre: producto.nombre };
-  });
-
-  const nuevoKit: Kit = {
-    id: `kit_${Date.now()}`,
-    nombre: data.nombre,
-    precio: data.precio,
-    componentes: componentesCompletos,
-  };
-
-  kits.unshift(nuevoKit);
-  return nuevoKit;
+    console.error('Error al crear el kit:', error);
+    throw new Error('No se pudo crear el kit.');
+  }
 }
 
 export async function deleteKit(id: string): Promise<boolean> {
-  const index = kits.findIndex(k => k.id === id);
-  if (index === -1) {
-    return false;
+  try {
+    const [result] = await db.query('DELETE FROM kits WHERE id = ?', [id]);
+    return (result as any).affectedRows > 0;
+  } catch (error) {
+    console.error('Error al eliminar el kit:', error);
+    throw new Error('No se pudo eliminar el kit.');
   }
-  kits.splice(index, 1);
-  return true;
 }
 
 export async function sellKit(kitId: string, cantidadVendida: number): Promise<void> {
-  const kit = kits.find(k => k.id === kitId);
-  if (!kit) {
+  const [rows] = await db.query('SELECT * FROM kits WHERE id = ?', [kitId]);
+  if ((rows as any[]).length === 0) {
     throw new Error('Kit no encontrado.');
   }
+  const kit = mapToKit((rows as any)[0]);
 
   // 1. Verificar stock de todos los componentes ANTES de descontar
   for (const componente of kit.componentes) {
@@ -59,6 +77,7 @@ export async function sellKit(kitId: string, cantidadVendida: number): Promise<v
   }
 
   // 2. Si hay stock para todo, proceder a descontar
+  // Esto debería estar en una transacción en una app real
   for (const componente of kit.componentes) {
     await registerProductExit(
       componente.productoId,

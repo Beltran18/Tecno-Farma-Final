@@ -1,87 +1,98 @@
 import { type Empleado, RolEmpleado } from '@/lib/types';
 import bcrypt from 'bcryptjs';
+import db from '@/lib/db';
 
-const globalForDb = globalThis as unknown as { empleados: Empleado[] };
-if (!globalForDb.empleados) {
-  globalForDb.empleados = [
-    {
-        id: 'emp_admin',
-        nombre: 'Admin Principal',
-        email: 'admin@tecnofarma.com',
-        rol: RolEmpleado.ADMINISTRADOR,
-        password: bcrypt.hashSync('admin123', 10),
-    },
-    {
-        id: 'emp_test',
-        nombre: 'Usuario de Prueba',
-        email: 'usuario@ejemplo.com',
-        rol: RolEmpleado.EMPLEADO,
-        password: bcrypt.hashSync('empleado123', 10),
+function mapToEmpleado(row: any, includePassword = false): Empleado {
+    const empleado: Empleado = {
+        id: String(row.id),
+        nombre: row.nombre,
+        email: row.email,
+        rol: row.rol,
+    };
+    if (includePassword) {
+        empleado.password = row.password;
     }
-  ];
+    return empleado;
 }
-let empleados: Empleado[] = globalForDb.empleados;
 
 export async function getAllEmployees(): Promise<Omit<Empleado, 'password'>[]> {
-  return JSON.parse(JSON.stringify(empleados)).map((emp: Empleado) => {
-    const { password, ...rest } = emp;
-    return rest;
-  });
+    try {
+        const [rows] = await db.query('SELECT id, nombre, email, rol FROM empleados ORDER BY nombre ASC');
+        return (rows as any[]).map(row => mapToEmpleado(row));
+    } catch (error) {
+        console.error('Error al obtener empleados:', error);
+        throw new Error('No se pudieron obtener los empleados.');
+    }
 }
 
 export async function getEmployeeByEmail(email: string): Promise<Empleado | null> {
-    const empleado = empleados.find(e => e.email.toLowerCase() === email.toLowerCase());
-    return empleado ? { ...empleado } : null;
+    try {
+        const [rows] = await db.query('SELECT * FROM empleados WHERE email = ?', [email]);
+        const empleados = rows as any[];
+        if (empleados.length === 0) {
+            return null;
+        }
+        return mapToEmpleado(empleados[0], true);
+    } catch (error) {
+        console.error('Error al obtener empleado por email:', error);
+        throw new Error('Error al consultar la base de datos.');
+    }
 }
 
 export async function createEmployee(employeeData: Omit<Empleado, 'id'>): Promise<Omit<Empleado, 'password'>> {
     if (!employeeData.password) {
         throw new Error('La contraseña es requerida');
     }
-    if (empleados.some(e => e.email.toLowerCase() === employeeData.email.toLowerCase())) {
-        throw new Error('Ya existe un empleado con este correo electrónico.');
+
+    try {
+        const hashedPassword = await bcrypt.hash(employeeData.password, 10);
+        const sql = 'INSERT INTO empleados (nombre, email, rol, password) VALUES (?, ?, ?, ?)';
+        const [result] = await db.query(sql, [employeeData.nombre, employeeData.email, employeeData.rol, hashedPassword]);
+        const insertId = (result as any).insertId;
+
+        const [newRow] = await db.query('SELECT id, nombre, email, rol FROM empleados WHERE id = ?', [insertId]);
+        return mapToEmpleado((newRow as any)[0]);
+
+    } catch (error: any) {
+        if (error.code === 'ER_DUP_ENTRY') {
+            throw new Error('Ya existe un empleado con este correo electrónico.');
+        }
+        console.error('Error al crear empleado:', error);
+        throw new Error('No se pudo crear el empleado.');
     }
-
-    const hashedPassword = await bcrypt.hash(employeeData.password, 10);
-
-    const nuevoEmpleado: Empleado = {
-        id: `emp_${Date.now()}`,
-        nombre: employeeData.nombre,
-        email: employeeData.email,
-        rol: employeeData.rol,
-        password: hashedPassword,
-    };
-    empleados.push(nuevoEmpleado);
-    
-    const { password, ...rest } = nuevoEmpleado;
-    return rest;
 }
 
 export async function updateEmployee(id: string, employeeData: Partial<Omit<Empleado, 'id' | 'password'>>): Promise<Omit<Empleado, 'password'> | null> {
-  const index = empleados.findIndex(e => e.id === id);
-  if (index === -1) {
-    return null;
-  }
-  
-  if (employeeData.email && empleados.some(e => e.email.toLowerCase() === employeeData.email!.toLowerCase() && e.id !== id)) {
-      throw new Error('El nuevo correo electrónico ya está en uso por otro empleado.');
-  }
-
-  const empleadoActualizado = { ...empleados[index], ...employeeData };
-  empleados[index] = empleadoActualizado;
-  
-  const { password, ...rest } = empleadoActualizado;
-  return rest;
+    try {
+        const [rows] = await db.query('SELECT * FROM empleados WHERE id = ?', [id]);
+        if ((rows as any[]).length === 0) {
+            return null;
+        }
+        
+        await db.query('UPDATE empleados SET ? WHERE id = ?', [employeeData, id]);
+        
+        const [updatedRows] = await db.query('SELECT id, nombre, email, rol FROM empleados WHERE id = ?', [id]);
+        return mapToEmpleado((updatedRows as any)[0]);
+        
+    } catch (error: any) {
+        if (error.code === 'ER_DUP_ENTRY') {
+             throw new Error('El nuevo correo electrónico ya está en uso por otro empleado.');
+        }
+        console.error('Error al actualizar empleado:', error);
+        throw new Error('No se pudo actualizar el empleado.');
+    }
 }
 
 export async function deleteEmployee(id: string): Promise<boolean> {
-    if (id === 'emp_admin') {
-        throw new Error('No se puede eliminar la cuenta de administrador principal.');
+    const numericId = parseInt(id, 10);
+    if (isNaN(numericId) || numericId <= 2) { // Proteger a los usuarios iniciales
+        throw new Error('No se puede eliminar la cuenta de administrador principal o de prueba.');
     }
-    const index = empleados.findIndex(p => p.id === id);
-    if (index === -1) {
-        return false;
+    try {
+        const [result] = await db.query('DELETE FROM empleados WHERE id = ?', [id]);
+        return (result as any).affectedRows > 0;
+    } catch (error) {
+        console.error('Error al eliminar empleado:', error);
+        throw new Error('No se pudo eliminar el empleado.');
     }
-    empleados.splice(index, 1);
-    return true;
 }

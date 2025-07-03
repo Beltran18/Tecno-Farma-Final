@@ -2,286 +2,174 @@
 -- ##                    ESQUEMA DE BASE DE DATOS                     ##
 -- ##                         TecnoFarma                              ##
 -- #####################################################################
-
+--
 -- Este archivo contiene el esquema SQL para la base de datos MySQL
 -- del sistema de gestión de inventarios TecnoFarma.
+--
+-- IMPORTANTE: Ejecuta este script en la base de datos que creaste
+-- (ej. 'tecnofarmadb') desde phpMyAdmin o tu cliente SQL preferido.
 
--- Todas las tablas y campos están en español.
+SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
+START TRANSACTION;
+SET time_zone = "+00:00";
 
-SET @OLD_UNIQUE_CHECKS=@@UNIQUE_CHECKS, UNIQUE_CHECKS=0;
-SET @OLD_FOREIGN_KEY_CHECKS=@@FOREIGN_KEY_CHECKS, FOREIGN_KEY_CHECKS=0;
-SET @OLD_SQL_MODE=@@SQL_MODE, SQL_MODE='ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION';
-
--- -----------------------------------------------------
--- Schema tecnofarma_db
--- -----------------------------------------------------
--- DROP SCHEMA IF EXISTS `tecnofarma_db`;
--- CREATE SCHEMA IF NOT EXISTS `tecnofarma_db` DEFAULT CHARACTER SET utf8mb4 ;
--- USE `tecnofarma_db` ;
-
--- -----------------------------------------------------
--- Tabla `roles`
--- Almacena los roles de los empleados (Ej: Administrador, Empleado).
--- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `roles` (
-  `id_rol` INT NOT NULL AUTO_INCREMENT,
-  `nombre_rol` VARCHAR(100) NOT NULL,
-  `fecha_creacion` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  PRIMARY KEY (`id_rol`),
-  UNIQUE INDEX `nombre_rol_UNIQUE` (`nombre_rol` ASC))
-ENGINE = InnoDB;
-
--- -----------------------------------------------------
--- Tabla `empleados`
--- Almacena la información de los usuarios del sistema.
--- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `empleados` (
-  `id_empleado` VARCHAR(50) NOT NULL,
-  `nombre` VARCHAR(255) NOT NULL,
-  `email` VARCHAR(255) NOT NULL,
-  `password` VARCHAR(255) NOT NULL,
-  `id_rol` INT NOT NULL,
-  `fecha_creacion` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  `fecha_actualizacion` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-  PRIMARY KEY (`id_empleado`),
-  UNIQUE INDEX `email_UNIQUE` (`email` ASC),
-  INDEX `fk_empleados_roles_idx` (`id_rol` ASC),
-  CONSTRAINT `fk_empleados_roles`
-    FOREIGN KEY (`id_rol`)
-    REFERENCES `roles` (`id_rol`)
-    ON DELETE RESTRICT
-    ON UPDATE CASCADE)
-ENGINE = InnoDB;
-
--- -----------------------------------------------------
+-- --------------------------------------------------------
+--
 -- Tabla `categorias`
 -- Almacena las categorías de los productos.
--- -----------------------------------------------------
+--
 CREATE TABLE IF NOT EXISTS `categorias` (
-  `id_categoria` VARCHAR(50) NOT NULL,
+  `id` INT NOT NULL AUTO_INCREMENT,
   `nombre` VARCHAR(255) NOT NULL,
-  PRIMARY KEY (`id_categoria`),
-  UNIQUE INDEX `nombre_UNIQUE` (`nombre` ASC))
-ENGINE = InnoDB;
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `nombre_UNIQUE` (`nombre`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- -----------------------------------------------------
+-- --------------------------------------------------------
+--
 -- Tabla `proveedores`
 -- Almacena la información de los proveedores.
--- -----------------------------------------------------
+--
 CREATE TABLE IF NOT EXISTS `proveedores` (
-  `id_proveedor` VARCHAR(50) NOT NULL,
+  `id` INT NOT NULL AUTO_INCREMENT,
   `nombre` VARCHAR(255) NOT NULL,
-  `contacto` VARCHAR(255) NULL,
-  `telefono` VARCHAR(45) NULL,
-  PRIMARY KEY (`id_proveedor`),
-  UNIQUE INDEX `nombre_UNIQUE` (`nombre` ASC))
-ENGINE = InnoDB;
+  `contacto` VARCHAR(255) NOT NULL,
+  `telefono` VARCHAR(50) NOT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `nombre_UNIQUE` (`nombre`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- -----------------------------------------------------
+-- --------------------------------------------------------
+--
 -- Tabla `productos`
--- Tabla principal que almacena todos los productos del inventario.
--- -----------------------------------------------------
+-- Tabla principal del inventario.
+--
 CREATE TABLE IF NOT EXISTS `productos` (
-  `id_producto` VARCHAR(50) NOT NULL,
+  `id` INT NOT NULL AUTO_INCREMENT,
   `nombre` VARCHAR(255) NOT NULL,
-  `id_categoria` VARCHAR(50) NOT NULL,
-  `costo` DECIMAL(10,2) NOT NULL DEFAULT 0.00,
+  `categoria` VARCHAR(255) NOT NULL,
+  `costo` DECIMAL(10,2) DEFAULT 0.00,
   `precio` DECIMAL(10,2) NOT NULL,
-  `cantidad_stock` INT NOT NULL DEFAULT 0,
-  `fecha_vencimiento` DATE NOT NULL,
-  `numero_lote` VARCHAR(100) NOT NULL,
-  `id_proveedor` VARCHAR(50) NULL,
-  `descuento_porcentaje` DECIMAL(5,2) NULL DEFAULT 0.00,
-  `fecha_inicio_garantia` DATE NULL,
-  `fecha_fin_garantia` DATE NULL,
-  PRIMARY KEY (`id_producto`),
-  INDEX `fk_productos_categorias_idx` (`id_categoria` ASC),
-  INDEX `fk_productos_proveedores_idx` (`id_proveedor` ASC),
-  INDEX `idx_nombre_producto` (`nombre` ASC),
-  INDEX `idx_numero_lote` (`numero_lote` ASC),
-  CONSTRAINT `fk_productos_categorias`
-    FOREIGN KEY (`id_categoria`)
-    REFERENCES `categorias` (`id_categoria`)
-    ON DELETE RESTRICT
-    ON UPDATE CASCADE,
-  CONSTRAINT `fk_productos_proveedores`
-    FOREIGN KEY (`id_proveedor`)
-    REFERENCES `proveedores` (`id_proveedor`)
-    ON DELETE SET NULL
-    ON UPDATE CASCADE)
-ENGINE = InnoDB;
-
--- -----------------------------------------------------
--- Tabla `movimientos_inventario`
--- Registra todas las entradas y salidas de stock.
--- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `movimientos_inventario` (
-  `id_movimiento` VARCHAR(50) NOT NULL,
-  `id_producto` VARCHAR(50) NOT NULL,
-  `numero_lote` VARCHAR(100) NOT NULL,
-  `fecha_movimiento` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  `tipo_movimiento` ENUM('Creación Inicial', 'Salida Manual', 'Ajuste Positivo', 'Ajuste Negativo', 'Importación CSV', 'Dispensado por Receta', 'Entrada por Pedido', 'Devolución a Proveedor', 'Venta de Kit') NOT NULL,
-  `cantidad_movida` INT NOT NULL,
-  `stock_anterior` INT NOT NULL,
-  `stock_nuevo` INT NOT NULL,
-  `notas` TEXT NULL,
-  PRIMARY KEY (`id_movimiento`),
-  INDEX `fk_movimientos_productos_idx` (`id_producto` ASC),
-  CONSTRAINT `fk_movimientos_productos`
-    FOREIGN KEY (`id_producto`)
-    REFERENCES `productos` (`id_producto`)
-    ON DELETE CASCADE
-    ON UPDATE CASCADE)
-ENGINE = InnoDB;
-
--- -----------------------------------------------------
--- Tabla `recetas_medicas`
--- Almacena las recetas médicas registradas.
--- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `recetas_medicas` (
-  `id_receta` VARCHAR(50) NOT NULL,
-  `nombre_paciente` VARCHAR(255) NOT NULL,
-  `nombre_doctor` VARCHAR(255) NOT NULL,
-  `fecha_prescripcion` DATE NOT NULL,
-  `estado` ENUM('Pendiente', 'Dispensada', 'Cancelada') NOT NULL DEFAULT 'Pendiente',
-  PRIMARY KEY (`id_receta`))
-ENGINE = InnoDB;
-
--- -----------------------------------------------------
--- Tabla `recetas_productos`
--- Tabla intermedia para la relación N:M entre recetas y productos.
--- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `recetas_productos` (
-  `id_receta_producto` INT NOT NULL AUTO_INCREMENT,
-  `id_receta` VARCHAR(50) NOT NULL,
-  `id_producto` VARCHAR(50) NOT NULL,
-  `cantidad_prescrita` INT NOT NULL,
-  `notas` VARCHAR(255) NULL,
-  PRIMARY KEY (`id_receta_producto`),
-  INDEX `fk_recetas_productos_recetas_idx` (`id_receta` ASC),
-  INDEX `fk_recetas_productos_productos_idx` (`id_producto` ASC),
-  CONSTRAINT `fk_recetas_productos_recetas`
-    FOREIGN KEY (`id_receta`)
-    REFERENCES `recetas_medicas` (`id_receta`)
-    ON DELETE CASCADE
-    ON UPDATE CASCADE,
-  CONSTRAINT `fk_recetas_productos_productos`
-    FOREIGN KEY (`id_producto`)
-    REFERENCES `productos` (`id_producto`)
-    ON DELETE RESTRICT
-    ON UPDATE CASCADE)
-ENGINE = InnoDB;
-
--- -----------------------------------------------------
--- Tabla `kits`
--- Almacena los kits o paquetes de productos.
--- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `kits` (
-  `id_kit` VARCHAR(50) NOT NULL,
-  `nombre` VARCHAR(255) NOT NULL,
-  `precio` DECIMAL(10,2) NOT NULL,
-  PRIMARY KEY (`id_kit`))
-ENGINE = InnoDB;
-
--- -----------------------------------------------------
--- Tabla `kits_productos`
--- Tabla intermedia para la relación N:M entre kits y productos.
--- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `kits_productos` (
-  `id_kit_producto` INT NOT NULL AUTO_INCREMENT,
-  `id_kit` VARCHAR(50) NOT NULL,
-  `id_producto` VARCHAR(50) NOT NULL,
   `cantidad` INT NOT NULL,
-  PRIMARY KEY (`id_kit_producto`),
-  INDEX `fk_kits_productos_kits_idx` (`id_kit` ASC),
-  INDEX `fk_kits_productos_productos_idx` (`id_producto` ASC),
-  CONSTRAINT `fk_kits_productos_kits`
-    FOREIGN KEY (`id_kit`)
-    REFERENCES `kits` (`id_kit`)
-    ON DELETE CASCADE
-    ON UPDATE CASCADE,
-  CONSTRAINT `fk_kits_productos_productos`
-    FOREIGN KEY (`id_producto`)
-    REFERENCES `productos` (`id_producto`)
-    ON DELETE CASCADE
-    ON UPDATE CASCADE)
-ENGINE = InnoDB;
+  `fechaVencimiento` DATE NOT NULL,
+  `numeroLote` VARCHAR(100) NOT NULL,
+  `proveedorId` INT DEFAULT NULL,
+  `proveedorNombre` VARCHAR(255) DEFAULT NULL,
+  `descuento` DECIMAL(5,2) DEFAULT 0.00,
+  `fechaInicioGarantia` DATE DEFAULT NULL,
+  `fechaFinGarantia` DATE DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `proveedorId_idx` (`proveedorId`),
+  CONSTRAINT `fk_producto_proveedor` FOREIGN KEY (`proveedorId`) REFERENCES `proveedores`(`id`) ON DELETE SET NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- -----------------------------------------------------
--- Tabla `pedidos_reposicion`
--- Almacena los pedidos de reposición de stock a proveedores.
--- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `pedidos_reposicion` (
-  `id_pedido` VARCHAR(50) NOT NULL,
-  `id_proveedor` VARCHAR(50) NOT NULL,
-  `fecha_pedido` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  `fecha_entrega_estimada` DATE NULL,
-  `estado` ENUM('Pendiente', 'Enviado', 'Completado', 'Cancelado') NOT NULL DEFAULT 'Pendiente',
-  PRIMARY KEY (`id_pedido`),
-  INDEX `fk_pedidos_proveedores_idx` (`id_proveedor` ASC),
-  CONSTRAINT `fk_pedidos_proveedores`
-    FOREIGN KEY (`id_proveedor`)
-    REFERENCES `proveedores` (`id_proveedor`)
-    ON DELETE RESTRICT
-    ON UPDATE CASCADE)
-ENGINE = InnoDB;
+-- --------------------------------------------------------
+--
+-- Tabla `empleados`
+-- Almacena los usuarios del sistema.
+--
+CREATE TABLE IF NOT EXISTS `empleados` (
+  `id` INT NOT NULL AUTO_INCREMENT,
+  `nombre` VARCHAR(255) NOT NULL,
+  `email` VARCHAR(255) NOT NULL,
+  `rol` ENUM('Administrador','Empleado') NOT NULL,
+  `password` VARCHAR(255) NOT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `email_UNIQUE` (`email`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- -----------------------------------------------------
--- Tabla `pedidos_productos`
--- Tabla intermedia para la relación N:M entre pedidos y productos.
--- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `pedidos_productos` (
-  `id_pedido_producto` INT NOT NULL AUTO_INCREMENT,
-  `id_pedido` VARCHAR(50) NOT NULL,
-  `id_producto` VARCHAR(50) NOT NULL,
-  `cantidad_pedida` INT NOT NULL,
-  PRIMARY KEY (`id_pedido_producto`),
-  INDEX `fk_pedidos_productos_pedidos_idx` (`id_pedido` ASC),
-  INDEX `fk_pedidos_productos_productos_idx` (`id_producto` ASC),
-  CONSTRAINT `fk_pedidos_productos_pedidos`
-    FOREIGN KEY (`id_pedido`)
-    REFERENCES `pedidos_reposicion` (`id_pedido`)
-    ON DELETE CASCADE
-    ON UPDATE CASCADE,
-  CONSTRAINT `fk_pedidos_productos_productos`
-    FOREIGN KEY (`id_producto`)
-    REFERENCES `productos` (`id_producto`)
-    ON DELETE RESTRICT
-    ON UPDATE CASCADE)
-ENGINE = InnoDB;
+--
+-- Datos iniciales para `empleados`
+--
+INSERT INTO `empleados` (`id`, `nombre`, `email`, `rol`, `password`) VALUES
+(1, 'Admin Principal', 'admin@tecnofarma.com', 'Administrador', '$2a$10$f.w9.3Xz.1J/QO9p2.j/L.x/.C3sM2Vp8b./L6.Y1d8j.z.a5W1yG'), -- pass: admin123
+(2, 'Usuario de Prueba', 'usuario@ejemplo.com', 'Empleado', '$2a$10$wT3A4h5b5i9.i.3D6J8n/e.Z2t8Y7w5f.u1i4O3p9v.b9S/g4I0Ea'); -- pass: empleado123
 
--- -----------------------------------------------------
--- Tabla `devoluciones_proveedor`
--- Almacena las devoluciones de productos a los proveedores.
--- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `devoluciones_proveedor` (
-  `id_devolucion` VARCHAR(50) NOT NULL,
-  `id_producto` VARCHAR(50) NOT NULL,
-  `id_proveedor` VARCHAR(50) NOT NULL,
-  `fecha_devolucion` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  `cantidad_devuelta` INT NOT NULL,
+ALTER TABLE `empleados` AUTO_INCREMENT = 3;
+
+-- --------------------------------------------------------
+--
+-- Tabla `movimientos_inventario`
+-- Historial de todos los cambios en el stock.
+--
+CREATE TABLE IF NOT EXISTS `movimientos_inventario` (
+  `id` INT NOT NULL AUTO_INCREMENT,
+  `productoId` INT NOT NULL,
+  `productoNombre` VARCHAR(255) NOT NULL,
+  `numeroLote` VARCHAR(100) NOT NULL,
+  `fecha` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `tipo` VARCHAR(100) NOT NULL,
+  `cantidadMovida` INT NOT NULL,
+  `stockAnterior` INT NOT NULL,
+  `stockNuevo` INT NOT NULL,
+  `notas` TEXT DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `productoId_idx` (`productoId`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- --------------------------------------------------------
+--
+-- Tabla `recetas`
+-- Almacena las recetas médicas. Los medicamentos se guardan como JSON.
+--
+CREATE TABLE IF NOT EXISTS `recetas` (
+  `id` INT NOT NULL AUTO_INCREMENT,
+  `pacienteNombre` VARCHAR(255) NOT NULL,
+  `doctorNombre` VARCHAR(255) NOT NULL,
+  `fechaPrescripcion` DATE NOT NULL,
+  `medicamentos` JSON NOT NULL,
+  `estado` ENUM('Pendiente','Dispensada','Cancelada') NOT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- --------------------------------------------------------
+--
+-- Tabla `pedidos`
+-- Pedidos de reposición a proveedores. Los productos se guardan como JSON.
+--
+CREATE TABLE IF NOT EXISTS `pedidos` (
+  `id` INT NOT NULL AUTO_INCREMENT,
+  `fechaPedido` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `fechaEntregaEstimada` DATE DEFAULT NULL,
+  `proveedorId` INT NOT NULL,
+  `proveedorNombre` VARCHAR(255) NOT NULL,
+  `productos` JSON NOT NULL,
+  `estado` ENUM('Pendiente','Enviado','Completado','Cancelado') NOT NULL,
+  PRIMARY KEY (`id`),
+  KEY `proveedorId_idx_pedidos` (`proveedorId`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- --------------------------------------------------------
+--
+-- Tabla `devoluciones`
+-- Devoluciones de productos a proveedores.
+--
+CREATE TABLE IF NOT EXISTS `devoluciones` (
+  `id` INT NOT NULL AUTO_INCREMENT,
+  `fecha` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `productoId` INT NOT NULL,
+  `productoNombre` VARCHAR(255) NOT NULL,
+  `proveedorId` INT NOT NULL,
+  `proveedorNombre` VARCHAR(255) NOT NULL,
+  `cantidadDevuelta` INT NOT NULL,
   `motivo` TEXT NOT NULL,
-  PRIMARY KEY (`id_devolucion`),
-  INDEX `fk_devoluciones_productos_idx` (`id_producto` ASC),
-  INDEX `fk_devoluciones_proveedores_idx` (`id_proveedor` ASC),
-  CONSTRAINT `fk_devoluciones_productos`
-    FOREIGN KEY (`id_producto`)
-    REFERENCES `productos` (`id_producto`)
-    ON DELETE RESTRICT
-    ON UPDATE CASCADE,
-  CONSTRAINT `fk_devoluciones_proveedores`
-    FOREIGN KEY (`id_proveedor`)
-    REFERENCES `proveedores` (`id_proveedor`)
-    ON DELETE RESTRICT
-    ON UPDATE CASCADE)
-ENGINE = InnoDB;
+  PRIMARY KEY (`id`),
+  KEY `productoId_idx_devoluciones` (`productoId`),
+  KEY `proveedorId_idx_devoluciones` (`proveedorId`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- -----------------------------------------------------
--- DATOS INICIALES
--- -----------------------------------------------------
-INSERT INTO `roles` (`id_rol`, `nombre_rol`) VALUES (1, 'Administrador'), (2, 'Empleado') ON DUPLICATE KEY UPDATE nombre_rol=VALUES(nombre_rol);
+-- --------------------------------------------------------
+--
+-- Tabla `kits`
+-- Kits o paquetes de productos. Los componentes se guardan como JSON.
+--
+CREATE TABLE IF NOT EXISTS `kits` (
+  `id` INT NOT NULL AUTO_INCREMENT,
+  `nombre` VARCHAR(255) NOT NULL,
+  `precio` DECIMAL(10,2) NOT NULL,
+  `componentes` JSON NOT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `nombre_UNIQUE_kits` (`nombre`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
-
-SET SQL_MODE=@OLD_SQL_MODE;
-SET FOREIGN_KEY_CHECKS=@OLD_FOREIGN_KEY_CHECKS;
-SET UNIQUE_CHECKS=@OLD_UNIQUE_CHECKS;
+COMMIT;

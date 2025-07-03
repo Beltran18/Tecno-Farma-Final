@@ -1,110 +1,126 @@
-
 import { type Producto, TipoMovimiento } from '@/lib/types';
 import { logMovement } from './movement-service';
+import db from '@/lib/db';
 
-// --- Almacenamiento en Memoria Temporal (con persistencia en desarrollo) ---
-const globalForDb = globalThis as unknown as { productos: Producto[] };
-if (!globalForDb.productos) {
-  globalForDb.productos = [];
+function mapToProducto(row: any): Producto {
+  return {
+    id: String(row.id),
+    nombre: row.nombre,
+    categoria: row.categoria,
+    costo: parseFloat(row.costo),
+    precio: parseFloat(row.precio),
+    cantidad: parseInt(row.cantidad, 10),
+    fechaVencimiento: new Date(row.fechaVencimiento),
+    numeroLote: row.numeroLote,
+    proveedorId: row.proveedorId ? String(row.proveedorId) : undefined,
+    proveedorNombre: row.proveedorNombre,
+    descuento: row.descuento ? parseFloat(row.descuento) : 0,
+    fechaInicioGarantia: row.fechaInicioGarantia ? new Date(row.fechaInicioGarantia) : undefined,
+    fechaFinGarantia: row.fechaFinGarantia ? new Date(row.fechaFinGarantia) : undefined,
+  };
 }
-const productos: Producto[] = globalForDb.productos;
-// -----------------------------------------
 
 export async function getAllProducts(): Promise<Producto[]> {
-  console.log("Obteniendo todos los productos del almacén en memoria.");
-  return JSON.parse(JSON.stringify(productos)); 
+  try {
+    const [rows] = await db.query('SELECT * FROM productos ORDER BY nombre ASC');
+    return (rows as any[]).map(mapToProducto);
+  } catch (error) {
+    console.error('Error al obtener productos:', error);
+    throw new Error('No se pudieron obtener los productos.');
+  }
 }
 
 export async function getProductById(id: string): Promise<Producto | undefined> {
-  console.log(`Buscando producto con id: ${id}`);
-  return productos.find(p => p.id === id);
+  try {
+    const [rows] = await db.query('SELECT * FROM productos WHERE id = ?', [id]);
+    if ((rows as any[]).length === 0) {
+      return undefined;
+    }
+    return mapToProducto((rows as any)[0]);
+  } catch (error) {
+    console.error(`Error al obtener producto ${id}:`, error);
+    throw new Error('Error al buscar el producto.');
+  }
 }
 
 export async function createProduct(
   productData: Omit<Producto, 'id'>,
   tipo: TipoMovimiento.CREACION_INICIAL | TipoMovimiento.IMPORTACION_CSV = TipoMovimiento.CREACION_INICIAL
 ): Promise<Producto> {
+  const sql = `
+    INSERT INTO productos 
+    (nombre, categoria, costo, precio, cantidad, fechaVencimiento, numeroLote, proveedorId, proveedorNombre, descuento, fechaInicioGarantia, fechaFinGarantia) 
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+  `;
+  try {
+    const [result] = await db.query(sql, [
+      productData.nombre,
+      productData.categoria,
+      productData.costo,
+      productData.precio,
+      productData.cantidad,
+      productData.fechaVencimiento,
+      productData.numeroLote,
+      productData.proveedorId,
+      productData.proveedorNombre,
+      productData.descuento,
+      productData.fechaInicioGarantia,
+      productData.fechaFinGarantia,
+    ]);
+    
+    const insertId = (result as any).insertId;
+    const nuevoProducto = { id: String(insertId), ...productData };
 
-  const nuevoProducto: Producto = {
-    id: `prod_${Date.now()}`,
-    nombre: String(productData.nombre),
-    categoria: productData.categoria,
-    costo: Number(productData.costo || 0),
-    precio: Number(productData.precio),
-    cantidad: Number(productData.cantidad),
-    fechaVencimiento: new Date(productData.fechaVencimiento),
-    numeroLote: productData.numeroLote,
-    proveedorId: productData.proveedorId,
-    proveedorNombre: productData.proveedorNombre,
-    descuento: Number(productData.descuento || 0),
-    fechaInicioGarantia: productData.fechaInicioGarantia ? new Date(productData.fechaInicioGarantia) : undefined,
-    fechaFinGarantia: productData.fechaFinGarantia ? new Date(productData.fechaFinGarantia) : undefined,
-  };
+    await logMovement({
+      productoId: nuevoProducto.id,
+      productoNombre: nuevoProducto.nombre,
+      numeroLote: nuevoProducto.numeroLote,
+      tipo,
+      cantidadMovida: nuevoProducto.cantidad,
+      stockAnterior: 0,
+      stockNuevo: nuevoProducto.cantidad,
+      notas: tipo === TipoMovimiento.IMPORTACION_CSV ? 'Importado desde archivo CSV' : 'Creado desde formulario',
+    });
 
-  productos.push(nuevoProducto);
-  console.log("Producto nuevo agregado al almacén en memoria:", nuevoProducto);
-  
-  await logMovement({
-    productoId: nuevoProducto.id,
-    productoNombre: nuevoProducto.nombre,
-    numeroLote: nuevoProducto.numeroLote,
-    tipo,
-    cantidadMovida: nuevoProducto.cantidad,
-    stockAnterior: 0,
-    stockNuevo: nuevoProducto.cantidad,
-    notas: tipo === TipoMovimiento.IMPORTACION_CSV ? 'Importado desde archivo CSV' : 'Creado desde formulario',
-  });
-
-  return nuevoProducto;
+    return nuevoProducto;
+  } catch (error) {
+    console.error('Error al crear producto:', error);
+    throw new Error('No se pudo crear el producto.');
+  }
 }
 
 export async function updateProduct(id: string, productData: Partial<Omit<Producto, 'id'>>): Promise<Producto | null> {
-  const productIndex = productos.findIndex(p => p.id === id);
-  if (productIndex === -1) {
-    console.log(`Producto con id: ${id} no encontrado para actualizar.`);
+  const productoAnterior = await getProductById(id);
+  if (!productoAnterior) {
     return null;
   }
   
-  const productoAnterior = productos[productIndex];
   const stockAnterior = productoAnterior.cantidad;
+  const stockNuevo = productData.cantidad !== undefined ? Number(productData.cantidad) : stockAnterior;
 
-  const productoActualizado: Producto = {
-      ...productoAnterior,
-      nombre: productData.nombre ?? productoAnterior.nombre,
-      categoria: productData.categoria ?? productoAnterior.categoria,
-      costo: productData.costo !== undefined ? Number(productData.costo || 0) : productoAnterior.costo,
-      precio: productData.precio !== undefined ? Number(productData.precio) : productoAnterior.precio,
-      cantidad: productData.cantidad !== undefined ? Number(productData.cantidad) : productoAnterior.cantidad,
-      fechaVencimiento: productData.fechaVencimiento ? new Date(productData.fechaVencimiento) : productoAnterior.fechaVencimiento,
-      numeroLote: productData.numeroLote ?? productoAnterior.numeroLote,
-      proveedorId: productData.proveedorId === '' ? undefined : productData.proveedorId ?? productoAnterior.proveedorId,
-      proveedorNombre: productData.proveedorNombre === '' ? undefined : productData.proveedorNombre ?? productoAnterior.proveedorNombre,
-      descuento: productData.descuento !== undefined ? Number(productData.descuento || 0) : productoAnterior.descuento,
-      fechaInicioGarantia: productData.fechaInicioGarantia ? new Date(productData.fechaInicioGarantia) : productData.fechaInicioGarantia === null ? undefined : productoAnterior.fechaInicioGarantia,
-      fechaFinGarantia: productData.fechaFinGarantia ? new Date(productData.fechaFinGarantia) : productData.fechaFinGarantia === null ? undefined : productoAnterior.fechaFinGarantia,
-  };
-  
-  const stockNuevo = productoActualizado.cantidad;
+  try {
+    await db.query('UPDATE productos SET ? WHERE id = ?', [productData, id]);
+    
+    if (stockNuevo !== stockAnterior) {
+      const cantidadMovida = Math.abs(stockNuevo - stockAnterior);
+      const tipo = stockNuevo > stockAnterior ? TipoMovimiento.AJUSTE_POSITIVO : TipoMovimiento.AJUSTE_NEGATIVO;
+      await logMovement({
+        productoId: id,
+        productoNombre: productData.nombre || productoAnterior.nombre,
+        numeroLote: productData.numeroLote || productoAnterior.numeroLote,
+        tipo,
+        cantidadMovida,
+        stockAnterior,
+        stockNuevo,
+        notas: 'Cantidad ajustada desde el formulario de edición.',
+      });
+    }
 
-  if (stockNuevo !== stockAnterior) {
-    const cantidadMovida = Math.abs(stockNuevo - stockAnterior);
-    const tipo = stockNuevo > stockAnterior ? TipoMovimiento.AJUSTE_POSITIVO : TipoMovimiento.AJUSTE_NEGATIVO;
-    await logMovement({
-      productoId: id,
-      productoNombre: productoActualizado.nombre,
-      numeroLote: productoActualizado.numeroLote,
-      tipo,
-      cantidadMovida,
-      stockAnterior,
-      stockNuevo,
-      notas: 'Cantidad ajustada desde el formulario de edición.',
-    });
+    return await getProductById(id) || null;
+  } catch (error) {
+    console.error(`Error al actualizar producto ${id}:`, error);
+    throw new Error('No se pudo actualizar el producto.');
   }
-
-
-  productos[productIndex] = productoActualizado;
-  console.log("Producto actualizado en el almacén en memoria:", productoActualizado);
-  return productoActualizado;
 }
 
 export async function registerProductExit(
@@ -113,82 +129,74 @@ export async function registerProductExit(
   notas?: string,
   tipo: TipoMovimiento = TipoMovimiento.SALIDA_MANUAL
 ): Promise<Producto | null> {
-  const productIndex = productos.findIndex(p => p.id === id);
-  if (productIndex === -1) {
+  const productoAnterior = await getProductById(id);
+  if (!productoAnterior) {
     return null;
   }
   
-  const productoAnterior = { ...productos[productIndex] };
   const stockAnterior = productoAnterior.cantidad;
-
   if (cantidadSalida > stockAnterior) {
     throw new Error('Stock insuficiente.');
   }
-
   const stockNuevo = stockAnterior - cantidadSalida;
   
-  const productoActualizado: Producto = {
-    ...productoAnterior,
-    cantidad: stockNuevo,
-  };
-  
-  await logMovement({
-    productoId: id,
-    productoNombre: productoActualizado.nombre,
-    numeroLote: productoActualizado.numeroLote,
-    tipo,
-    cantidadMovida: cantidadSalida,
-    stockAnterior,
-    stockNuevo,
-    notas: notas,
-  });
+  try {
+    await db.query('UPDATE productos SET cantidad = ? WHERE id = ?', [stockNuevo, id]);
 
-  productos[productIndex] = productoActualizado;
-  console.log("Salida de producto registrada:", productoActualizado);
-  return productoActualizado;
+    await logMovement({
+      productoId: id,
+      productoNombre: productoAnterior.nombre,
+      numeroLote: productoAnterior.numeroLote,
+      tipo,
+      cantidadMovida: cantidadSalida,
+      stockAnterior,
+      stockNuevo,
+      notas: notas,
+    });
+
+    return { ...productoAnterior, cantidad: stockNuevo };
+  } catch (error) {
+    console.error('Error al registrar salida de producto:', error);
+    throw new Error('No se pudo registrar la salida del producto.');
+  }
 }
 
 export async function registerProductEntry(id: string, cantidadEntrada: number, tipo: TipoMovimiento, notas?: string): Promise<Producto | null> {
-  const productIndex = productos.findIndex(p => p.id === id);
-  if (productIndex === -1) {
+  const productoAnterior = await getProductById(id);
+  if (!productoAnterior) {
     throw new Error(`Producto con ID ${id} no encontrado para registrar entrada.`);
   }
 
-  const productoAnterior = { ...productos[productIndex] };
   const stockAnterior = productoAnterior.cantidad;
   const stockNuevo = stockAnterior + cantidadEntrada;
-
-  const productoActualizado: Producto = {
-    ...productoAnterior,
-    cantidad: stockNuevo,
-  };
   
-  await logMovement({
-    productoId: id,
-    productoNombre: productoActualizado.nombre,
-    numeroLote: productoActualizado.numeroLote,
-    tipo,
-    cantidadMovida: cantidadEntrada,
-    stockAnterior,
-    stockNuevo,
-    notas,
-  });
-
-  productos[productIndex] = productoActualizado;
-  console.log(`${tipo} registrada para el producto ${id}: ${cantidadEntrada} unidades.`);
-  return productoActualizado;
+  try {
+    await db.query('UPDATE productos SET cantidad = ? WHERE id = ?', [stockNuevo, id]);
+    
+    await logMovement({
+      productoId: id,
+      productoNombre: productoAnterior.nombre,
+      numeroLote: productoAnterior.numeroLote,
+      tipo,
+      cantidadMovida: cantidadEntrada,
+      stockAnterior,
+      stockNuevo,
+      notas,
+    });
+    
+    return { ...productoAnterior, cantidad: stockNuevo };
+  } catch (error) {
+    console.error('Error al registrar entrada de producto:', error);
+    throw new Error('No se pudo registrar la entrada del producto.');
+  }
 }
-
 
 export async function deleteProduct(id: string): Promise<boolean> {
-  const productIndex = productos.findIndex(p => p.id === id);
-  if (productIndex === -1) {
-    console.log(`Producto con id: ${id} no encontrado para eliminar.`);
-    return false;
+  try {
+    const [result] = await db.query('DELETE FROM productos WHERE id = ?', [id]);
+    return (result as any).affectedRows > 0;
+  } catch (error) {
+    console.error('Error al eliminar producto:', error);
+    throw new Error('No se pudo eliminar el producto.');
   }
-  productos.splice(productIndex, 1);
-  console.log(`Producto con id: ${id} eliminado del almacén en memoria.`);
-  return true;
 }
-
-    

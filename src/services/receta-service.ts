@@ -1,63 +1,82 @@
 import { type RecetaMedica, type MedicamentoPrescrito, TipoMovimiento } from '@/lib/types';
-import { getAllProducts, getProductById, registerProductExit } from './product-service';
+import { getProductById, registerProductExit } from './product-service';
+import db from '@/lib/db';
 
-// En una aplicación real, esto estaría en una base de datos.
-const globalForDb = globalThis as unknown as { recetas: RecetaMedica[] };
-if (!globalForDb.recetas) {
-  globalForDb.recetas = [];
+function mapToReceta(row: any): RecetaMedica {
+    return {
+        id: String(row.id),
+        pacienteNombre: row.pacienteNombre,
+        doctorNombre: row.doctorNombre,
+        fechaPrescripcion: new Date(row.fechaPrescripcion),
+        medicamentos: JSON.parse(row.medicamentos || '[]'),
+        estado: row.estado,
+    };
 }
-const recetas: RecetaMedica[] = globalForDb.recetas;
 
 export async function getAllRecetas(): Promise<RecetaMedica[]> {
-  // Devolvemos una copia para evitar mutaciones.
-  return JSON.parse(JSON.stringify(recetas));
+  try {
+    const [rows] = await db.query('SELECT * FROM recetas ORDER BY fechaPrescripcion DESC');
+    return (rows as any[]).map(mapToReceta);
+  } catch (error) {
+    console.error('Error al obtener recetas:', error);
+    throw new Error('No se pudieron obtener las recetas.');
+  }
 }
 
 export async function createReceta(
   data: Omit<RecetaMedica, 'id' | 'estado' | 'medicamentos'> & { medicamentos: Omit<MedicamentoPrescrito, 'productoNombre' | 'notas'>[] }
 ): Promise<RecetaMedica> {
   
-  const allProducts = await getAllProducts();
-  const productMap = new Map(allProducts.map(p => [p.id, p]));
+  const medicamentosCompletos: MedicamentoPrescrito[] = await Promise.all(
+    data.medicamentos.map(async (med) => {
+      const producto = await getProductById(med.productoId);
+      if (!producto) {
+        throw new Error(`Producto con ID ${med.productoId} no encontrado.`);
+      }
+      return {
+        ...med,
+        productoNombre: producto.nombre,
+      };
+    })
+  );
 
-  const medicamentosCompletos: MedicamentoPrescrito[] = data.medicamentos.map(med => {
-    const producto = productMap.get(med.productoId);
-    if (!producto) {
-      throw new Error(`Producto con ID ${med.productoId} no encontrado.`);
-    }
-    return {
-      ...med,
-      productoNombre: producto.nombre,
-    };
-  });
-  
-  const nuevaReceta: RecetaMedica = {
-    id: `rec_${Date.now()}`,
-    pacienteNombre: data.pacienteNombre,
-    doctorNombre: data.doctorNombre,
-    fechaPrescripcion: new Date(data.fechaPrescripcion),
-    medicamentos: medicamentosCompletos,
-    estado: 'Pendiente',
-  };
+  const medicamentosJson = JSON.stringify(medicamentosCompletos);
+  const sql = `
+    INSERT INTO recetas (pacienteNombre, doctorNombre, fechaPrescripcion, medicamentos, estado) 
+    VALUES (?, ?, ?, ?, ?)
+  `;
 
-  recetas.unshift(nuevaReceta);
-  return nuevaReceta;
+  try {
+    const [result] = await db.query(sql, [
+      data.pacienteNombre,
+      data.doctorNombre,
+      new Date(data.fechaPrescripcion),
+      medicamentosJson,
+      'Pendiente'
+    ]);
+    const insertId = (result as any).insertId;
+    const [newRow] = await db.query('SELECT * FROM recetas WHERE id = ?', [insertId]);
+    return mapToReceta((newRow as any)[0]);
+  } catch (error) {
+    console.error('Error al crear receta:', error);
+    throw new Error('No se pudo crear la receta.');
+  }
 }
 
 
 export async function dispenseReceta(recetaId: string): Promise<RecetaMedica> {
-  const recetaIndex = recetas.findIndex(r => r.id === recetaId);
-  if (recetaIndex === -1) {
+  const [rows] = await db.query('SELECT * FROM recetas WHERE id = ?', [recetaId]);
+  if ((rows as any[]).length === 0) {
     throw new Error('Receta no encontrada.');
   }
 
-  const receta = recetas[recetaIndex];
+  const receta = mapToReceta((rows as any)[0]);
 
   if (receta.estado !== 'Pendiente') {
     throw new Error(`No se puede dispensar una receta que está en estado "${receta.estado}".`);
   }
 
-  // 1. Verificar stock ANTES de dispensar nada
+  // 1. Verificar stock ANTES de dispensar nada (idealmente en una transacción)
   for (const med of receta.medicamentos) {
     const producto = await getProductById(med.productoId);
     if (!producto || producto.cantidad < med.cantidadPrescrita) {
@@ -76,21 +95,22 @@ export async function dispenseReceta(recetaId: string): Promise<RecetaMedica> {
   }
 
   // 3. Actualizar el estado de la receta
-  const recetaActualizada: RecetaMedica = {
-    ...receta,
-    estado: 'Dispensada',
-  };
-
-  recetas[recetaIndex] = recetaActualizada;
-  return recetaActualizada;
+  try {
+    await db.query('UPDATE recetas SET estado = ? WHERE id = ?', ['Dispensada', recetaId]);
+    const [updatedRows] = await db.query('SELECT * FROM recetas WHERE id = ?', [recetaId]);
+    return mapToReceta((updatedRows as any)[0]);
+  } catch (error) {
+    console.error('Error al actualizar estado de la receta:', error);
+    throw new Error('No se pudo actualizar el estado de la receta.');
+  }
 }
 
 export async function deleteReceta(id: string): Promise<boolean> {
-    const recetaIndex = recetas.findIndex(r => r.id === id);
-    if (recetaIndex === -1) {
-        return false;
+    try {
+        const [result] = await db.query('DELETE FROM recetas WHERE id = ?', [id]);
+        return (result as any).affectedRows > 0;
+    } catch (error) {
+        console.error('Error al eliminar receta:', error);
+        throw new Error('No se pudo eliminar la receta.');
     }
-    // Al eliminar una receta NO se restaura el stock. Es una acción para limpiar registros.
-    recetas.splice(recetaIndex, 1);
-    return true;
 }

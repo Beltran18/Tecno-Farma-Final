@@ -1,14 +1,28 @@
 import { type DevolucionProveedor, TipoMovimiento } from '@/lib/types';
 import { getProductById, registerProductExit } from './product-service';
+import db from '@/lib/db';
 
-const globalForDb = globalThis as unknown as { devoluciones: DevolucionProveedor[] };
-if (!globalForDb.devoluciones) {
-  globalForDb.devoluciones = [];
+function mapToDevolucion(row: any): DevolucionProveedor {
+    return {
+        id: String(row.id),
+        fecha: new Date(row.fecha),
+        productoId: String(row.productoId),
+        productoNombre: row.productoNombre,
+        proveedorId: String(row.proveedorId),
+        proveedorNombre: row.proveedorNombre,
+        cantidadDevuelta: row.cantidadDevuelta,
+        motivo: row.motivo,
+    };
 }
-let devoluciones: DevolucionProveedor[] = globalForDb.devoluciones;
 
 export async function getAllDevoluciones(): Promise<DevolucionProveedor[]> {
-  return JSON.parse(JSON.stringify(devoluciones));
+  try {
+    const [rows] = await db.query('SELECT * FROM devoluciones ORDER BY fecha DESC');
+    return (rows as any[]).map(mapToDevolucion);
+  } catch (error) {
+    console.error('Error al obtener las devoluciones:', error);
+    throw new Error('No se pudieron obtener las devoluciones.');
+  }
 }
 
 export async function createDevolucion(data: {
@@ -24,7 +38,7 @@ export async function createDevolucion(data: {
       throw new Error('El producto no tiene un proveedor asociado para la devolución.');
   }
 
-  // Descontar del stock
+  // Descontar del stock y registrar movimiento
   await registerProductExit(
     data.productoId,
     data.cantidadDevuelta,
@@ -32,27 +46,34 @@ export async function createDevolucion(data: {
     TipoMovimiento.DEVOLUCION_PROVEEDOR
   );
 
-  const nuevaDevolucion: DevolucionProveedor = {
-    id: `dev_${Date.now()}`,
-    fecha: new Date(),
-    productoId: data.productoId,
-    productoNombre: producto.nombre,
-    proveedorId: producto.proveedorId,
-    proveedorNombre: producto.proveedorNombre,
-    cantidadDevuelta: data.cantidadDevuelta,
-    motivo: data.motivo,
-  };
-
-  devoluciones.unshift(nuevaDevolucion);
-  return nuevaDevolucion;
+  const sql = `INSERT INTO devoluciones (productoId, productoNombre, proveedorId, proveedorNombre, cantidadDevuelta, motivo) VALUES (?, ?, ?, ?, ?, ?)`;
+  
+  try {
+    const [result] = await db.query(sql, [
+      data.productoId,
+      producto.nombre,
+      producto.proveedorId,
+      producto.proveedorNombre,
+      data.cantidadDevuelta,
+      data.motivo,
+    ]);
+    const insertId = (result as any).insertId;
+    const [newRow] = await db.query('SELECT * FROM devoluciones WHERE id = ?', [insertId]);
+    return mapToDevolucion((newRow as any)[0]);
+  } catch (error) {
+    console.error('Error al crear la devolución en DB:', error);
+    // Aquí se debería implementar lógica para revertir la salida de stock si la inserción de la devolución falla.
+    // Por simplicidad del prototipo, se omite.
+    throw new Error('No se pudo registrar la devolución.');
+  }
 }
 
 export async function deleteDevolucion(id: string): Promise<boolean> {
-  const index = devoluciones.findIndex(d => d.id === id);
-  if (index === -1) {
-    return false;
+  try {
+    const [result] = await db.query('DELETE FROM devoluciones WHERE id = ?', [id]);
+    return (result as any).affectedRows > 0;
+  } catch (error) {
+    console.error('Error al eliminar la devolución:', error);
+    throw new Error('No se pudo eliminar la devolución.');
   }
-  // Al eliminar una devolución NO se restaura el stock. Es una acción para limpiar registros.
-  devoluciones.splice(index, 1);
-  return true;
 }
