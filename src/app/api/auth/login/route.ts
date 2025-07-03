@@ -4,14 +4,14 @@ import { getEmployeeByEmail } from '@/services/employee-service';
 import bcrypt from 'bcryptjs';
 
 export async function POST(req: NextRequest) {
-  const session = await getSession();
-  const { email, password } = await req.json();
-
-  if (!email || !password) {
-    return NextResponse.json({ message: 'Correo y contraseña son requeridos' }, { status: 400 });
-  }
-
   try {
+    const session = await getSession();
+    const { email, password } = await req.json();
+
+    if (!email || !password) {
+      return NextResponse.json({ message: 'Correo y contraseña son requeridos' }, { status: 400 });
+    }
+
     const user = await getEmployeeByEmail(email);
 
     if (!user || !user.password) {
