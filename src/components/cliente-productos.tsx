@@ -42,6 +42,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
 import { MoreHorizontal, PlusCircle, Search, Calendar as CalendarIcon, Upload, Download, Printer, MinusCircle, History, Trash2, DollarSign } from 'lucide-react';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
@@ -113,7 +114,9 @@ export function ClienteProductos({ productosIniciales, categoriasIniciales, prov
       
       const productoFinal = {
           ...data,
-          fechaVencimiento: new Date(data.fechaVencimiento)
+          fechaVencimiento: new Date(data.fechaVencimiento),
+          ...(data.fechaInicioGarantia && { fechaInicioGarantia: new Date(data.fechaInicioGarantia) }),
+          ...(data.fechaFinGarantia && { fechaFinGarantia: new Date(data.fechaFinGarantia) }),
       };
 
       setProductos([...productos, productoFinal]);
@@ -151,6 +154,8 @@ export function ClienteProductos({ productosIniciales, categoriasIniciales, prov
         const productoFinal = {
             ...data,
             fechaVencimiento: new Date(data.fechaVencimiento),
+            ...(data.fechaInicioGarantia && { fechaInicioGarantia: new Date(data.fechaInicioGarantia) }),
+            ...(data.fechaFinGarantia && { fechaFinGarantia: new Date(data.fechaFinGarantia) }),
         };
 
         setProductos(productos.map(p => p.id === productoFinal.id ? productoFinal : p));
@@ -223,6 +228,8 @@ export function ClienteProductos({ productosIniciales, categoriasIniciales, prov
         const productosFinales = productosImportados.map((p: Producto) => ({
             ...p,
             fechaVencimiento: new Date(p.fechaVencimiento),
+            ...(p.fechaInicioGarantia && { fechaInicioGarantia: new Date(p.fechaInicioGarantia) }),
+            ...(p.fechaFinGarantia && { fechaFinGarantia: new Date(p.fechaFinGarantia) }),
         }));
 
         setProductos(prev => [...prev, ...productosFinales]);
@@ -286,6 +293,45 @@ export function ClienteProductos({ productosIniciales, categoriasIniciales, prov
         title: 'Éxito',
         description: 'La exportación del inventario ha comenzado.',
     });
+  };
+
+  const handleRegistrarSalida = async (cantidadSalida: number, notas?: string) => {
+    if (!productoParaSalida) return;
+
+    try {
+        const response = await fetch(`/api/productos/${productoParaSalida.id}/salida`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ cantidad: cantidadSalida, notas: notas }),
+        });
+
+        if (!response.ok) {
+            const error = await response.json();
+            throw new Error(error.message || 'Error al registrar la salida');
+        }
+
+        const productoActualizado = await response.json();
+        
+        const productoFinal = {
+            ...productoActualizado,
+            fechaVencimiento: new Date(productoActualizado.fechaVencimiento),
+            ...(productoActualizado.fechaInicioGarantia && { fechaInicioGarantia: new Date(productoActualizado.fechaInicioGarantia) }),
+            ...(productoActualizado.fechaFinGarantia && { fechaFinGarantia: new Date(productoActualizado.fechaFinGarantia) }),
+        };
+
+        setProductos(productos.map(p => p.id === productoFinal.id ? productoFinal : p));
+        setSalidaDialogOpen(false);
+        notificacion({
+            title: 'Éxito',
+            description: `Salida de ${cantidadSalida} unidades de "${productoFinal.nombre}" registrada correctamente.`,
+        });
+    } catch (error: any) {
+        notificacion({
+            title: 'Error',
+            description: error.message,
+            variant: 'destructive',
+        });
+    }
   };
 
   const abrirFormularioEditar = (producto: Producto) => {
@@ -708,19 +754,21 @@ function FormularioSalidaProducto({
   onGuardar 
 }: { 
   producto: Producto | null, 
-  onGuardar: (cantidadSalida: number) => Promise<void>, 
+  onGuardar: (cantidadSalida: number, notas?: string) => Promise<void>, 
 }) {
   const [cantidad, setCantidad] = useState(1);
+  const [notas, setNotas] = useState('');
 
   useEffect(() => {
     setCantidad(1);
+    setNotas('');
   }, [producto]);
 
   if (!producto) return null;
 
   const handleEnviar = async (e: React.FormEvent) => {
     e.preventDefault();
-    await onGuardar(cantidad);
+    await onGuardar(cantidad, notas);
   };
 
   return (
@@ -743,6 +791,15 @@ function FormularioSalidaProducto({
               min="1"
               max={producto.cantidad}
               placeholder="Ej: 5"
+            />
+        </div>
+        <div className="space-y-2">
+            <label htmlFor="notas-salida">Notas (Opcional)</label>
+            <Textarea
+              id="notas-salida"
+              value={notas}
+              onChange={e => setNotas(e.target.value)}
+              placeholder="Ej: Venta a cliente, ajuste de inventario, etc."
             />
         </div>
       </div>
