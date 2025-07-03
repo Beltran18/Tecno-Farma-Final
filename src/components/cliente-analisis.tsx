@@ -61,14 +61,17 @@ export function ClienteAnalisis({ productos, movimientos }: { productos: Product
       return { ...p, precioVenta, margenPorUnidad, unidadesVendidas, gananciaTotalProducto };
     }).sort((a, b) => b.gananciaTotalProducto - a.gananciaTotalProducto);
 
-    const rentabilidadPorCategoria = productosConRentabilidad.reduce((acc, p) => {
-        const categoria = p.categoria;
-        if (!acc[categoria]) {
-            acc[categoria] = { ventas: 0, costo: 0, ganancia: 0, categoria };
-        }
-        const gananciaProducto = p.gananciaTotalProducto;
-        acc[categoria].ganancia += gananciaProducto;
-        return acc;
+    const rentabilidadPorCategoria = productosConRentabilidad
+        .filter(p => p.unidadesVendidas > 0)
+        .reduce((acc, p) => {
+            const categoria = p.categoria;
+            if (!acc[categoria]) {
+                acc[categoria] = { ventas: 0, costo: 0, ganancia: 0, categoria };
+            }
+            acc[categoria].ganancia += p.gananciaTotalProducto;
+            acc[categoria].ventas += p.precioVenta * p.unidadesVendidas;
+            acc[categoria].costo += (p.costo || 0) * p.unidadesVendidas;
+            return acc;
     }, {} as Record<string, { ventas: number; costo: number; ganancia: number; categoria: string }>);
 
     const datosGrafico = Object.values(rentabilidadPorCategoria)
