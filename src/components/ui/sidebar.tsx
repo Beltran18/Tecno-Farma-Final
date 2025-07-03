@@ -434,6 +434,7 @@ const SidebarGroup = React.forwardRef<
       ref={ref}
       data-sidebar="group"
       className={cn("relative flex w-full min-w-0 flex-col p-2", className)}
+      suppressHydrationWarning
       {...props}
     />
   )
@@ -455,6 +456,7 @@ const SidebarGroupLabel = React.forwardRef<
         "group-data-[collapsible=icon]:-mt-8 group-data-[collapsible=icon]:opacity-0",
         className
       )}
+      suppressHydrationWarning
       {...props}
     />
   )
@@ -492,6 +494,7 @@ const SidebarGroupContent = React.forwardRef<
     ref={ref}
     data-sidebar="group-content"
     className={cn("w-full text-sm", className)}
+    suppressHydrationWarning
     {...props}
   />
 ))
@@ -505,6 +508,7 @@ const SidebarMenu = React.forwardRef<
     ref={ref}
     data-sidebar="menu"
     className={cn("flex w-full min-w-0 flex-col gap-1 p-2", className)}
+    suppressHydrationWarning
     {...props}
   />
 ))
@@ -518,6 +522,7 @@ const SidebarMenuItem = React.forwardRef<
     ref={ref}
     data-sidebar="menu-item"
     className={cn("group/menu-item relative", className)}
+    suppressHydrationWarning
     {...props}
   />
 ))
@@ -720,6 +725,7 @@ const SidebarMenuSub = React.forwardRef<
       "group-data-[collapsible=icon]:hidden",
       className
     )}
+    suppressHydrationWarning
     {...props}
   />
 ))
