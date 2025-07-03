@@ -10,15 +10,11 @@ const productos: Producto[] = globalForDb.productos;
 // -----------------------------------------
 
 export async function getAllProducts(): Promise<Producto[]> {
-  // TODO: Reemplazar con la lógica para obtener todos los productos de la base de datos.
-  // Ejemplo: return await db.product.findMany();
   console.log("Obteniendo todos los productos del almacén en memoria.");
-  return JSON.parse(JSON.stringify(productos)); // Devolvemos una copia para evitar mutaciones.
+  return JSON.parse(JSON.stringify(productos)); 
 }
 
 export async function getProductById(id: string): Promise<Producto | undefined> {
-  // TODO: Reemplazar con la lógica para obtener un producto por su ID de la base de datos.
-  // Ejemplo: return await db.product.findUnique({ where: { id } });
   console.log(`Buscando producto con id: ${id}`);
   return productos.find(p => p.id === id);
 }
@@ -31,14 +27,14 @@ export async function createProduct(
     id: `prod_${Date.now()}`,
     nombre: productData.nombre,
     categoria: productData.categoria,
-    costo: productData.costo || 0,
-    precio: productData.precio || 0,
-    cantidad: productData.cantidad || 0,
+    costo: productData.costo ?? 0,
+    precio: productData.precio ?? 0,
+    cantidad: productData.cantidad ?? 0,
     fechaVencimiento: new Date(productData.fechaVencimiento),
     numeroLote: productData.numeroLote,
     proveedorId: productData.proveedorId,
     proveedorNombre: productData.proveedorNombre,
-    descuento: productData.descuento || 0,
+    descuento: productData.descuento ?? 0,
     fechaInicioGarantia: productData.fechaInicioGarantia ? new Date(productData.fechaInicioGarantia) : undefined,
     fechaFinGarantia: productData.fechaFinGarantia ? new Date(productData.fechaFinGarantia) : undefined,
   };
@@ -61,24 +57,29 @@ export async function createProduct(
 }
 
 export async function updateProduct(id: string, productData: Partial<Omit<Producto, 'id'>>): Promise<Producto | null> {
-    // TODO: Reemplazar con la lógica para actualizar un producto en la base de datos.
   const productIndex = productos.findIndex(p => p.id === id);
   if (productIndex === -1) {
     console.log(`Producto con id: ${id} no encontrado para actualizar.`);
     return null;
   }
   
-  const productoAnterior = { ...productos[productIndex] };
+  const productoAnterior = productos[productIndex];
   const stockAnterior = productoAnterior.cantidad;
 
   const productoActualizado: Producto = {
-    ...productoAnterior,
-    ...productData,
-    costo: productData.costo || 0,
-    precio: productData.precio || 0,
-    cantidad: productData.cantidad || 0,
-    descuento: productData.descuento || 0,
-    fechaVencimiento: new Date(productData.fechaVencimiento || productoAnterior.fechaVencimiento),
+      ...productoAnterior,
+      nombre: productData.nombre ?? productoAnterior.nombre,
+      categoria: productData.categoria ?? productoAnterior.categoria,
+      costo: productData.costo ?? productoAnterior.costo,
+      precio: productData.precio ?? productoAnterior.precio,
+      cantidad: productData.cantidad ?? productoAnterior.cantidad,
+      fechaVencimiento: productData.fechaVencimiento ? new Date(productData.fechaVencimiento) : productoAnterior.fechaVencimiento,
+      numeroLote: productData.numeroLote ?? productoAnterior.numeroLote,
+      proveedorId: productData.proveedorId === '' ? undefined : productData.proveedorId ?? productoAnterior.proveedorId,
+      proveedorNombre: productData.proveedorNombre === '' ? undefined : productData.proveedorNombre ?? productoAnterior.proveedorNombre,
+      descuento: productData.descuento ?? productoAnterior.descuento,
+      fechaInicioGarantia: productData.fechaInicioGarantia ? new Date(productData.fechaInicioGarantia) : productoAnterior.fechaInicioGarantia,
+      fechaFinGarantia: productData.fechaFinGarantia ? new Date(productData.fechaFinGarantia) : productoAnterior.fechaFinGarantia,
   };
   
   const stockNuevo = productoActualizado.cantidad;
@@ -178,8 +179,6 @@ export async function registerProductEntry(id: string, cantidadEntrada: number, 
 
 
 export async function deleteProduct(id: string): Promise<boolean> {
-    // TODO: Reemplazar con la lógica para eliminar un producto de la base de datos.
-    // Ejemplo: await db.product.delete({ where: { id } }); return true;
   const productIndex = productos.findIndex(p => p.id === id);
   if (productIndex === -1) {
     console.log(`Producto con id: ${id} no encontrado para eliminar.`);
