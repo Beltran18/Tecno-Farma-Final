@@ -57,8 +57,8 @@ export async function updatePedidoStatus(id: string, estado: EstadoPedido): Prom
   if (pedido.estado === estado) return pedido;
 
   if (estado === EstadoPedido.COMPLETADO) {
-    if (pedido.estado !== EstadoPedido.PENDIENTE) {
-        throw new Error('Solo se pueden completar pedidos pendientes.');
+    if (pedido.estado !== EstadoPedido.ENVIADO) {
+        throw new Error("Solo se pueden completar pedidos que ya han sido marcados como 'Enviado'.");
     }
     // Lógica para añadir stock
     for (const item of pedido.productos) {
