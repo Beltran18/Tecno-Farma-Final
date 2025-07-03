@@ -29,7 +29,7 @@ import {
   SidebarTrigger,
 } from '@/components/ui/sidebar';
 import { Button } from '@/components/ui/button';
-import { Home, User, LogOut, Settings, Tag, Truck, CalendarDays, LifeBuoy, FileText, BookOpenCheck, NotebookPen, ClipboardList } from 'lucide-react';
+import { Home, User, LogOut, Settings, Tag, Truck, CalendarDays, LifeBuoy, FileText, BookOpenCheck, NotebookPen, ClipboardList, Undo2 } from 'lucide-react';
 import { Logo } from '@/components/logo';
 import { usarNotificacion } from '@/hooks/usar-notificacion';
 
@@ -60,6 +60,7 @@ export default function DisposicionPanel({
     if (pathname.startsWith('/panel/soporte')) return 'Soporte Técnico';
     if (pathname.startsWith('/panel/recetas')) return 'Gestión de Recetas';
     if (pathname.startsWith('/panel/pedidos')) return 'Gestión de Pedidos';
+    if (pathname.startsWith('/panel/devoluciones')) return 'Devoluciones a Proveedores';
     return 'TecnoFarma';
   };
   
@@ -103,6 +104,12 @@ export default function DisposicionPanel({
               </SidebarMenuButton>
             </SidebarMenuItem>
             <SidebarMenuItem>
+              <SidebarMenuButton href="/panel/devoluciones" tooltip="Devoluciones" isActive={pathname.startsWith('/panel/devoluciones')}>
+                <Undo2 />
+                Devoluciones
+              </SidebarMenuButton>
+            </SidebarMenuItem>
+            <SidebarMenuItem>
               <SidebarMenuButton href="/panel/categorias" tooltip="Categorías" isActive={pathname.startsWith('/panel/categorias')}>
                 <Tag />
                 Categorías
@@ -143,12 +150,12 @@ export default function DisposicionPanel({
         <SidebarFooter>
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="ghost" className="h-auto w-full justify-start gap-2 p-2">
+              <Button variant="ghost" className="h-auto w-full justify-start gap-2 p-2" suppressHydrationWarning>
                 <Avatar className="h-8 w-8">
                   <AvatarImage src={usuarioSimulado.photoURL || `https://placehold.co/100x100.png`} alt={usuarioSimulado.displayName || 'Usuario'} />
                   <AvatarFallback>{usuarioSimulado.email?.charAt(0).toUpperCase() || 'U'}</AvatarFallback>
                 </Avatar>
-                <div className="text-left w-full overflow-hidden">
+                <div className="text-left w-full overflow-hidden" suppressHydrationWarning>
                   <p className="text-sm font-medium truncate">{usuarioSimulado.displayName || 'Usuario'}</p>
                   <p className="text-xs text-muted-foreground truncate">{usuarioSimulado.email}</p>
                 </div>

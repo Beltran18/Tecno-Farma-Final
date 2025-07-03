@@ -30,6 +30,7 @@ export enum TipoMovimiento {
   IMPORTACION_CSV = 'Importación CSV',
   DISPENSADO_RECETA = 'Dispensado por Receta',
   ENTRADA_PEDIDO = 'Entrada por Pedido',
+  DEVOLUCION_PROVEEDOR = 'Devolución a Proveedor',
 }
 
 export interface MovimientoInventario {
@@ -77,4 +78,15 @@ export interface PedidoReposicion {
     cantidadPedida: number;
   }[];
   estado: EstadoPedido;
+}
+
+export interface DevolucionProveedor {
+  id: string;
+  fecha: Date;
+  productoId: string;
+  productoNombre: string;
+  proveedorId: string;
+  proveedorNombre: string;
+  cantidadDevuelta: number;
+  motivo: string;
 }

@@ -92,7 +92,7 @@ export async function registerProductExit(
   id: string, 
   cantidadSalida: number, 
   notas?: string,
-  tipo: TipoMovimiento.SALIDA_MANUAL | TipoMovimiento.DISPENSADO_RECETA = TipoMovimiento.SALIDA_MANUAL
+  tipo: TipoMovimiento.SALIDA_MANUAL | TipoMovimiento.DISPENSADO_RECETA | TipoMovimiento.DEVOLUCION_PROVEEDOR = TipoMovimiento.SALIDA_MANUAL
 ): Promise<Producto | null> {
   const productIndex = productos.findIndex(p => p.id === id);
   if (productIndex === -1) {
