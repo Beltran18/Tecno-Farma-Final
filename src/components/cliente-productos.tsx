@@ -1,3 +1,4 @@
+
 'use client';
 
 import React, { useState, useMemo, useEffect } from 'react';
@@ -586,10 +587,10 @@ function FormularioProducto({
     if (producto) {
       setNombre(producto.nombre);
       setCategoria(producto.categoria);
-      setCosto(String(producto.costo || ''));
-      setPrecio(String(producto.precio || ''));
-      setDescuento(String(producto.descuento || ''));
-      setCantidad(String(producto.cantidad || ''));
+      setCosto(String(producto.costo ?? ''));
+      setPrecio(String(producto.precio ?? ''));
+      setDescuento(String(producto.descuento ?? ''));
+      setCantidad(String(producto.cantidad ?? ''));
       setFechaVencimiento(new Date(producto.fechaVencimiento));
       setNumeroLote(producto.numeroLote);
       setProveedorId(producto.proveedorId || '');
@@ -617,14 +618,14 @@ function FormularioProducto({
     const proveedorSeleccionado = proveedores.find(p => p.id === proveedorId);
     
     const datosProducto = { 
-        nombre: nombre, 
-        categoria: categoria, 
-        costo: Number(costo) || 0,
-        precio: Number(precio) || 0, 
-        descuento: Number(descuento) || 0,
-        cantidad: Number(cantidad) || 0,
-        fechaVencimiento: fechaVencimiento, 
-        numeroLote: numeroLote,
+        nombre, 
+        categoria, 
+        costo: Number(costo),
+        precio: Number(precio), 
+        descuento: Number(descuento),
+        cantidad: Number(cantidad),
+        fechaVencimiento, 
+        numeroLote,
         proveedorId: proveedorSeleccionado?.id,
         proveedorNombre: proveedorSeleccionado?.nombre,
         fechaInicioGarantia,
@@ -968,3 +969,5 @@ function HistorialVentasDialog({ producto, open, onOpenChange }: { producto: Pro
     </Dialog>
   );
 }
+
+    

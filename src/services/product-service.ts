@@ -1,3 +1,4 @@
+
 import { type Producto, TipoMovimiento } from '@/lib/types';
 import { logMovement } from './movement-service';
 
@@ -28,14 +29,14 @@ export async function createProduct(
     id: `prod_${Date.now()}`,
     nombre: String(productData.nombre),
     categoria: productData.categoria,
-    costo: Number(productData.costo) || 0,
-    precio: Number(productData.precio) || 0,
-    cantidad: Number(productData.cantidad) || 0,
+    costo: Number(productData.costo),
+    precio: Number(productData.precio),
+    cantidad: Number(productData.cantidad),
     fechaVencimiento: new Date(productData.fechaVencimiento),
     numeroLote: productData.numeroLote,
     proveedorId: productData.proveedorId,
     proveedorNombre: productData.proveedorNombre,
-    descuento: Number(productData.descuento) || 0,
+    descuento: Number(productData.descuento),
     fechaInicioGarantia: productData.fechaInicioGarantia ? new Date(productData.fechaInicioGarantia) : undefined,
     fechaFinGarantia: productData.fechaFinGarantia ? new Date(productData.fechaFinGarantia) : undefined,
   };
@@ -71,14 +72,14 @@ export async function updateProduct(id: string, productData: Partial<Omit<Produc
       ...productoAnterior,
       nombre: productData.nombre ?? productoAnterior.nombre,
       categoria: productData.categoria ?? productoAnterior.categoria,
-      costo: productData.costo !== undefined ? (Number(productData.costo) || 0) : productoAnterior.costo,
-      precio: productData.precio !== undefined ? (Number(productData.precio) || 0) : productoAnterior.precio,
-      cantidad: productData.cantidad !== undefined ? (Number(productData.cantidad) || 0) : productoAnterior.cantidad,
+      costo: productData.costo !== undefined ? Number(productData.costo) : productoAnterior.costo,
+      precio: productData.precio !== undefined ? Number(productData.precio) : productoAnterior.precio,
+      cantidad: productData.cantidad !== undefined ? Number(productData.cantidad) : productoAnterior.cantidad,
       fechaVencimiento: productData.fechaVencimiento ? new Date(productData.fechaVencimiento) : productoAnterior.fechaVencimiento,
       numeroLote: productData.numeroLote ?? productoAnterior.numeroLote,
       proveedorId: productData.proveedorId === '' ? undefined : productData.proveedorId ?? productoAnterior.proveedorId,
       proveedorNombre: productData.proveedorNombre === '' ? undefined : productData.proveedorNombre ?? productoAnterior.proveedorNombre,
-      descuento: productData.descuento !== undefined ? (Number(productData.descuento) || 0) : productoAnterior.descuento,
+      descuento: productData.descuento !== undefined ? Number(productData.descuento) : productoAnterior.descuento,
       fechaInicioGarantia: productData.fechaInicioGarantia ? new Date(productData.fechaInicioGarantia) : productData.fechaInicioGarantia === null ? undefined : productoAnterior.fechaInicioGarantia,
       fechaFinGarantia: productData.fechaFinGarantia ? new Date(productData.fechaFinGarantia) : productData.fechaFinGarantia === null ? undefined : productoAnterior.fechaFinGarantia,
   };
@@ -189,3 +190,5 @@ export async function deleteProduct(id: string): Promise<boolean> {
   console.log(`Producto con id: ${id} eliminado del almacén en memoria.`);
   return true;
 }
+
+    
