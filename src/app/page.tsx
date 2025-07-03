@@ -1,8 +1,7 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
 import { useForm, type SubmitHandler } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -22,20 +21,13 @@ const loginSchema = z.object({
 type LoginSchemaType = z.infer<typeof loginSchema>;
 
 export default function PaginaInicioSesion() {
-  const router = useRouter();
-  const { user, login } = useAuth();
+  const { login } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
   const { notificacion } = usarNotificacion();
 
   const { register, handleSubmit, formState: { errors } } = useForm<LoginSchemaType>({
     resolver: zodResolver(loginSchema),
   });
-
-  useEffect(() => {
-    if (user) {
-      router.push('/panel');
-    }
-  }, [user, router]);
 
   const handleLogin: SubmitHandler<LoginSchemaType> = async (data) => {
     setIsLoading(true);

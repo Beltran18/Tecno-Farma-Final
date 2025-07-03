@@ -3,7 +3,7 @@
 
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import { type Empleado, RolEmpleado } from '@/lib/types';
-import { useRouter } from 'next/navigation';
+import { useRouter, usePathname } from 'next/navigation';
 import { usarNotificacion } from '@/hooks/usar-notificacion';
 
 type AuthContextType = {
@@ -20,6 +20,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<Omit<Empleado, 'password'> | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const router = useRouter();
+  const pathname = usePathname();
   const { notificacion } = usarNotificacion();
 
   const fetchUser = useCallback(async () => {
@@ -42,6 +43,24 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     fetchUser();
   }, [fetchUser]);
 
+  // Lógica de redirección centralizada
+  useEffect(() => {
+    if (isLoading) return; // No hacer nada mientras se carga el estado inicial
+
+    const esPaginaDeAutenticacion = pathname === '/' || pathname.startsWith('/registro') || pathname.startsWith('/recuperar-contrasena') || pathname.startsWith('/nueva-contrasena');
+
+    // Si el usuario está logueado y en una página de autenticación, redirigir al panel
+    if (user && esPaginaDeAutenticacion) {
+        router.push('/panel');
+    }
+
+    // Si el usuario no está logueado y en una página protegida, redirigir al login
+    if (!user && pathname.startsWith('/panel')) {
+        router.push('/');
+    }
+  }, [user, isLoading, pathname, router]);
+
+
   const login = async (email: string, password: string) => {
     const response = await fetch('/api/auth/login', {
       method: 'POST',
@@ -55,7 +74,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
     setUser(data);
     notificacion({ title: '¡Bienvenido!', description: 'Has iniciado sesión correctamente.' });
-    router.push('/panel');
+    // La redirección la maneja el useEffect
   };
 
   const register = async (nombre: string, email: string, password: string) => {
@@ -71,14 +90,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
     setUser(data);
     notificacion({ title: '¡Registro exitoso!', description: 'Tu cuenta ha sido creada.' });
-    router.push('/panel');
+    // La redirección la maneja el useEffect
   };
 
   const logout = async () => {
     await fetch('/api/auth/logout', { method: 'POST' });
     setUser(null);
     notificacion({ title: 'Sesión cerrada', description: 'Vuelve pronto.' });
-    router.push('/');
+    // La redirección la maneja el useEffect
   };
 
   return (

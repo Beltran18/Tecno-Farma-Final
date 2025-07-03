@@ -1,8 +1,7 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
 import { useForm, type SubmitHandler } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -23,20 +22,13 @@ const registroSchema = z.object({
 type RegistroSchemaType = z.infer<typeof registroSchema>;
 
 export default function PaginaRegistro() {
-  const router = useRouter();
-  const { user, register: registerUser } = useAuth();
+  const { register: registerUser } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
   const { notificacion } = usarNotificacion();
 
   const { register, handleSubmit, formState: { errors } } = useForm<RegistroSchemaType>({
     resolver: zodResolver(registroSchema),
   });
-
-  useEffect(() => {
-    if (user) {
-      router.push('/panel');
-    }
-  }, [user, router]);
 
   const handleSignup: SubmitHandler<RegistroSchemaType> = async (data) => {
     setIsLoading(true);
