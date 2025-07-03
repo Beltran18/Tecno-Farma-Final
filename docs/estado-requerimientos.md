@@ -49,7 +49,7 @@ Este documento realiza un seguimiento del progreso de la implementación de los 
 | **RF036** | El sistema debe permitir al administrador configurar notificaciones automáticas por correo electrónico para alertas críticas de inventario. | ❌ **Pendiente** | |
 | **RF037** | El sistema debe permitir al usuario consultar el historial de ventas de un producto específico. | ❌ **Pendiente** | |
 | **RF038** | El sistema debe permitir al administrador registrar la trazabilidad completa de los lotes de medicamentos para cumplir con regulaciones sanitarias. | ❌ **Pendiente** | |
-| **RF039** | El sistema debe permitir al administrador configurar las alertas para la revisión de productos no vendidos o de lento movimiento. | ❌ **Pendiente** | |
+| **RF039** | El sistema debe permitir al administrador configurar las alertas para la revisión de productos no vendidos o de lento movimiento. | ✅ **Completado** | Se pueden configurar los días para considerar un producto como de "lento movimiento" y se listan en las alertas. |
 | **RF040** | El sistema debe sugerir reposiciones cuando un producto esté por debajo del stock mínimo definido. | ❌ **Pendiente** | |
 | **RF041** | El sistema debe permitir al administrador realizar la creación de paquetes o kits de productos, gestionando su inventario como una unidad. | ❌ **Pendiente** | |
 | **RF042** | El sistema debe permitir al administrador incluir medidas de seguridad para la protección de datos sensibles, incluyendo cifrado de datos y copias de seguridad automáticas. | ❌ **Pendiente** | |

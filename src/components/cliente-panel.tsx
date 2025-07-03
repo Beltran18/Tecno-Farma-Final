@@ -21,8 +21,8 @@ import {
 } from '@/components/ui/alert';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { DollarSign, Package, AlertTriangle, Settings, CalendarOff, PackagePlus } from 'lucide-react';
-import { format, isBefore, isWithinInterval, addDays, subDays } from 'date-fns';
+import { DollarSign, Package, AlertTriangle, Settings, CalendarOff, PackagePlus, TimerOff } from 'lucide-react';
+import { format, isBefore, isWithinInterval, addDays, subDays, formatDistanceToNow } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { Pie, PieChart, Cell } from 'recharts';
 import {
@@ -32,16 +32,19 @@ import {
   type ChartConfig,
 } from '@/components/ui/chart';
 
-import { type Producto } from '@/lib/types';
+import { type Producto, type MovimientoInventario, TipoMovimiento } from '@/lib/types';
 
 interface ClientePanelProps {
   productosIniciales: Producto[];
+  movimientosIniciales: MovimientoInventario[];
 }
 
-export function ClientePanel({ productosIniciales }: ClientePanelProps) {
+export function ClientePanel({ productosIniciales, movimientosIniciales }: ClientePanelProps) {
   const [productos, setProductos] = useState<Producto[]>(productosIniciales);
+  const [movimientos, setMovimientos] = useState<MovimientoInventario[]>(movimientosIniciales);
   const [umbralStockBajo, setUmbralStockBajo] = useState(10);
   const [umbralDiasVencimiento, setUmbralDiasVencimiento] = useState(30);
+  const [umbralDiasLentoMovimiento, setUmbralDiasLentoMovimiento] = useState(90);
   const [alertasVencimiento, setAlertasVencimiento] = useState<Producto[]>([]);
   const [isClient, setIsClient] = useState(false);
 
@@ -53,6 +56,10 @@ export function ClientePanel({ productosIniciales }: ClientePanelProps) {
     // Actualiza el estado interno si las props cambian
     setProductos(productosIniciales);
   }, [productosIniciales]);
+
+   useEffect(() => {
+    setMovimientos(movimientosIniciales);
+  }, [movimientosIniciales]);
   
   useEffect(() => {
     if (!isClient) return;
@@ -73,6 +80,42 @@ export function ClientePanel({ productosIniciales }: ClientePanelProps) {
     productos.filter((p) => p.cantidad > 0 && p.cantidad <= umbralStockBajo),
     [productos, umbralStockBajo]
   );
+  
+  const alertasLentoMovimiento = useMemo(() => {
+    if (!isClient) return [];
+
+    const umbralFecha = subDays(new Date(), umbralDiasLentoMovimiento);
+    const tiposDeSalida = [TipoMovimiento.SALIDA_MANUAL, TipoMovimiento.DISPENSADO_RECETA];
+
+    const ultimoMovimientoSalida = new Map<string, Date>();
+    movimientos
+      .filter(m => tiposDeSalida.includes(m.tipo))
+      .sort((a, b) => new Date(b.fecha).getTime() - new Date(a.fecha).getTime())
+      .forEach(m => {
+        if (!ultimoMovimientoSalida.has(m.productoId)) {
+          ultimoMovimientoSalida.set(m.productoId, new Date(m.fecha));
+        }
+      });
+
+    return productos.filter(producto => {
+      const fechaUltimoMovimiento = ultimoMovimientoSalida.get(producto.id);
+      
+      if (!fechaUltimoMovimiento) {
+        const movimientoCreacion = movimientos.find(m => 
+            m.productoId === producto.id && 
+            [TipoMovimiento.CREACION_INICIAL, TipoMovimiento.IMPORTACION_CSV].includes(m.tipo)
+        );
+        const fechaCreacion = movimientoCreacion ? new Date(movimientoCreacion.fecha) : new Date(0);
+        return isBefore(fechaCreacion, umbralFecha);
+      }
+      
+      return isBefore(fechaUltimoMovimiento, umbralFecha);
+    }).map(producto => ({
+        ...producto,
+        ultimoMovimiento: ultimoMovimientoSalida.get(producto.id)
+    }));
+  }, [productos, movimientos, umbralDiasLentoMovimiento, isClient]);
+
 
   const productosRecientes = useMemo(() => {
     return [...productos]
@@ -252,7 +295,7 @@ export function ClientePanel({ productosIniciales }: ClientePanelProps) {
             </div>
           </CardHeader>
           <CardContent>
-            <div className="grid md:grid-cols-2 gap-6">
+            <div className="grid md:grid-cols-3 gap-6">
               <div className="space-y-2">
                 <Label htmlFor="stock-threshold">Umbral de Stock Bajo</Label>
                 <Input
@@ -289,11 +332,30 @@ export function ClientePanel({ productosIniciales }: ClientePanelProps) {
                   Alertar sobre productos que vencen en los próximos X días.
                 </p>
               </div>
+              <div className="space-y-2">
+                <Label htmlFor="slow-moving-threshold">
+                  Umbral de Lento Movimiento (días)
+                </Label>
+                <Input
+                  id="slow-moving-threshold"
+                  type="number"
+                  value={umbralDiasLentoMovimiento}
+                  onChange={(e) =>
+                    setUmbralDiasLentoMovimiento(
+                      Number(e.target.value) >= 0 ? Number(e.target.value) : 0
+                    )
+                  }
+                  min="0"
+                />
+                <p className="text-sm text-muted-foreground">
+                  Alertar sobre productos sin salida en los últimos X días.
+                </p>
+              </div>
             </div>
           </CardContent>
         </Card>
 
-         <div className="grid gap-6">
+         <div className="space-y-6">
             <div>
                <h3 className="text-lg font-medium mb-2">Alertas de Stock Bajo ({alertasStockBajo.length})</h3>
                <div className="space-y-4">
@@ -324,6 +386,26 @@ export function ClientePanel({ productosIniciales }: ClientePanelProps) {
                        </Alert>
                      ))
                   ) : <p className="text-sm text-muted-foreground">No hay productos próximos a vencer.</p>}
+               </div>
+            </div>
+            <div>
+               <h3 className="text-lg font-medium mb-2">Alertas de Lento Movimiento ({alertasLentoMovimiento.length})</h3>
+               <div className="space-y-4">
+                  {alertasLentoMovimiento.length > 0 ? (
+                      alertasLentoMovimiento.map(producto => (
+                        <Alert key={producto.id}>
+                          <TimerOff className="h-4 w-4" />
+                          <AlertTitle>{producto.nombre}</AlertTitle>
+                          <AlertDescription>
+                            {isClient && (producto as any).ultimoMovimiento 
+                                ? `Última salida ${formatDistanceToNow(new Date((producto as any).ultimoMovimiento), { locale: es, addSuffix: true })}.`
+                                : 'No ha registrado salidas.'
+                            }
+                            {' '}Stock actual: {producto.cantidad} unidades.
+                          </AlertDescription>
+                        </Alert>
+                      ))
+                  ) : <p className="text-sm text-muted-foreground">No hay productos con movimiento lento.</p>}
                </div>
             </div>
          </div>

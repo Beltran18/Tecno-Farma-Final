@@ -22,3 +22,7 @@ export async function getMovementHistory(productoId: string): Promise<Movimiento
   console.log(`Historial encontrado para ${productoId}: ${historial.length} movimientos.`);
   return JSON.parse(JSON.stringify(historial));
 }
+
+export async function getAllMovements(): Promise<MovimientoInventario[]> {
+  return JSON.parse(JSON.stringify(movimientos));
+}

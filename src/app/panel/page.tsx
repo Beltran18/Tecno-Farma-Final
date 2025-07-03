@@ -1,6 +1,7 @@
 import { ClientePanel } from '@/components/cliente-panel';
-import { type Producto } from '@/lib/types';
+import { type Producto, type MovimientoInventario } from '@/lib/types';
 import { getAllProducts } from '@/services/product-service';
+import { getAllMovements } from '@/services/movement-service';
 
 async function getProducts(): Promise<Producto[]> {
   try {
@@ -12,8 +13,21 @@ async function getProducts(): Promise<Producto[]> {
   }
 }
 
-export default async function PaginaPanel() {
-  const productos = await getProducts();
+async function getMovements(): Promise<MovimientoInventario[]> {
+  try {
+    const movimientos = await getAllMovements();
+    return movimientos;
+  } catch (error) {
+    console.error('Failed to fetch movements:', error);
+    return [];
+  }
+}
 
-  return <ClientePanel productosIniciales={productos} />;
+export default async function PaginaPanel() {
+  const [productos, movimientos] = await Promise.all([
+      getProducts(),
+      getMovements()
+  ]);
+
+  return <ClientePanel productosIniciales={productos} movimientosIniciales={movimientos} />;
 }
