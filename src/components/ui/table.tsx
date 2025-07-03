@@ -8,10 +8,11 @@ const Table = React.forwardRef<
   HTMLTableElement,
   React.HTMLAttributes<HTMLTableElement>
 >(({ className, ...props }, ref) => (
-  <div className="relative w-full overflow-auto">
+  <div className="relative w-full overflow-auto" suppressHydrationWarning>
     <table
       ref={ref}
       className={cn("w-full caption-bottom text-sm", className)}
+      suppressHydrationWarning
       {...props}
     />
   </div>
@@ -22,7 +23,7 @@ const TableHeader = React.forwardRef<
   HTMLTableSectionElement,
   React.HTMLAttributes<HTMLTableSectionElement>
 >(({ className, ...props }, ref) => (
-  <thead ref={ref} className={cn("[&_tr]:border-b", className)} {...props} />
+  <thead ref={ref} className={cn("[&_tr]:border-b", className)} suppressHydrationWarning {...props} />
 ))
 TableHeader.displayName = "TableHeader"
 
@@ -33,6 +34,7 @@ const TableBody = React.forwardRef<
   <tbody
     ref={ref}
     className={cn("[&_tr:last-child]:border-0", className)}
+    suppressHydrationWarning
     {...props}
   />
 ))
@@ -48,6 +50,7 @@ const TableFooter = React.forwardRef<
       "border-t bg-muted/50 font-medium [&>tr]:last:border-b-0",
       className
     )}
+    suppressHydrationWarning
     {...props}
   />
 ))
@@ -63,6 +66,7 @@ const TableRow = React.forwardRef<
       "border-b transition-colors hover:bg-muted/50 data-[state=selected]:bg-muted",
       className
     )}
+    suppressHydrationWarning
     {...props}
   />
 ))
@@ -78,6 +82,7 @@ const TableHead = React.forwardRef<
       "h-12 px-4 text-left align-middle font-medium text-muted-foreground [&:has([role=checkbox])]:pr-0",
       className
     )}
+    suppressHydrationWarning
     {...props}
   />
 ))
@@ -90,6 +95,7 @@ const TableCell = React.forwardRef<
   <td
     ref={ref}
     className={cn("p-4 align-middle [&:has([role=checkbox])]:pr-0", className)}
+    suppressHydrationWarning
     {...props}
   />
 ))
@@ -102,6 +108,7 @@ const TableCaption = React.forwardRef<
   <caption
     ref={ref}
     className={cn("mt-4 text-sm text-muted-foreground", className)}
+    suppressHydrationWarning
     {...props}
   />
 ))

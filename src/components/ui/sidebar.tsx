@@ -188,6 +188,7 @@ const Sidebar = React.forwardRef<
             className
           )}
           ref={ref}
+          suppressHydrationWarning
           {...props}
         >
           {children}
@@ -208,9 +209,10 @@ const Sidebar = React.forwardRef<
               } as React.CSSProperties
             }
             side={side}
+            suppressHydrationWarning
           >
             <SheetTitle className="sr-only">Menu</SheetTitle>
-            <div className="flex h-full w-full flex-col">{children}</div>
+            <div className="flex h-full w-full flex-col" suppressHydrationWarning>{children}</div>
           </SheetContent>
         </Sheet>
       )
@@ -691,6 +693,7 @@ const SidebarMenuSkeleton = React.forwardRef<
       ref={ref}
       data-sidebar="menu-skeleton"
       className={cn("rounded-md h-8 flex gap-2 px-2 items-center", className)}
+      suppressHydrationWarning
       {...props}
     >
       {showIcon && (
@@ -734,7 +737,7 @@ SidebarMenuSub.displayName = "SidebarMenuSub"
 const SidebarMenuSubItem = React.forwardRef<
   HTMLLIElement,
   React.ComponentProps<"li">
->(({ ...props }, ref) => <li ref={ref} {...props} />)
+>(({ ...props }, ref) => <li ref={ref} suppressHydrationWarning {...props} />)
 SidebarMenuSubItem.displayName = "SidebarMenuSubItem"
 
 const SidebarMenuSubButton = React.forwardRef<
