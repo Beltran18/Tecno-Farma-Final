@@ -27,12 +27,22 @@ export async function createProduct(
   productData: Omit<Producto, 'id'>,
   tipo: TipoMovimiento.CREACION_INICIAL | TipoMovimiento.IMPORTACION_CSV = TipoMovimiento.CREACION_INICIAL
 ): Promise<Producto> {
-  // TODO: Reemplazar con la lógica para crear un producto en la base de datos.
   const nuevoProducto: Producto = {
-    ...productData,
     id: `prod_${Date.now()}`,
+    nombre: productData.nombre,
+    categoria: productData.categoria,
+    costo: productData.costo || 0,
+    precio: productData.precio || 0,
+    cantidad: productData.cantidad || 0,
     fechaVencimiento: new Date(productData.fechaVencimiento),
+    numeroLote: productData.numeroLote,
+    proveedorId: productData.proveedorId,
+    proveedorNombre: productData.proveedorNombre,
+    descuento: productData.descuento || 0,
+    fechaInicioGarantia: productData.fechaInicioGarantia ? new Date(productData.fechaInicioGarantia) : undefined,
+    fechaFinGarantia: productData.fechaFinGarantia ? new Date(productData.fechaFinGarantia) : undefined,
   };
+
   productos.push(nuevoProducto);
   console.log("Producto nuevo agregado al almacén en memoria:", nuevoProducto);
   
@@ -64,6 +74,10 @@ export async function updateProduct(id: string, productData: Partial<Omit<Produc
   const productoActualizado: Producto = {
     ...productoAnterior,
     ...productData,
+    costo: productData.costo || 0,
+    precio: productData.precio || 0,
+    cantidad: productData.cantidad || 0,
+    descuento: productData.descuento || 0,
     fechaVencimiento: new Date(productData.fechaVencimiento || productoAnterior.fechaVencimiento),
   };
   
