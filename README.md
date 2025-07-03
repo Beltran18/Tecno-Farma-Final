@@ -60,3 +60,13 @@ npm run dev
 ```
 
 Abre [http://localhost:9002](http://localhost:9002) en tu navegador para ver la aplicación.
+
+### 5. Ejecutar las Pruebas
+
+El proyecto está configurado con Jest y React Testing Library para garantizar la calidad del código. Para ejecutar las pruebas, usa el siguiente comando:
+
+```bash
+npm test
+```
+
+Esto iniciará Jest en modo "watch", que ejecuta automáticamente las pruebas cada vez que guardas un cambio en un archivo.
