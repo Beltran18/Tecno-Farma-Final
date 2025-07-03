@@ -146,8 +146,8 @@ export function ClientePedidos({ pedidosIniciales, productosInventario, proveedo
     <>
       <Card>
         <CardHeader>
-          <div className="flex justify-between items-center">
-            <div>
+          <div className="flex justify-between items-center" suppressHydrationWarning>
+            <div suppressHydrationWarning>
               <CardTitle>Pedidos de Reposición</CardTitle>
               <CardDescription>
                 Gestiona los pedidos a tus proveedores.
@@ -160,7 +160,7 @@ export function ClientePedidos({ pedidosIniciales, productosInventario, proveedo
           </div>
         </CardHeader>
         <CardContent>
-          <div className="rounded-md border">
+          <div className="rounded-md border" suppressHydrationWarning>
             <Table>
               <TableHeader>
                 <TableRow>
