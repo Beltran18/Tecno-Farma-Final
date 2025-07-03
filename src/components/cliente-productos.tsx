@@ -30,10 +30,20 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
-import { MoreHorizontal, PlusCircle, Search, Calendar as CalendarIcon, Upload, Download, Printer, MinusCircle, History } from 'lucide-react';
+import { MoreHorizontal, PlusCircle, Search, Calendar as CalendarIcon, Upload, Download, Printer, MinusCircle, History, Trash2 } from 'lucide-react';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Calendar } from '@/components/ui/calendar';
 import { format, isBefore } from 'date-fns';
@@ -63,6 +73,8 @@ export function ClienteProductos({ productosIniciales, categoriasIniciales, prov
   const [productoParaSalida, setProductoParaSalida] = useState<Producto | null>(null);
   const [historyDialogOpen, setHistoryDialogOpen] = useState(false);
   const [productoParaHistorial, setProductoParaHistorial] = useState<Producto | null>(null);
+  const [productoParaEliminar, setProductoParaEliminar] = useState<Producto | null>(null);
+
 
   const { notificacion } = usarNotificacion();
   const router = useRouter();
@@ -156,9 +168,11 @@ export function ClienteProductos({ productosIniciales, categoriasIniciales, prov
     }
   };
 
-  const eliminarProducto = async (productoId: string) => {
+  const handleEliminarProducto = async () => {
+     if (!productoParaEliminar) return;
+
      try {
-        const response = await fetch(`/api/productos/${productoId}`, {
+        const response = await fetch(`/api/productos/${productoParaEliminar.id}`, {
             method: 'DELETE',
         });
 
@@ -167,7 +181,7 @@ export function ClienteProductos({ productosIniciales, categoriasIniciales, prov
             throw new Error(errorData.message || 'No se pudo eliminar el producto.');
         }
 
-        setProductos(productos.filter(p => p.id !== productoId));
+        setProductos(productos.filter(p => p.id !== productoParaEliminar.id));
         notificacion({
             title: 'Éxito',
             description: 'Producto eliminado correctamente.',
@@ -179,6 +193,8 @@ export function ClienteProductos({ productosIniciales, categoriasIniciales, prov
             description: error.message || 'No se pudo eliminar el producto. Inténtalo de nuevo.',
             variant: 'destructive',
         });
+    } finally {
+        setProductoParaEliminar(null);
     }
   }
 
@@ -416,7 +432,10 @@ export function ClienteProductos({ productosIniciales, categoriasIniciales, prov
                             <Printer className="mr-2 h-4 w-4" />
                             <span>Imprimir Etiqueta</span>
                           </DropdownMenuItem>
-                          <DropdownMenuItem onSelect={() => eliminarProducto(producto.id)} className="text-destructive">Eliminar</DropdownMenuItem>
+                          <DropdownMenuItem onSelect={() => setProductoParaEliminar(producto)} className="text-destructive">
+                            <Trash2 className="mr-2 h-4 w-4" />
+                            <span>Eliminar</span>
+                          </DropdownMenuItem>
                         </DropdownMenuContent>
                       </DropdownMenu>
                     </TableCell>
@@ -477,6 +496,21 @@ export function ClienteProductos({ productosIniciales, categoriasIniciales, prov
         open={historyDialogOpen}
         onOpenChange={setHistoryDialogOpen}
       />
+
+      <AlertDialog open={!!productoParaEliminar} onOpenChange={(open) => !open && setProductoParaEliminar(null)}>
+        <AlertDialogContent>
+            <AlertDialogHeader>
+                <AlertDialogTitle>¿Estás seguro de eliminar este producto?</AlertDialogTitle>
+                <AlertDialogDescription>
+                    Esta acción no se puede deshacer. Se eliminará permanentemente el producto "{productoParaEliminar?.nombre}".
+                </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+                <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                <AlertDialogAction onClick={handleEliminarProducto}>Sí, eliminar</AlertDialogAction>
+            </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </>
   );
 }

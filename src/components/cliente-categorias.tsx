@@ -25,7 +25,6 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-  AlertDialogTrigger,
 } from "@/components/ui/alert-dialog"
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -40,6 +39,7 @@ interface ClienteCategoriasProps {
 export function ClienteCategorias({ categoriasIniciales }: ClienteCategoriasProps) {
   const [categorias, setCategorias] = useState<Categoria[]>(categoriasIniciales);
   const [nuevaCategoria, setNuevaCategoria] = useState('');
+  const [categoriaParaEliminar, setCategoriaParaEliminar] = useState<Categoria | null>(null);
   const { notificacion } = usarNotificacion();
 
   const handleAgregarCategoria = async (e: React.FormEvent) => {
@@ -72,16 +72,18 @@ export function ClienteCategorias({ categoriasIniciales }: ClienteCategoriasProp
     }
   };
 
-  const handleEliminarCategoria = async (id: string) => {
+  const handleEliminarCategoria = async () => {
+    if (!categoriaParaEliminar) return;
+
     try {
-        const response = await fetch(`/api/categorias/${id}`, {
+        const response = await fetch(`/api/categorias/${categoriaParaEliminar.id}`, {
             method: 'DELETE',
         });
         if (!response.ok) {
             const error = await response.json();
             throw new Error(error.message || 'No se pudo eliminar la categoría');
         }
-        setCategorias(categorias.filter(c => c.id !== id));
+        setCategorias(categorias.filter(c => c.id !== categoriaParaEliminar.id));
         notificacion({
             title: 'Éxito',
             description: 'Categoría eliminada correctamente.',
@@ -92,83 +94,85 @@ export function ClienteCategorias({ categoriasIniciales }: ClienteCategoriasProp
             description: error.message,
             variant: 'destructive',
         });
+    } finally {
+        setCategoriaParaEliminar(null);
     }
   };
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>Gestionar Categorías</CardTitle>
-        <CardDescription>
-          Agrega o elimina las categorías de productos de tu inventario.
-        </CardDescription>
-      </CardHeader>
-      <CardContent className="space-y-6">
-        <form onSubmit={handleAgregarCategoria} className="flex items-center gap-2">
-          <Input
-            type="text"
-            placeholder="Nombre de la nueva categoría"
-            value={nuevaCategoria}
-            onChange={(e) => setNuevaCategoria(e.target.value)}
-            className="flex-grow"
-          />
-          <Button type="submit">
-            <PlusCircle className="mr-2 h-4 w-4" />
-            Agregar
-          </Button>
-        </form>
+    <>
+      <Card>
+        <CardHeader>
+          <CardTitle>Gestionar Categorías</CardTitle>
+          <CardDescription>
+            Agrega o elimina las categorías de productos de tu inventario.
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-6">
+          <form onSubmit={handleAgregarCategoria} className="flex items-center gap-2">
+            <Input
+              type="text"
+              placeholder="Nombre de la nueva categoría"
+              value={nuevaCategoria}
+              onChange={(e) => setNuevaCategoria(e.target.value)}
+              className="flex-grow"
+            />
+            <Button type="submit">
+              <PlusCircle className="mr-2 h-4 w-4" />
+              Agregar
+            </Button>
+          </form>
 
-        <div className="rounded-md border">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Nombre</TableHead>
-                <TableHead className="text-right w-[100px]">Acciones</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {categorias.length > 0 ? (
-                categorias.map((categoria) => (
-                  <TableRow key={categoria.id}>
-                    <TableCell className="font-medium">{categoria.nombre}</TableCell>
-                    <TableCell className="text-right">
-                       <AlertDialog>
-                          <AlertDialogTrigger asChild>
-                            <Button variant="ghost" size="icon">
-                                <Trash2 className="h-4 w-4 text-destructive" />
-                                <span className="sr-only">Eliminar</span>
-                            </Button>
-                          </AlertDialogTrigger>
-                          <AlertDialogContent>
-                            <AlertDialogHeader>
-                              <AlertDialogTitle>¿Estás seguro?</AlertDialogTitle>
-                              <AlertDialogDescription>
-                                Esta acción no se puede deshacer. Esto eliminará permanentemente la categoría.
-                                Los productos existentes en esta categoría no se verán afectados, pero deberás asignarles una nueva categoría manualmente.
-                              </AlertDialogDescription>
-                            </AlertDialogHeader>
-                            <AlertDialogFooter>
-                              <AlertDialogCancel>Cancelar</AlertDialogCancel>
-                              <AlertDialogAction onClick={() => handleEliminarCategoria(categoria.id)}>
-                                Continuar
-                              </AlertDialogAction>
-                            </AlertDialogFooter>
-                          </AlertDialogContent>
-                        </AlertDialog>
+          <div className="rounded-md border">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Nombre</TableHead>
+                  <TableHead className="text-right w-[100px]">Acciones</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {categorias.length > 0 ? (
+                  categorias.map((categoria) => (
+                    <TableRow key={categoria.id}>
+                      <TableCell className="font-medium">{categoria.nombre}</TableCell>
+                      <TableCell className="text-right">
+                          <Button variant="ghost" size="icon" onClick={() => setCategoriaParaEliminar(categoria)}>
+                              <Trash2 className="h-4 w-4 text-destructive" />
+                              <span className="sr-only">Eliminar</span>
+                          </Button>
+                      </TableCell>
+                    </TableRow>
+                  ))
+                ) : (
+                  <TableRow>
+                    <TableCell colSpan={2} className="text-center">
+                      No hay categorías registradas.
                     </TableCell>
                   </TableRow>
-                ))
-              ) : (
-                <TableRow>
-                  <TableCell colSpan={2} className="text-center">
-                    No hay categorías registradas.
-                  </TableCell>
-                </TableRow>
-              )}
-            </TableBody>
-          </Table>
-        </div>
-      </CardContent>
-    </Card>
+                )}
+              </TableBody>
+            </Table>
+          </div>
+        </CardContent>
+      </Card>
+
+      <AlertDialog open={!!categoriaParaEliminar} onOpenChange={(open) => !open && setCategoriaParaEliminar(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>¿Estás seguro de eliminar esta categoría?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Esta acción no se puede deshacer. Se eliminará permanentemente la categoría "{categoriaParaEliminar?.nombre}". Los productos existentes en esta categoría no se verán afectados.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogAction onClick={handleEliminarCategoria}>
+              Sí, eliminar
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    </>
   );
 }

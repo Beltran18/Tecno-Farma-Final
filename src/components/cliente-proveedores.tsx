@@ -31,7 +31,6 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-  AlertDialogTrigger,
 } from "@/components/ui/alert-dialog"
 import {
   Dialog,
@@ -55,6 +54,7 @@ export function ClienteProveedores({ proveedoresIniciales }: ClienteProveedoresP
   const [proveedores, setProveedores] = useState<Proveedor[]>(proveedoresIniciales);
   const [formularioAbierto, setFormularioAbierto] = useState(false);
   const [proveedorEnEdicion, setProveedorEnEdicion] = useState<Proveedor | null>(null);
+  const [proveedorParaEliminar, setProveedorParaEliminar] = useState<Proveedor | null>(null);
   const { notificacion } = usarNotificacion();
 
   const handleAgregarProveedor = async (proveedor: Omit<Proveedor, 'id'>) => {
@@ -116,16 +116,18 @@ export function ClienteProveedores({ proveedoresIniciales }: ClienteProveedoresP
     }
   };
 
-  const handleEliminarProveedor = async (id: string) => {
+  const handleEliminarProveedor = async () => {
+    if (!proveedorParaEliminar) return;
+
     try {
-        const response = await fetch(`/api/proveedores/${id}`, {
+        const response = await fetch(`/api/proveedores/${proveedorParaEliminar.id}`, {
             method: 'DELETE',
         });
         if (!response.ok) {
             const error = await response.json();
             throw new Error(error.message || 'No se pudo eliminar el proveedor');
         }
-        setProveedores(proveedores.filter(p => p.id !== id));
+        setProveedores(proveedores.filter(p => p.id !== proveedorParaEliminar.id));
         notificacion({
             title: 'Éxito',
             description: 'Proveedor eliminado correctamente.',
@@ -136,6 +138,8 @@ export function ClienteProveedores({ proveedoresIniciales }: ClienteProveedoresP
             description: error.message,
             variant: 'destructive',
         });
+    } finally {
+        setProveedorParaEliminar(null);
     }
   };
 
@@ -197,28 +201,10 @@ export function ClienteProveedores({ proveedoresIniciales }: ClienteProveedoresP
                             <Edit className="mr-2 h-4 w-4" />
                             Editar
                           </DropdownMenuItem>
-                          <AlertDialog>
-                            <AlertDialogTrigger asChild>
-                                <DropdownMenuItem onSelect={(e) => e.preventDefault()} className="text-destructive">
-                                    <Trash2 className="mr-2 h-4 w-4" />
-                                    Eliminar
-                                </DropdownMenuItem>
-                            </AlertDialogTrigger>
-                            <AlertDialogContent>
-                                <AlertDialogHeader>
-                                <AlertDialogTitle>¿Estás seguro?</AlertDialogTitle>
-                                <AlertDialogDescription>
-                                    Esta acción no se puede deshacer. Esto eliminará permanentemente al proveedor.
-                                </AlertDialogDescription>
-                                </AlertDialogHeader>
-                                <AlertDialogFooter>
-                                <AlertDialogCancel>Cancelar</AlertDialogCancel>
-                                <AlertDialogAction onClick={() => handleEliminarProveedor(proveedor.id)}>
-                                    Continuar
-                                </AlertDialogAction>
-                                </AlertDialogFooter>
-                            </AlertDialogContent>
-                          </AlertDialog>
+                          <DropdownMenuItem onSelect={() => setProveedorParaEliminar(proveedor)} className="text-destructive">
+                              <Trash2 className="mr-2 h-4 w-4" />
+                              Eliminar
+                          </DropdownMenuItem>
                         </DropdownMenuContent>
                       </DropdownMenu>
                     </TableCell>
@@ -245,6 +231,23 @@ export function ClienteProveedores({ proveedoresIniciales }: ClienteProveedoresP
           />
         </DialogContent>
       </Dialog>
+    
+      <AlertDialog open={!!proveedorParaEliminar} onOpenChange={(open) => !open && setProveedorParaEliminar(null)}>
+        <AlertDialogContent>
+            <AlertDialogHeader>
+            <AlertDialogTitle>¿Estás seguro de eliminar este proveedor?</AlertDialogTitle>
+            <AlertDialogDescription>
+                Esta acción no se puede deshacer. Se eliminará permanentemente al proveedor "{proveedorParaEliminar?.nombre}".
+            </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogAction onClick={handleEliminarProveedor}>
+                Sí, eliminar
+            </AlertDialogAction>
+            </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </>
   );
 }

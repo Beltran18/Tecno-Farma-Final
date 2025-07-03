@@ -206,7 +206,7 @@ export function ClienteDevoluciones({ devolucionesIniciales, productosInventario
                 </AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter>
-                <AlertDialogCancel onClick={() => setDevolucionParaEliminar(null)}>No, volver</AlertDialogCancel>
+                <AlertDialogCancel>Cancelar</AlertDialogCancel>
                 <AlertDialogAction onClick={handleEliminarDevolucion}>
                     Sí, eliminar
                 </AlertDialogAction>
