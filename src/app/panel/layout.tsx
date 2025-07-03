@@ -29,7 +29,7 @@ import {
   SidebarTrigger,
 } from '@/components/ui/sidebar';
 import { Button } from '@/components/ui/button';
-import { Home, User, LogOut, Settings, Tag, Truck, CalendarDays, LifeBuoy, FileText, BookOpenCheck } from 'lucide-react';
+import { Home, User, LogOut, Settings, Tag, Truck, CalendarDays, LifeBuoy, FileText, BookOpenCheck, NotebookPen } from 'lucide-react';
 import { Logo } from '@/components/logo';
 import { usarNotificacion } from '@/hooks/usar-notificacion';
 
@@ -58,6 +58,7 @@ export default function DisposicionPanel({
     if (pathname.startsWith('/panel/reportes')) return 'Generación de Reportes';
     if (pathname.startsWith('/panel/ayuda')) return 'Ayuda y Tutoriales';
     if (pathname.startsWith('/panel/soporte')) return 'Soporte Técnico';
+    if (pathname.startsWith('/panel/recetas')) return 'Gestión de Recetas';
     return 'TecnoFarma';
   };
   
@@ -80,6 +81,18 @@ export default function DisposicionPanel({
               <SidebarMenuButton href="/panel" tooltip="Panel" isActive={pathname === '/panel'}>
                 <Home />
                 Panel Principal
+              </SidebarMenuButton>
+            </SidebarMenuItem>
+            <SidebarMenuItem>
+              <SidebarMenuButton href="/panel/productos" tooltip="Productos" isActive={pathname.startsWith('/panel/productos')}>
+                <Tag />
+                Productos
+              </SidebarMenuButton>
+            </SidebarMenuItem>
+            <SidebarMenuItem>
+              <SidebarMenuButton href="/panel/recetas" tooltip="Recetas" isActive={pathname.startsWith('/panel/recetas')}>
+                <NotebookPen />
+                Recetas
               </SidebarMenuButton>
             </SidebarMenuItem>
             <SidebarMenuItem>
