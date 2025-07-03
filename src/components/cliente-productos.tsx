@@ -573,10 +573,10 @@ function FormularioProducto({
   const [nombre, setNombre] = useState('');
   const [categoria, setCategoria] = useState('');
   const [proveedorId, setProveedorId] = useState('');
-  const [costo, setCosto] = useState(0);
-  const [precio, setPrecio] = useState(0);
-  const [descuento, setDescuento] = useState(0);
-  const [cantidad, setCantidad] = useState(0);
+  const [costo, setCosto] = useState<number | ''>('');
+  const [precio, setPrecio] = useState<number | ''>('');
+  const [descuento, setDescuento] = useState<number | ''>('');
+  const [cantidad, setCantidad] = useState<number | ''>('');
   const [fechaVencimiento, setFechaVencimiento] = useState<Date | undefined>(new Date());
   const [numeroLote, setNumeroLote] = useState('');
   const [fechaInicioGarantia, setFechaInicioGarantia] = useState<Date | undefined>();
@@ -588,7 +588,7 @@ function FormularioProducto({
       setCategoria(producto.categoria);
       setCosto(producto.costo);
       setPrecio(producto.precio);
-      setDescuento(producto.descuento || 0);
+      setDescuento(producto.descuento || '');
       setCantidad(producto.cantidad);
       setFechaVencimiento(new Date(producto.fechaVencimiento));
       setNumeroLote(producto.numeroLote);
@@ -598,10 +598,10 @@ function FormularioProducto({
     } else {
       setNombre('');
       setCategoria(categorias.length > 0 ? categorias[0].nombre : '');
-      setCosto(0);
-      setPrecio(0);
-      setDescuento(0);
-      setCantidad(0);
+      setCosto('');
+      setPrecio('');
+      setDescuento('');
+      setCantidad('');
       setFechaVencimiento(new Date());
       setNumeroLote('');
       setProveedorId('');
@@ -619,10 +619,10 @@ function FormularioProducto({
     const datosProducto = { 
         nombre, 
         categoria, 
-        costo,
-        precio, 
-        descuento,
-        cantidad, 
+        costo: Number(costo) || 0,
+        precio: Number(precio) || 0, 
+        descuento: Number(descuento) || 0,
+        cantidad: Number(cantidad) || 0, 
         fechaVencimiento, 
         numeroLote,
         proveedorId: proveedorSeleccionado?.id,
@@ -671,21 +671,21 @@ function FormularioProducto({
          <div className="grid grid-cols-3 gap-4">
             <div className="space-y-2">
                 <label htmlFor="costo">Costo</label>
-                <Input id="costo" type="number" value={costo} onChange={e => setCosto(parseFloat(e.target.value) || 0)} required min="0" step="any" />
+                <Input id="costo" type="number" value={costo} onChange={e => setCosto(e.target.value)} required min="0" step="any" />
             </div>
             <div className="space-y-2">
                 <label htmlFor="price">Precio</label>
-                <Input id="price" type="number" value={precio} onChange={e => setPrecio(parseFloat(e.target.value) || 0)} required min="0" step="any" />
+                <Input id="price" type="number" value={precio} onChange={e => setPrecio(e.target.value)} required min="0" step="any" />
             </div>
             <div className="space-y-2">
                 <label htmlFor="descuento">Desc. (%)</label>
-                <Input id="descuento" type="number" value={descuento} onChange={e => setDescuento(parseFloat(e.target.value) || 0)} min="0" max="100" />
+                <Input id="descuento" type="number" value={descuento} onChange={e => setDescuento(e.target.value)} min="0" max="100" />
             </div>
         </div>
         <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
                 <label htmlFor="quantity">Cantidad</label>
-                <Input id="quantity" type="number" value={cantidad} onChange={e => setCantidad(parseInt(e.target.value, 10) || 0)} required min="0"/>
+                <Input id="quantity" type="number" value={cantidad} onChange={e => setCantidad(e.target.value)} required min="0"/>
             </div>
             <div className="space-y-2">
                 <label htmlFor="lotNumber">Número de Lote</label>
