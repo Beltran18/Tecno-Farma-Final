@@ -155,13 +155,13 @@ export function ClientePanel({ productosIniciales, movimientosIniciales }: Clien
 
   
   return (
-    <Tabs defaultValue="panel" className="space-y-4">
+    <Tabs defaultValue="panel" className="space-y-4" suppressHydrationWarning>
       <TabsList>
         <TabsTrigger value="panel">Panel de Control</TabsTrigger>
         <TabsTrigger value="alerts">Alertas</TabsTrigger>
       </TabsList>
 
-      <TabsContent value="panel">
+      <TabsContent value="panel" suppressHydrationWarning>
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -170,12 +170,12 @@ export function ClientePanel({ productosIniciales, movimientosIniciales }: Clien
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">
-                 {new Intl.NumberFormat('es-CO', {
+                 {isClient ? new Intl.NumberFormat('es-CO', {
                   style: 'currency',
                   currency: 'COP',
                   minimumFractionDigits: 0,
                   maximumFractionDigits: 0,
-                }).format(totalValorInventario)}
+                }).format(totalValorInventario) : '$ 0'}
               </div>
               <p className="text-xs text-muted-foreground">
                 Calculado sobre {productos.length} productos
@@ -188,7 +188,7 @@ export function ClientePanel({ productosIniciales, movimientosIniciales }: Clien
               <Package className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{totalUnidades.toLocaleString('es-CO')}</div>
+              <div className="text-2xl font-bold">{isClient ? totalUnidades.toLocaleString('es-CO') : '0'}</div>
               <p className="text-xs text-muted-foreground">
                 Sumatoria de todos los productos
               </p>
@@ -284,7 +284,7 @@ export function ClientePanel({ productosIniciales, movimientosIniciales }: Clien
         </div>
       </TabsContent>
 
-      <TabsContent value="alerts" className="space-y-6">
+      <TabsContent value="alerts" className="space-y-6" suppressHydrationWarning>
         <Card>
           <CardHeader>
             <div className="flex items-center gap-4">

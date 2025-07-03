@@ -13,18 +13,15 @@ const ToastViewport = React.forwardRef<
   React.ElementRef<typeof ToastPrimitives.Viewport>,
   React.ComponentPropsWithoutRef<typeof ToastPrimitives.Viewport>
 >(({ className, ...props }, ref) => (
-  // The wrapping div will suppress the warning for all its DOM children,
-  // including the ones deeply nested inside the Radix primitive.
-  <div suppressHydrationWarning>
-    <ToastPrimitives.Viewport
-      ref={ref}
-      className={cn(
-        "fixed top-0 z-[100] flex max-h-screen w-full flex-col-reverse p-4 sm:bottom-0 sm:right-0 sm:top-auto sm:flex-col md:max-w-[420px]",
-        className
-      )}
-      {...props}
-    />
-  </div>
+  <ToastPrimitives.Viewport
+    ref={ref}
+    suppressHydrationWarning
+    className={cn(
+      "fixed top-0 z-[100] flex max-h-screen w-full flex-col-reverse p-4 sm:bottom-0 sm:right-0 sm:top-auto sm:flex-col md:max-w-[420px]",
+      className
+    )}
+    {...props}
+  />
 ))
 ToastViewport.displayName = ToastPrimitives.Viewport.displayName
 
