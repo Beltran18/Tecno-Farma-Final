@@ -1,8 +1,8 @@
 'use client';
 
+import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
-import React, { useState } from 'react';
 import {
   Avatar,
   AvatarFallback,
@@ -34,12 +34,11 @@ import {
   SidebarTrigger,
 } from '@/components/ui/sidebar';
 import { Button } from '@/components/ui/button';
-import { Home, User, LogOut, Settings, Tag, Truck, CalendarDays, LifeBuoy, FileText, BookOpenCheck, NotebookPen, ClipboardList, Undo2, Boxes, BarChart3, PackageSearch, UsersRound, Bell } from 'lucide-react';
+import { Home, User, LogOut, Settings, Tag, Truck, CalendarDays, LifeBuoy, FileText, BookOpenCheck, NotebookPen, ClipboardList, Undo2, Boxes, BarChart3, PackageSearch, UsersRound, Bell, Loader2 } from 'lucide-react';
 import { Logo } from '@/components/logo';
-import { usarNotificacion } from '@/hooks/usar-notificacion';
 import { RolEmpleado } from '@/lib/types';
 import { Badge } from '@/components/ui/badge';
-
+import { useAuth } from '@/context/auth-provider';
 
 export default function DisposicionPanel({
   children,
@@ -48,7 +47,7 @@ export default function DisposicionPanel({
 }) {
   const router = useRouter();
   const pathname = usePathname();
-  const { notificacion } = usarNotificacion();
+  const { user, logout, isLoading } = useAuth();
 
   const [notifications, setNotifications] = useState([
     { id: 1, title: '¡Roles y Permisos!', description: 'La barra lateral ahora se adapta según el rol del usuario.', read: false, date: 'hace 1 día' },
@@ -57,13 +56,19 @@ export default function DisposicionPanel({
   ]);
   const unreadCount = notifications.filter(n => !n.read).length;
 
-  const handleLogout = () => {
-    notificacion({
-      title: 'Sesión Cerrada',
-      description: 'Has cerrado la sesión simulada.',
-    });
-    router.push('/');
-  };
+  useEffect(() => {
+    if (!isLoading && !user) {
+      router.push('/');
+    }
+  }, [isLoading, user, router]);
+
+  if (isLoading || !user) {
+    return (
+      <div className="flex h-screen items-center justify-center">
+        <Loader2 className="h-12 w-12 animate-spin text-primary" />
+      </div>
+    );
+  }
 
   const getTitle = () => {
     if (pathname === '/panel') return 'Panel de Control';
@@ -83,15 +88,7 @@ export default function DisposicionPanel({
     return 'TecnoFarma';
   };
   
-  // Datos de usuario simulados para desarrollo
-  const usuarioSimulado = {
-    email: 'admin@tecnofarma.com',
-    displayName: 'Administrador de Prueba',
-    photoURL: null,
-    rol: RolEmpleado.ADMINISTRADOR, // Cambia a RolEmpleado.EMPLEADO para probar la vista restringida
-  };
-
-  const esAdmin = usuarioSimulado.rol === RolEmpleado.ADMINISTRADOR;
+  const esAdmin = user.rol === RolEmpleado.ADMINISTRADOR;
 
   return (
     <SidebarProvider>
@@ -206,14 +203,14 @@ export default function DisposicionPanel({
             <DropdownMenuTrigger asChild>
               <Button variant="ghost" className="h-auto w-full justify-start gap-2 p-2" suppressHydrationWarning>
                 <Avatar className="h-8 w-8">
-                  <AvatarImage src={usuarioSimulado.photoURL || `https://placehold.co/100x100.png`} alt={usuarioSimulado.displayName || 'Usuario'} />
-                  <AvatarFallback>{usuarioSimulado.email?.charAt(0).toUpperCase() || 'U'}</AvatarFallback>
+                  <AvatarImage src={`https://placehold.co/100x100.png`} alt={user.nombre} />
+                  <AvatarFallback>{user.email?.charAt(0).toUpperCase() || 'U'}</AvatarFallback>
                 </Avatar>
                 <div className="text-left w-full overflow-hidden" suppressHydrationWarning>
-                  <p className="text-sm font-medium truncate">{usuarioSimulado.displayName || 'Usuario'}</p>
+                  <p className="text-sm font-medium truncate">{user.nombre}</p>
                    <div className="flex items-center gap-2">
-                    <p className="text-xs text-muted-foreground truncate">{usuarioSimulado.email}</p>
-                    <Badge variant={esAdmin ? 'default' : 'secondary'} className="h-4 px-1.5 text-[10px]">{usuarioSimulado.rol}</Badge>
+                    <p className="text-xs text-muted-foreground truncate">{user.email}</p>
+                    <Badge variant={esAdmin ? 'default' : 'secondary'} className="h-4 px-1.5 text-[10px]">{user.rol}</Badge>
                   </div>
                 </div>
               </Button>
@@ -230,7 +227,7 @@ export default function DisposicionPanel({
                 <span>Ajustes</span>
               </DropdownMenuItem>
               <DropdownMenuSeparator />
-              <DropdownMenuItem onClick={handleLogout}>
+              <DropdownMenuItem onClick={logout}>
                 <LogOut className="mr-2 h-4 w-4" />
                 <span>Cerrar Sesión</span>
               </DropdownMenuItem>

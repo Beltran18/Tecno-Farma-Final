@@ -121,4 +121,5 @@ export interface Empleado {
   nombre: string;
   email: string;
   rol: RolEmpleado;
+  password?: string;
 }

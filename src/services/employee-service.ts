@@ -1,4 +1,5 @@
 import { type Empleado, RolEmpleado } from '@/lib/types';
+import bcrypt from 'bcryptjs';
 
 const globalForDb = globalThis as unknown as { empleados: Empleado[] };
 if (!globalForDb.empleados) {
@@ -8,46 +9,69 @@ if (!globalForDb.empleados) {
         nombre: 'Admin Principal',
         email: 'admin@tecnofarma.com',
         rol: RolEmpleado.ADMINISTRADOR,
+        password: bcrypt.hashSync('admin123', 10),
     },
     {
         id: 'emp_test',
         nombre: 'Usuario de Prueba',
         email: 'usuario@ejemplo.com',
         rol: RolEmpleado.EMPLEADO,
+        password: bcrypt.hashSync('empleado123', 10),
     }
   ];
 }
 let empleados: Empleado[] = globalForDb.empleados;
 
-export async function getAllEmployees(): Promise<Empleado[]> {
-  return JSON.parse(JSON.stringify(empleados));
+export async function getAllEmployees(): Promise<Omit<Empleado, 'password'>[]> {
+  return JSON.parse(JSON.stringify(empleados)).map((emp: Empleado) => {
+    const { password, ...rest } = emp;
+    return rest;
+  });
 }
 
-export async function createEmployee(employeeData: Omit<Empleado, 'id'>): Promise<Empleado> {
+export async function getEmployeeByEmail(email: string): Promise<Empleado | null> {
+    const empleado = empleados.find(e => e.email.toLowerCase() === email.toLowerCase());
+    return empleado ? { ...empleado } : null;
+}
+
+export async function createEmployee(employeeData: Omit<Empleado, 'id'>): Promise<Omit<Empleado, 'password'>> {
+    if (!employeeData.password) {
+        throw new Error('La contraseña es requerida');
+    }
     if (empleados.some(e => e.email.toLowerCase() === employeeData.email.toLowerCase())) {
         throw new Error('Ya existe un empleado con este correo electrónico.');
     }
+
+    const hashedPassword = await bcrypt.hash(employeeData.password, 10);
+
     const nuevoEmpleado: Empleado = {
         id: `emp_${Date.now()}`,
-        ...employeeData,
+        nombre: employeeData.nombre,
+        email: employeeData.email,
+        rol: employeeData.rol,
+        password: hashedPassword,
     };
     empleados.push(nuevoEmpleado);
-    return nuevoEmpleado;
+    
+    const { password, ...rest } = nuevoEmpleado;
+    return rest;
 }
 
-export async function updateEmployee(id: string, employeeData: Partial<Omit<Empleado, 'id'>>): Promise<Empleado | null> {
+export async function updateEmployee(id: string, employeeData: Partial<Omit<Empleado, 'id' | 'password'>>): Promise<Omit<Empleado, 'password'> | null> {
   const index = empleados.findIndex(e => e.id === id);
   if (index === -1) {
     return null;
   }
-  // No permitir cambiar el email a uno que ya existe
+  
   if (employeeData.email && empleados.some(e => e.email.toLowerCase() === employeeData.email!.toLowerCase() && e.id !== id)) {
       throw new Error('El nuevo correo electrónico ya está en uso por otro empleado.');
   }
 
   const empleadoActualizado = { ...empleados[index], ...employeeData };
   empleados[index] = empleadoActualizado;
-  return empleadoActualizado;
+  
+  const { password, ...rest } = empleadoActualizado;
+  return rest;
 }
 
 export async function deleteEmployee(id: string): Promise<boolean> {

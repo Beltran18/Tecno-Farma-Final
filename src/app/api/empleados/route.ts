@@ -14,9 +14,9 @@ export async function GET() {
 
 export async function POST(request: NextRequest) {
   try {
-    const { nombre, email, rol } = await request.json();
+    const { nombre, email, rol, password } = await request.json();
 
-    if (!nombre || !email || !rol) {
+    if (!nombre || !email || !rol || !password) {
        return new NextResponse(JSON.stringify({ message: 'Todos los campos son requeridos' }), { status: 400, headers: { 'Content-Type': 'application/json' } });
     }
     
@@ -24,7 +24,7 @@ export async function POST(request: NextRequest) {
         return new NextResponse(JSON.stringify({ message: 'Rol no válido' }), { status: 400, headers: { 'Content-Type': 'application/json' } });
     }
 
-    const nuevoEmpleado = await createEmployee({ nombre, email, rol });
+    const nuevoEmpleado = await createEmployee({ nombre, email, rol, password });
 
     return NextResponse.json(nuevoEmpleado, { status: 201 });
 
