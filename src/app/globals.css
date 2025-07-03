@@ -94,6 +94,15 @@ body {
     text-decoration-thickness: 2px;
     text-decoration-color: hsl(var(--destructive));
   }
+  .day-pedido:not([aria-selected]) {
+    font-weight: bold;
+    color: hsl(var(--primary));
+  }
+  .day-pedido[aria-selected=true] {
+    text-decoration: underline;
+    text-decoration-thickness: 2px;
+    text-decoration-color: hsl(var(--primary));
+  }
 }
 
 @media print {

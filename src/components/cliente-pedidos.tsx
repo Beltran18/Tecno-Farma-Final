@@ -46,11 +46,13 @@ import {
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
-import { PlusCircle, Trash2, MoreHorizontal, CheckCircle, XCircle, DollarSign, ClipboardList, Hourglass } from 'lucide-react';
+import { PlusCircle, Trash2, MoreHorizontal, CheckCircle, XCircle, DollarSign, ClipboardList, Hourglass, Calendar as CalendarIcon } from 'lucide-react';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { type PedidoReposicion, type Producto, type Proveedor, EstadoPedido } from '@/lib/types';
 import { usarNotificacion } from '@/hooks/usar-notificacion';
+import { Popover, PopoverContent, PopoverTrigger } from './ui/popover';
+import { Calendar } from './ui/calendar';
 
 interface ClientePedidosProps {
   pedidosIniciales: PedidoReposicion[];
@@ -382,6 +384,7 @@ function FormularioPedido({ productosInventario, proveedoresInventario, onGuarda
   
   const [proveedorId, setProveedorId] = useState('');
   const [productos, setProductos] = useState([{ productoId: '', cantidadPedida: 1 }]);
+  const [fechaEntregaEstimada, setFechaEntregaEstimada] = useState<Date | undefined>();
 
   useEffect(() => {
     if (initialProveedorId) {
@@ -428,6 +431,7 @@ function FormularioPedido({ productosInventario, proveedoresInventario, onGuarda
           productoId: p.productoId,
           cantidadPedida: p.cantidadPedida,
       })),
+      fechaEntregaEstimada,
     };
     
     await onGuardar(datosPedido);
@@ -443,20 +447,36 @@ function FormularioPedido({ productosInventario, proveedoresInventario, onGuarda
       </DialogHeader>
       
       <div className="grid gap-4 py-4 max-h-[60vh] overflow-y-auto pr-4">
-        <div className="space-y-2">
-          <label htmlFor="proveedor">Proveedor</label>
-          <select 
-            id="proveedor" 
-            value={proveedorId} 
-            onChange={(e) => setProveedorId(e.target.value)} 
-            className="w-full flex h-10 rounded-md border border-input bg-background px-3 py-2 text-sm"
-            required
-          >
-            <option value="" disabled>Selecciona un proveedor...</option>
-            {proveedoresInventario.map(p => (
-              <option key={p.id} value={p.id}>{p.nombre}</option>
-            ))}
-          </select>
+        <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-2">
+                <label htmlFor="proveedor">Proveedor</label>
+                <select 
+                    id="proveedor" 
+                    value={proveedorId} 
+                    onChange={(e) => setProveedorId(e.target.value)} 
+                    className="w-full flex h-10 rounded-md border border-input bg-background px-3 py-2 text-sm"
+                    required
+                >
+                    <option value="" disabled>Selecciona un proveedor...</option>
+                    {proveedoresInventario.map(p => (
+                    <option key={p.id} value={p.id}>{p.nombre}</option>
+                    ))}
+                </select>
+            </div>
+            <div className="space-y-2">
+                <label>Entrega Estimada (Opcional)</label>
+                <Popover>
+                    <PopoverTrigger asChild>
+                        <Button variant={"outline"} className="w-full justify-start text-left font-normal">
+                            <CalendarIcon className="mr-2 h-4 w-4" />
+                            {fechaEntregaEstimada ? format(fechaEntregaEstimada, "PPP", { locale: es }) : <span>Elige una fecha</span>}
+                        </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-auto p-0">
+                        <Calendar mode="single" selected={fechaEntregaEstimada} onSelect={setFechaEntregaEstimada} initialFocus />
+                    </PopoverContent>
+                </Popover>
+            </div>
         </div>
         
         <div className="space-y-4">

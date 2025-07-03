@@ -76,6 +76,7 @@ export enum EstadoPedido {
 export interface PedidoReposicion {
   id: string;
   fechaPedido: Date;
+  fechaEntregaEstimada?: Date;
   proveedorId: string;
   proveedorNombre: string;
   productos: {

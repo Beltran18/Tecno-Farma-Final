@@ -33,6 +33,7 @@ export async function createPedido(
   const nuevoPedido: PedidoReposicion = {
     id: `ped_${Date.now()}`,
     fechaPedido: new Date(),
+    fechaEntregaEstimada: data.fechaEntregaEstimada ? new Date(data.fechaEntregaEstimada) : undefined,
     proveedorId: data.proveedorId,
     proveedorNombre: proveedor.nombre,
     productos: data.productos.map(p => ({
