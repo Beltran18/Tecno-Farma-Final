@@ -23,7 +23,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { DollarSign, Package, AlertTriangle, Settings, CalendarOff, PackagePlus, TimerOff, PlusCircle } from 'lucide-react';
+import { DollarSign, Package, AlertTriangle, Settings, CalendarOff, PackagePlus, TimerOff, PlusCircle, Mail } from 'lucide-react';
 import { format, isBefore, isWithinInterval, addDays, subDays, formatDistanceToNow } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { Pie, PieChart, Cell } from 'recharts';
@@ -35,6 +35,7 @@ import {
 } from '@/components/ui/chart';
 
 import { type Producto, type MovimientoInventario, TipoMovimiento } from '@/lib/types';
+import { Switch } from './ui/switch';
 
 interface ClientePanelProps {
   productosIniciales: Producto[];
@@ -298,7 +299,7 @@ export function ClientePanel({ productosIniciales, movimientosIniciales }: Clien
             </div>
           </CardHeader>
           <CardContent>
-            <div className="grid md:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-8">
               <div className="space-y-2">
                 <Label htmlFor="stock-threshold">Umbral de Stock Bajo</Label>
                 <Input
@@ -353,6 +354,18 @@ export function ClientePanel({ productosIniciales, movimientosIniciales }: Clien
                 <p className="text-sm text-muted-foreground">
                   Alertar sobre productos sin salida en los últimos X días.
                 </p>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="email-notifications">Notificaciones por Correo</Label>
+                  <div className="flex items-center space-x-2 pt-2">
+                    <Switch id="email-notifications" />
+                    <Label htmlFor="email-notifications" className="text-sm text-muted-foreground font-normal cursor-pointer">
+                        Habilitar envío de alertas críticas por correo electrónico.
+                    </Label>
+                  </div>
+                  <p className="text-sm text-muted-foreground">
+                    Se enviará un resumen al correo del administrador.
+                  </p>
               </div>
             </div>
           </CardContent>
