@@ -45,7 +45,7 @@ export function ClienteAnalisis({ productos, movimientos }: { productos: Product
       if (producto) {
         const precioVenta = producto.descuento ? producto.precio * (1 - producto.descuento / 100) : producto.precio;
         acc.ventasTotales += precioVenta * mov.cantidadMovida;
-        acc.costoDeVentas += producto.costo * mov.cantidadMovida;
+        acc.costoDeVentas += (producto.costo || 0) * mov.cantidadMovida;
       }
       return acc;
     }, { ventasTotales: 0, costoDeVentas: 0 });
@@ -54,7 +54,7 @@ export function ClienteAnalisis({ productos, movimientos }: { productos: Product
 
     const productosConRentabilidad = productos.map(p => {
       const precioVenta = p.descuento ? p.precio * (1 - p.descuento / 100) : p.precio;
-      const margenPorUnidad = precioVenta - p.costo;
+      const margenPorUnidad = precioVenta - (p.costo || 0);
       const movimientosProducto = movimientosVenta.filter(m => m.productoId === p.id);
       const unidadesVendidas = movimientosProducto.reduce((sum, mov) => sum + mov.cantidadMovida, 0);
       const gananciaTotalProducto = margenPorUnidad * unidadesVendidas;
