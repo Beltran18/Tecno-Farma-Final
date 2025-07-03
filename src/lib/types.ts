@@ -40,6 +40,7 @@ export interface MovimientoInventario {
   id: string;
   productoId: string;
   productoNombre: string;
+  numeroLote: string;
   fecha: Date;
   tipo: TipoMovimiento;
   cantidadMovida: number;

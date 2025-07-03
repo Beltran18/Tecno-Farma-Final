@@ -39,6 +39,7 @@ export async function createProduct(
   await logMovement({
     productoId: nuevoProducto.id,
     productoNombre: nuevoProducto.nombre,
+    numeroLote: nuevoProducto.numeroLote,
     tipo,
     cantidadMovida: nuevoProducto.cantidad,
     stockAnterior: 0,
@@ -74,6 +75,7 @@ export async function updateProduct(id: string, productData: Partial<Omit<Produc
     await logMovement({
       productoId: id,
       productoNombre: productoActualizado.nombre,
+      numeroLote: productoActualizado.numeroLote,
       tipo,
       cantidadMovida,
       stockAnterior,
@@ -116,6 +118,7 @@ export async function registerProductExit(
   await logMovement({
     productoId: id,
     productoNombre: productoActualizado.nombre,
+    numeroLote: productoActualizado.numeroLote,
     tipo,
     cantidadMovida: cantidadSalida,
     stockAnterior,
@@ -146,6 +149,7 @@ export async function registerProductEntry(id: string, cantidadEntrada: number, 
   await logMovement({
     productoId: id,
     productoNombre: productoActualizado.nombre,
+    numeroLote: productoActualizado.numeroLote,
     tipo,
     cantidadMovida: cantidadEntrada,
     stockAnterior,
