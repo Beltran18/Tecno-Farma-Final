@@ -46,7 +46,7 @@ Este documento realiza un seguimiento del progreso de la implementación de los 
 | **RF033** | El sistema debe permitir al administrador dar autenticación de usuario para acceder a cualquier funcionalidad de gestión de inventario. | ✅ **Completado** | Implementado con sistema de sesión basado en cookies. Las rutas del panel están protegidas. |
 | **RF034** | El sistema debe registrar y mostrar el historial de cambios de cada producto en el inventario. | ✅ **Completado** | Implementado como parte del historial de transacciones (RF027). |
 | **RF035** | El sistema debe permitir al administrador gestionar categorías de productos para una organización eficiente del inventario. | ✅ **Completado** | Implementada página de gestión de categorías (crear/eliminar). |
-| **RF036** | El sistema debe permitir al administrador configurar notificaciones automáticas por correo electrónico para alertas críticas de inventario. | ✅ **Completado** | Se añadió la UI para habilitar notificaciones. La lógica de envío se conectará en el backend. |
+| **RF036** | El sistema debe permitir al administrador configurar notificaciones automáticas por correo electrónico para alertas críticas de inventario. | ✅ **Completado** | Se añadió la UI para habilitar notificaciones. El envío real de correos requeriría un servicio externo. |
 | **RF037** | El sistema debe permitir al usuario consultar el historial de ventas de un producto específico. | ✅ **Completado** | Se añadió una nueva opción en el menú de cada producto para ver un historial filtrado solo con los movimientos de venta y sus totales. |
 | **RF038** | El sistema debe permitir al administrador registrar la trazabilidad completa de los lotes de medicamentos para cumplir con regulaciones sanitarias. | ✅ **Completado** | Implementada página de Trazabilidad con búsqueda por número de lote para ver todo el historial de movimientos. |
 | **RF039** | El sistema debe permitir al administrador configurar las alertas para la revisión de productos no vendidos o de lento movimiento. | ✅ **Completado** | Se pueden configurar los días para considerar un producto como de "lento movimiento" y se listan en la pestaña de Alertas. |
@@ -62,5 +62,3 @@ Este documento realiza un seguimiento del progreso de la implementación de los 
 | **RF049** | El sistema debe mostrar a los usuarios mensajes de error amigables en caso de credenciales inválidas u otros errores de autenticación. | ✅ **Completado** | Se muestran notificaciones de error claras durante el login y registro. |
 | **RF050** | El sistema deberá permitir al administrador crear la cuenta administrador. | ✅ **Completado** | El rol de Administrador puede ser asignado desde la gestión de empleados. La primera cuenta es de Administrador por defecto. |
 | **RF051** | El sistema deberá permitir al administrador crear cuentas de empleados. | ✅ **Completado** | Implementada la página de gestión de empleados con funcionalidad CRUD completa. |
-
-    
