@@ -62,3 +62,5 @@ Este documento realiza un seguimiento del progreso de la implementación de los 
 | **RF049** | El sistema debe mostrar a los usuarios mensajes de error amigables en caso de credenciales inválidas u otros errores de autenticación. | ✅ **Completado** | Se muestran notificaciones de error claras durante el login y registro. |
 | **RF050** | El sistema deberá permitir al administrador crear la cuenta administrador. | ✅ **Completado** | El rol de Administrador puede ser asignado desde la gestión de empleados. La primera cuenta es de Administrador por defecto. |
 | **RF051** | El sistema deberá permitir al administrador crear cuentas de empleados. | ✅ **Completado** | Implementada la página de gestión de empleados con funcionalidad CRUD completa. |
+
+    
