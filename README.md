@@ -49,7 +49,7 @@ d. Ve a la pestaña **"SQL"**.
 e. Copia **todo** el contenido del archivo `docs/database-schema.sql` que está en el proyecto.
 f. Pega el contenido en el campo de texto de la pestaña SQL y haz clic en **"Go"** o **"Continuar"**.
 
-Esto creará todas las tablas necesarias.
+Esto creará todas las tablas necesarias. Si las tablas ya existen, el script las borrará y las creará de nuevo para asegurar una instalación limpia.
 
 ### 4. Ejecutar el Servidor de Desarrollo
 
