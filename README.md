@@ -70,3 +70,27 @@ npm test
 ```
 
 Esto iniciará Jest en modo "watch", que ejecuta automáticamente las pruebas cada vez que guardas un cambio en un archivo.
+
+---
+
+## Flujo de Trabajo con Git
+
+### ¿Error `[rejected] main -> main (fetch first)` al hacer `git push`?
+
+Este es un error muy común y significa que el repositorio remoto (en GitHub) tiene cambios que tú no tienes en tu máquina local. Git te protege para que no sobrescribas accidentalmente el trabajo de otros.
+
+**Solución (siempre antes de un `push`):**
+
+1.  **Descarga los cambios remotos:**
+    ```bash
+    git pull
+    ```
+    Este comando traerá los cambios de GitHub y los fusionará con tu trabajo local.
+
+2.  **Sube tus cambios ahora sí combinados:**
+    ```bash
+    git push
+    ```
+
+**Flujo recomendado:**
+Antes de empezar a trabajar o antes de subir tus cambios, siempre es una buena práctica ejecutar `git pull` para asegurarte de que tienes la última versión del proyecto.
