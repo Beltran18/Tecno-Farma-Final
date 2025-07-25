@@ -92,13 +92,14 @@ Este es un error muy común y significa que el repositorio remoto (en GitHub) ti
 
 **Solución (siempre antes de un `push`):**
 
-1.  **Descarga los cambios remotos:**
+1.  **Asegúrate de estar en la carpeta del proyecto**: Antes de ejecutar cualquier comando de Git, tu terminal debe estar "dentro" de la carpeta del proyecto. Si no lo está, usa el comando `cd` para navegar hasta ella (ej: `cd ruta/a/tu/proyecto`).
+2.  **Descarga los cambios remotos:**
     ```bash
     git pull
     ```
     Este comando traerá los cambios de GitHub y los fusionará con tu trabajo local.
 
-2.  **Sube tus cambios ahora sí combinados:**
+3.  **Sube tus cambios ahora sí combinados:**
     ```bash
     git push
     ```
