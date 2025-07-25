@@ -4,7 +4,7 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "node -r dotenv/config node_modules/next/dist/bin/next dev -p 9002",
+    "dev": "next dev -p 9002",
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
@@ -40,7 +40,6 @@
     "clsx": "^2.1.1",
     "csv-parse": "^5.5.6",
     "date-fns": "^3.6.0",
-    "dotenv": "^16.5.0",
     "embla-carousel-react": "^8.6.0",
     "iron-session": "^8.0.2",
     "lucide-react": "^0.475.0",

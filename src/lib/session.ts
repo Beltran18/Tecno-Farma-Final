@@ -4,8 +4,15 @@ import { type Empleado } from './types';
 
 const sessionPassword = process.env.SESSION_SECRET;
 
+// Verificación para depuración
+if (sessionPassword) {
+  console.log('✅ SESSION_SECRET cargada correctamente.');
+} else {
+  console.error('❌ ERROR: SESSION_SECRET no encontrada en process.env');
+}
+
 if (!sessionPassword) {
-  throw new Error('La variable de entorno SESSION_SECRET no está configurada. Por favor, añádela a tu archivo .env');
+  throw new Error('La variable de entorno SESSION_SECRET no está configurada. Por favor, revisa tu archivo .env y reinicia el servidor.');
 }
 
 export const sessionOptions = {
@@ -18,8 +25,6 @@ export const sessionOptions = {
 
 export async function getSession() {
   // `getIronSession` funciona directamente con el `cookies()` de Next.js.
-  // No es necesario crear objetos falsos ni manipular las cookies manualmente.
-  // Esta es la implementación moderna y correcta para el App Router.
   const session = await getIronSession<IronSessionData & { user?: Omit<Empleado, 'password'> }>(
     cookies(),
     sessionOptions
