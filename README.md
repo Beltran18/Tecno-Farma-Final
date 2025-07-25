@@ -75,6 +75,17 @@ Esto iniciará Jest en modo "watch", que ejecuta automáticamente las pruebas ca
 
 ## Flujo de Trabajo con Git
 
+### Configuración de Git por Primera Vez (en un PC nuevo)
+
+Si estás en una máquina nueva, es crucial que le digas a Git quién eres. De lo contrario, no podrás "firmar" y subir tus cambios. Abre una terminal y ejecuta estos dos comandos, reemplazando los datos de ejemplo con los tuyos:
+
+```bash
+git config --global user.name "Tu Nombre Completo"
+git config --global user.email "tu-email-de-github@ejemplo.com"
+```
+
+Esto solo necesitas hacerlo una vez por cada máquina que uses.
+
 ### ¿Error `[rejected] main -> main (fetch first)` al hacer `git push`?
 
 Este es un error muy común y significa que el repositorio remoto (en GitHub) tiene cambios que tú no tienes en tu máquina local. Git te protege para que no sobrescribas accidentalmente el trabajo de otros.
