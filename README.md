@@ -137,3 +137,22 @@ Este es un error muy común y significa que el repositorio remoto (en GitHub) ti
     ```bash
     git push
     ```
+
+### Error: `fatal: Need to specify how to reconcile divergent branches` al hacer `git pull`
+
+Este error ocurre cuando tanto tú (en tu PC) como otro colaborador (o tú mismo desde otro PC) han hecho cambios sobre la misma base de código, creando dos "versiones" de la historia. Git no sabe cómo unirlas.
+
+**Solución (solo necesitas hacer esto una vez por proyecto):**
+1. **Configura la estrategia de unión (merge):** Dile a Git que quieres que combine las historias creando un "commit de unión". Es la estrategia más segura y recomendada.
+    ```bash
+    git config pull.rebase false
+    ```
+2. **Intenta el `pull` de nuevo:**
+    ```bash
+    git pull
+    ```
+    Es posible que se abra un editor de texto para que confirmes un mensaje para la unión. Simplemente guarda y cierra el editor.
+3. **Ahora sí, haz el `push`:**
+    ```bash
+    git push
+    ```
