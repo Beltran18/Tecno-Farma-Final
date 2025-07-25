@@ -86,23 +86,54 @@ git config --global user.email "tu-email-de-github@ejemplo.com"
 
 Esto solo necesitas hacerlo una vez por cada máquina que uses.
 
-### ¿Error `[rejected] main -> main (fetch first)` al hacer `git push`?
+### Flujo recomendado para subir cambios
 
-Este es un error muy común y significa que el repositorio remoto (en GitHub) tiene cambios que tú no tienes en tu máquina local. Git te protege para que no sobrescribas accidentalmente el trabajo de otros.
-
-**Solución (siempre antes de un `push`):**
+Antes de empezar a trabajar o antes de subir tus cambios, siempre es una buena práctica ejecutar `git pull` para asegurarte de que tienes la última versión del proyecto.
 
 1.  **Asegúrate de estar en la carpeta del proyecto**: Antes de ejecutar cualquier comando de Git, tu terminal debe estar "dentro" de la carpeta del proyecto. Si no lo está, usa el comando `cd` para navegar hasta ella (ej: `cd ruta/a/tu/proyecto`).
 2.  **Descarga los cambios remotos:**
     ```bash
     git pull
     ```
-    Este comando traerá los cambios de GitHub y los fusionará con tu trabajo local.
-
-3.  **Sube tus cambios ahora sí combinados:**
+3.  **Sube tus cambios:**
     ```bash
     git push
     ```
 
-**Flujo recomendado:**
-Antes de empezar a trabajar o antes de subir tus cambios, siempre es una buena práctica ejecutar `git pull` para asegurarte de que tienes la última versión del proyecto.
+---
+## Solución de Problemas Comunes de Git
+
+### Error: `fatal: not a git repository`
+
+Este error significa que la carpeta en la que estás no está siendo reconocida por Git. Esto suele ocurrir si descargaste el proyecto como un ZIP en lugar de clonarlo. Para solucionarlo:
+
+1.  **Asegúrate de estar en la carpeta correcta** del proyecto en tu terminal.
+2.  **Inicializa un repositorio de Git:**
+    ```bash
+    git init
+    ```
+3.  **Conecta tu carpeta local con el repositorio remoto:**
+    ```bash
+    git remote add origin https://github.com/juandi286/tecnofarmaprobar.git
+    ```
+4.  **Descarga y fusiona el historial de cambios:**
+    ```bash
+    git pull origin main
+    ```
+5.  Ahora ya puedes usar `git pull` y `git push` normalmente.
+
+### Error: `[rejected] main -> main (fetch first)` al hacer `git push`
+
+Este es un error muy común y significa que el repositorio remoto (en GitHub) tiene cambios que tú no tienes en tu máquina local. Git te protege para que no sobrescribas accidentalmente el trabajo de otros.
+
+**Solución (siempre antes de un `push`):**
+1.  **Descarga los cambios remotos:**
+    ```bash
+    git pull
+    ```
+    Este comando traerá los cambios de GitHub y los fusionará con tu trabajo local.
+
+2.  **Sube tus cambios ahora sí combinados:**
+    ```bash
+    git push
+    ```
