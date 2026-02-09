@@ -22,7 +22,7 @@ export async function getAllPedidos(): Promise<PedidoReposicion[]> {
     return (rows as any[]).map(mapToPedido);
   } catch (error) {
     console.error('Error al obtener los pedidos:', error);
-    throw new Error('No se pudieron obtener los pedidos.');
+    return [];
   }
 }
 

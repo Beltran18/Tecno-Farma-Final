@@ -21,7 +21,7 @@ export async function getAllDevoluciones(): Promise<DevolucionProveedor[]> {
     return (rows as any[]).map(mapToDevolucion);
   } catch (error) {
     console.error('Error al obtener las devoluciones:', error);
-    throw new Error('No se pudieron obtener las devoluciones.');
+    return [];
   }
 }
 

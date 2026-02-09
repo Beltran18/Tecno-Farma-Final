@@ -26,7 +26,7 @@ export async function getAllProducts(): Promise<Producto[]> {
     return (rows as any[]).map(mapToProducto);
   } catch (error) {
     console.error('Error al obtener productos:', error);
-    throw new Error('No se pudieron obtener los productos.');
+    return [];
   }
 }
 

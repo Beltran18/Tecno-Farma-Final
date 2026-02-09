@@ -19,7 +19,7 @@ export async function getAllRecetas(): Promise<RecetaMedica[]> {
     return (rows as any[]).map(mapToReceta);
   } catch (error) {
     console.error('Error al obtener recetas:', error);
-    throw new Error('No se pudieron obtener las recetas.');
+    return [];
   }
 }
 

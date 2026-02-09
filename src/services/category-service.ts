@@ -14,7 +14,7 @@ export async function getAllCategories(): Promise<Categoria[]> {
     return (rows as any[]).map(mapToCategoria);
   } catch (error) {
     console.error('Error al obtener las categorías:', error);
-    throw new Error('No se pudo obtener las categorías de la base de datos.');
+    return [];
   }
 }
 

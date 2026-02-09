@@ -21,7 +21,7 @@ export async function getAllEmployees(): Promise<Omit<Empleado, 'password'>[]> {
         return (rows as any[]).map(row => mapToEmpleado(row));
     } catch (error) {
         console.error('Error al obtener empleados:', error);
-        throw new Error('No se pudieron obtener los empleados.');
+        return [];
     }
 }
 

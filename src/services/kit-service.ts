@@ -17,7 +17,7 @@ export async function getAllKits(): Promise<Kit[]> {
     return (rows as any[]).map(mapToKit);
   } catch (error) {
     console.error('Error al obtener kits:', error);
-    throw new Error('No se pudieron obtener los kits.');
+    return [];
   }
 }
 

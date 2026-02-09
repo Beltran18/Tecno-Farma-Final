@@ -16,7 +16,7 @@ export async function getAllProveedores(): Promise<Proveedor[]> {
     return (rows as any[]).map(mapToProveedor);
   } catch (error) {
     console.error('Error al obtener proveedores:', error);
-    throw new Error('No se pudieron obtener los proveedores.');
+    return [];
   }
 }
 

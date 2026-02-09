@@ -60,6 +60,6 @@ export async function getAllMovements(): Promise<MovimientoInventario[]> {
     return (rows as any[]).map(mapToMovimiento);
   } catch (error) {
     console.error('Error al obtener todos los movimientos:', error);
-    throw new Error('No se pudieron obtener los movimientos.');
+    return [];
   }
 }
