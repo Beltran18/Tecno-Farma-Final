@@ -1,3 +1,5 @@
+export const dynamic = 'force-dynamic';
+
 import { getAllMovements } from "@/services/movement-service";
 import { ClienteTrazabilidad } from "@/components/cliente-trazabilidad";
 

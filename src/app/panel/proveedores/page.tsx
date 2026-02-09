@@ -1,3 +1,5 @@
+export const dynamic = 'force-dynamic';
+
 import { getAllProveedores } from "@/services/proveedor-service";
 import { ClienteProveedores } from "@/components/cliente-proveedores";
 

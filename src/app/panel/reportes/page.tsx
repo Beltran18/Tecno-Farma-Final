@@ -1,3 +1,5 @@
+export const dynamic = 'force-dynamic';
+
 import { getAllProducts } from "@/services/product-service";
 import { ClienteReportes } from "@/components/cliente-reportes";
 

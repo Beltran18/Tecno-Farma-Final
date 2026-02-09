@@ -1,3 +1,5 @@
+export const dynamic = 'force-dynamic';
+
 import { getAllEmployees } from "@/services/employee-service";
 import { ClienteEmpleados } from "@/components/cliente-empleados";
 

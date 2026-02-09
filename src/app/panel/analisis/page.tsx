@@ -1,3 +1,5 @@
+export const dynamic = 'force-dynamic';
+
 import { ClienteAnalisis } from '@/components/cliente-analisis';
 import { getAllProducts } from '@/services/product-service';
 import { getAllMovements } from '@/services/movement-service';

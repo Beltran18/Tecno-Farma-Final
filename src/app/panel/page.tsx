@@ -1,3 +1,5 @@
+export const dynamic = 'force-dynamic';
+
 import { ClientePanel } from '@/components/cliente-panel';
 import { type Producto, type MovimientoInventario } from '@/lib/types';
 import { getAllProducts } from '@/services/product-service';
