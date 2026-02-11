@@ -2,21 +2,8 @@ import { getIronSession, type IronSessionData } from 'iron-session';
 import { cookies } from 'next/headers';
 import { type Empleado } from './types';
 
-const sessionPassword = process.env.SESSION_SECRET;
-
-// Verificación para depuración
-if (sessionPassword) {
-  console.log('✅ SESSION_SECRET cargada correctamente.');
-} else {
-  console.error('❌ ERROR: SESSION_SECRET no encontrada en process.env');
-}
-
-if (!sessionPassword) {
-  throw new Error('La variable de entorno SESSION_SECRET no está configurada. Por favor, revisa tu archivo .env y reinicia el servidor.');
-}
-
 export const sessionOptions = {
-  password: sessionPassword,
+  password: process.env.SESSION_SECRET || 'dev-secret-change-this',
   cookieName: 'tecnofarma-session',
   cookieOptions: {
     secure: process.env.NODE_ENV === 'production',
@@ -24,10 +11,20 @@ export const sessionOptions = {
 };
 
 export async function getSession() {
-  // `getIronSession` funciona directamente con el `cookies()` de Next.js.
+  const sessionPassword = process.env.SESSION_SECRET;
+
+  // ✅ Validar AQUÍ, no fuera del archivo
+  if (!sessionPassword) {
+    throw new Error('SESSION_SECRET no configurada en variables de entorno');
+  }
+
   const session = await getIronSession<IronSessionData & { user?: Omit<Empleado, 'password'> }>(
     cookies(),
-    sessionOptions
+    {
+      ...sessionOptions,
+      password: sessionPassword,
+    }
   );
+
   return session;
 }
