@@ -33,4 +33,5 @@ export async function POST(req: NextRequest) {
     console.error('Login error:', error);
     return NextResponse.json({ message: 'Error interno del servidor' }, { status: 500 });
   }
+  
 }
