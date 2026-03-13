@@ -67,7 +67,7 @@ export async function createPedido(
     throw new Error('No se pudo crear el pedido.');
   }
 }
-
+//
 export async function updatePedidoStatus(id: string, estado: EstadoPedido): Promise<PedidoReposicion | null> {
   const select = await db.query('SELECT * FROM pedidos WHERE id = $1', [id]);
   if (select.rows.length === 0) {
