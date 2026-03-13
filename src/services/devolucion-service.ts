@@ -6,19 +6,19 @@ function mapToDevolucion(row: any): DevolucionProveedor {
     return {
         id: String(row.id),
         fecha: new Date(row.fecha),
-        productoId: String(row.productoId),
-        productoNombre: row.productoNombre,
-        proveedorId: String(row.proveedorId),
-        proveedorNombre: row.proveedorNombre,
-        cantidadDevuelta: row.cantidadDevuelta,
+        productoId: String(row.productoid),
+        productoNombre: row.productonombre,
+        proveedorId: String(row.proveedorid),
+        proveedorNombre: row.proveedornombre,
+        cantidadDevuelta: row.cantidaddevuelta,
         motivo: row.motivo,
     };
 }
 
 export async function getAllDevoluciones(): Promise<DevolucionProveedor[]> {
   try {
-    const [rows] = await db.query('SELECT * FROM devoluciones ORDER BY fecha DESC');
-    return (rows as any[]).map(mapToDevolucion);
+    const result = await db.query('SELECT * FROM devoluciones ORDER BY fecha DESC');
+    return (result.rows as any[]).map(mapToDevolucion);
   } catch (error) {
     console.error('Error al obtener las devoluciones:', error);
     return [];
@@ -46,10 +46,10 @@ export async function createDevolucion(data: {
     TipoMovimiento.DEVOLUCION_PROVEEDOR
   );
 
-  const sql = `INSERT INTO devoluciones (productoId, productoNombre, proveedorId, proveedorNombre, cantidadDevuelta, motivo) VALUES (?, ?, ?, ?, ?, ?)`;
+  const sql = `INSERT INTO devoluciones (productoid, productonombre, proveedorid, proveedornombre, cantidaddevuelta, motivo) VALUES ($1, $2, $3, $4, $5, $6) RETURNING *`;
   
   try {
-    const [result] = await db.query(sql, [
+    const insertResult = await db.query(sql, [
       data.productoId,
       producto.nombre,
       producto.proveedorId,
@@ -57,9 +57,8 @@ export async function createDevolucion(data: {
       data.cantidadDevuelta,
       data.motivo,
     ]);
-    const insertId = (result as any).insertId;
-    const [newRow] = await db.query('SELECT * FROM devoluciones WHERE id = ?', [insertId]);
-    return mapToDevolucion((newRow as any)[0]);
+    // PostgreSQL RETURNING gives new row directly
+    return mapToDevolucion(insertResult.rows[0]);
   } catch (error) {
     console.error('Error al crear la devolución en DB:', error);
     // Aquí se debería implementar lógica para revertir la salida de stock si la inserción de la devolución falla.
@@ -70,8 +69,8 @@ export async function createDevolucion(data: {
 
 export async function deleteDevolucion(id: string): Promise<boolean> {
   try {
-    const [result] = await db.query('DELETE FROM devoluciones WHERE id = ?', [id]);
-    return (result as any).affectedRows > 0;
+    const result = await db.query('DELETE FROM devoluciones WHERE id = $1', [id]);
+    return result.rowCount > 0;
   } catch (error) {
     console.error('Error al eliminar la devolución:', error);
     throw new Error('No se pudo eliminar la devolución.');

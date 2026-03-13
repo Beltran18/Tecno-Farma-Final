@@ -7,10 +7,10 @@ import db from '@/lib/db';
 function mapToPedido(row: any): PedidoReposicion {
     return {
         id: String(row.id),
-        fechaPedido: new Date(row.fechaPedido),
-        fechaEntregaEstimada: row.fechaEntregaEstimada ? new Date(row.fechaEntregaEstimada) : undefined,
-        proveedorId: String(row.proveedorId),
-        proveedorNombre: row.proveedorNombre,
+        fechaPedido: new Date(row.fechapedido),
+        fechaEntregaEstimada: row.fechaentregaestimada ? new Date(row.fechaentregaestimada) : undefined,
+        proveedorId: String(row.proveedorid),
+        proveedorNombre: row.proveedornombre,
         productos: JSON.parse(row.productos || '[]'),
         estado: row.estado,
     };
@@ -18,8 +18,8 @@ function mapToPedido(row: any): PedidoReposicion {
 
 export async function getAllPedidos(): Promise<PedidoReposicion[]> {
   try {
-    const [rows] = await db.query('SELECT * FROM pedidos ORDER BY fechaPedido DESC');
-    return (rows as any[]).map(mapToPedido);
+    const result = await db.query('SELECT * FROM pedidos ORDER BY fechaPedido DESC');
+    return (result.rows as any[]).map(mapToPedido);
   } catch (error) {
     console.error('Error al obtener los pedidos:', error);
     return [];
@@ -50,20 +50,18 @@ export async function createPedido(
 
   const productosJson = JSON.stringify(productosConNombre);
   const sql = `
-    INSERT INTO pedidos (proveedorId, proveedorNombre, productos, estado, fechaEntregaEstimada) 
-    VALUES (?, ?, ?, ?, ?)
+    INSERT INTO pedidos (proveedorid, proveedornombre, productos, estado, fechaentregaestimada) 
+    VALUES ($1, $2, $3, $4, $5) RETURNING *
   `;
   try {
-    const [result] = await db.query(sql, [
+    const insertResult = await db.query(sql, [
       data.proveedorId,
       proveedor.nombre,
       productosJson,
       EstadoPedido.PENDIENTE,
       data.fechaEntregaEstimada ? new Date(data.fechaEntregaEstimada) : null,
     ]);
-    const insertId = (result as any).insertId;
-    const [newRow] = await db.query('SELECT * FROM pedidos WHERE id = ?', [insertId]);
-    return mapToPedido((newRow as any)[0]);
+    return mapToPedido(insertResult.rows[0]);
   } catch (error) {
     console.error('Error al crear el pedido:', error);
     throw new Error('No se pudo crear el pedido.');
@@ -71,11 +69,11 @@ export async function createPedido(
 }
 
 export async function updatePedidoStatus(id: string, estado: EstadoPedido): Promise<PedidoReposicion | null> {
-  const [rows] = await db.query('SELECT * FROM pedidos WHERE id = ?', [id]);
-  if ((rows as any[]).length === 0) {
+  const select = await db.query('SELECT * FROM pedidos WHERE id = $1', [id]);
+  if (select.rows.length === 0) {
     return null;
   }
-  const pedido = mapToPedido((rows as any)[0]);
+  const pedido = mapToPedido(select.rows[0]);
 
   if (pedido.estado === estado) return pedido;
 
@@ -95,9 +93,9 @@ export async function updatePedidoStatus(id: string, estado: EstadoPedido): Prom
   }
   
   try {
-    await db.query('UPDATE pedidos SET estado = ? WHERE id = ?', [estado, id]);
-    const [updatedRows] = await db.query('SELECT * FROM pedidos WHERE id = ?', [id]);
-    return mapToPedido((updatedRows as any)[0]);
+    await db.query('UPDATE pedidos SET estado = $1 WHERE id = $2', [estado, id]);
+    const updated = await db.query('SELECT * FROM pedidos WHERE id = $1', [id]);
+    return mapToPedido(updated.rows[0]);
   } catch (error) {
     console.error(`Error al actualizar estado del pedido ${id}:`, error);
     throw new Error('No se pudo actualizar el estado del pedido.');
@@ -106,8 +104,8 @@ export async function updatePedidoStatus(id: string, estado: EstadoPedido): Prom
 
 export async function deletePedido(id: string): Promise<boolean> {
   try {
-    const [result] = await db.query('DELETE FROM pedidos WHERE id = ?', [id]);
-    return (result as any).affectedRows > 0;
+    const result = await db.query('DELETE FROM pedidos WHERE id = $1', [id]);
+    return result.rowCount !== null && result.rowCount > 0;
   } catch (error) {
     console.error('Error al eliminar el pedido:', error);
     throw new Error('No se pudo eliminar el pedido.');

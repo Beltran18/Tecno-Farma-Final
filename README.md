@@ -22,34 +22,44 @@ a. Busca el archivo llamado `.env.example`. Este es tu plantilla.
 
 b. **Copia y renombra** ese archivo a `.env`.
 
-c. Abre el nuevo archivo `.env` y **revisa que los datos de tu base de datos sean correctos**. Por lo general, si usas XAMPP, los valores por defecto son:
+c. Abre el nuevo archivo `.env` y **revisa que la cadena de conexión sea correcta**. La aplicación ahora utiliza PostgreSQL (por ejemplo el servicio Neon) mediante la variable `DATABASE_URL`.
 
 ```
 # Clave secreta para la sesión (puedes dejar la que está)
 SESSION_SECRET=a5b3c7d9e1f2a8b5c4d6e8f1a2b3c4d5e7f8a9b0c1d2e3f4
 
-# Datos de tu base de datos MySQL
-DB_HOST=localhost
-DB_PORT=3306
-DB_USER=root
-DB_PASSWORD=  <-- ¡Importante! Déjalo vacío si no tienes contraseña en 'root'.
-DB_DATABASE=tecnofarmadb
+# Cadena de conexión para PostgreSQL / Neon
+# formato: postgres://user:password@host:port/databasename
+DATABASE_URL=postgres://usuario:contraseña@tuhost:5432/tecnofarmadb
 ```
 
 **Importante:** Si el usuario o contraseña de tu base de datos son diferentes, debes actualizarlos en este archivo. Sin este paso, la aplicación no podrá conectarse a la base de datos y fallará.
 
 ### 3. Crear la Base de Datos
 
-Antes de arrancar la aplicación, necesitas crear la base de datos y sus tablas.
+Antes de arrancar la aplicación, necesitas tener una base de datos PostgreSQL disponible (puede ser local, en Neon, o cualquier proveedor compatible). Una vez creada, ejecuta el script de esquema para generar las tablas.
 
-a. Abre **phpMyAdmin**.
-b. Crea una nueva base de datos llamada `tecnofarmadb`.
-c. Selecciona la base de datos que acabas de crear.
-d. Ve a la pestaña **"SQL"**.
-e. Copia **todo** el contenido del archivo `docs/database-schema.sql` que está en el proyecto.
-f. Pega el contenido en el campo de texto de la pestaña SQL y haz clic en **"Go"** o **"Continuar"**.
+*Si usas Neon*, copia la conexión generada por Neon en `DATABASE_URL` y luego abre la consola SQL del panel de Neon.
 
-Esto creará todas las tablas necesarias. Si las tablas ya existen, el script las borrará y las creará de nuevo para asegurar una instalación limpia.
+Si estás trabajando en tu máquina local con `psql`:
+
+```bash
+psql "$DATABASE_URL" -f docs/database-schema.sql
+```
+
+O, alternativamente, abre cualquier cliente SQL (pgAdmin, DBeaver, TablePlus, etc.), conéctate usando la cadena `DATABASE_URL` y ejecuta el contenido de `docs/database-schema.sql`.
+
+El script está diseñado para limpiar y recrear las tablas cada vez, así que puede ejecutarse varias veces sin problemas.
+
+### Ruta de prueba de conexión
+
+Para verificar rápidamente que la aplicación se conecta correctamente a tu base de datos PostgreSQL, hay una ruta de ejemplo disponible:
+
+```
+GET /api/test-db
+```
+
+Devuelve `NOW()` del servidor de BD en JSON. Usa `curl` o abre en el navegador durante el desarrollo.
 
 ### 4. Ejecutar el Servidor de Desarrollo
 

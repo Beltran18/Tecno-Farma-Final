@@ -13,8 +13,8 @@ function mapToKit(row: any): Kit {
 
 export async function getAllKits(): Promise<Kit[]> {
   try {
-    const [rows] = await db.query('SELECT * FROM kits ORDER BY nombre ASC');
-    return (rows as any[]).map(mapToKit);
+    const result = await db.query('SELECT * FROM kits ORDER BY nombre ASC');
+    return (result.rows as any[]).map(mapToKit);
   } catch (error) {
     console.error('Error al obtener kits:', error);
     return [];
@@ -34,15 +34,13 @@ export async function createKit(data: Omit<Kit, 'id' | 'componentes'> & { compon
   );
 
   const componentesJson = JSON.stringify(componentesCompletos);
-  const sql = 'INSERT INTO kits (nombre, precio, componentes) VALUES (?, ?, ?)';
+  const sql = 'INSERT INTO kits (nombre, precio, componentes) VALUES ($1, $2, $3) RETURNING *';
 
   try {
-    const [result] = await db.query(sql, [data.nombre, data.precio, componentesJson]);
-    const insertId = (result as any).insertId;
-    const [newRow] = await db.query('SELECT * FROM kits WHERE id = ?', [insertId]);
-    return mapToKit((newRow as any)[0]);
+    const insertResult = await db.query(sql, [data.nombre, data.precio, componentesJson]);
+    return mapToKit(insertResult.rows[0]);
   } catch (error: any) {
-    if (error.code === 'ER_DUP_ENTRY') {
+    if (error.code === '23505') {
       throw new Error('Ya existe un kit con este nombre.');
     }
     console.error('Error al crear el kit:', error);
@@ -52,8 +50,8 @@ export async function createKit(data: Omit<Kit, 'id' | 'componentes'> & { compon
 
 export async function deleteKit(id: string): Promise<boolean> {
   try {
-    const [result] = await db.query('DELETE FROM kits WHERE id = ?', [id]);
-    return (result as any).affectedRows > 0;
+    const result = await db.query('DELETE FROM kits WHERE id = $1', [id]);
+    return result.rowCount > 0;
   } catch (error) {
     console.error('Error al eliminar el kit:', error);
     throw new Error('No se pudo eliminar el kit.');
@@ -61,11 +59,11 @@ export async function deleteKit(id: string): Promise<boolean> {
 }
 
 export async function sellKit(kitId: string, cantidadVendida: number): Promise<void> {
-  const [rows] = await db.query('SELECT * FROM kits WHERE id = ?', [kitId]);
-  if ((rows as any[]).length === 0) {
+  const selectResult = await db.query('SELECT * FROM kits WHERE id = $1', [kitId]);
+  if (selectResult.rows.length === 0) {
     throw new Error('Kit no encontrado.');
   }
-  const kit = mapToKit((rows as any)[0]);
+  const kit = mapToKit(selectResult.rows[0]);
 
   // 1. Verificar stock de todos los componentes ANTES de descontar
   for (const componente of kit.componentes) {

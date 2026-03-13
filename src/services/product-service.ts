@@ -10,20 +10,20 @@ function mapToProducto(row: any): Producto {
     costo: parseFloat(row.costo),
     precio: parseFloat(row.precio),
     cantidad: parseInt(row.cantidad, 10),
-    fechaVencimiento: new Date(row.fechaVencimiento),
-    numeroLote: row.numeroLote,
-    proveedorId: row.proveedorId ? String(row.proveedorId) : undefined,
-    proveedorNombre: row.proveedorNombre,
+    fechaVencimiento: new Date(row.fechavencimiento),
+    numeroLote: row.numerolote,
+    proveedorId: row.proveedorid ? String(row.proveedorid) : undefined,
+    proveedorNombre: row.proveedornombre,
     descuento: row.descuento ? parseFloat(row.descuento) : 0,
-    fechaInicioGarantia: row.fechaInicioGarantia ? new Date(row.fechaInicioGarantia) : undefined,
-    fechaFinGarantia: row.fechaFinGarantia ? new Date(row.fechaFinGarantia) : undefined,
+    fechaInicioGarantia: row.fechainiciogarantia ? new Date(row.fechainiciogarantia) : undefined,
+    fechaFinGarantia: row.fechafingarantia ? new Date(row.fechafingarantia) : undefined,
   };
 }
 
 export async function getAllProducts(): Promise<Producto[]> {
   try {
-    const [rows] = await db.query('SELECT * FROM productos ORDER BY nombre ASC');
-    return (rows as any[]).map(mapToProducto);
+    const result = await db.query('SELECT * FROM productos ORDER BY nombre ASC');
+    return (result.rows as any[]).map(mapToProducto);
   } catch (error) {
     console.error('Error al obtener productos:', error);
     return [];
@@ -32,11 +32,11 @@ export async function getAllProducts(): Promise<Producto[]> {
 
 export async function getProductById(id: string): Promise<Producto | undefined> {
   try {
-    const [rows] = await db.query('SELECT * FROM productos WHERE id = ?', [id]);
-    if ((rows as any[]).length === 0) {
+    const result = await db.query('SELECT * FROM productos WHERE id = $1', [id]);
+    if (result.rows.length === 0) {
       return undefined;
     }
-    return mapToProducto((rows as any)[0]);
+    return mapToProducto(result.rows[0]);
   } catch (error) {
     console.error(`Error al obtener producto ${id}:`, error);
     throw new Error('Error al buscar el producto.');
@@ -49,11 +49,12 @@ export async function createProduct(
 ): Promise<Producto> {
   const sql = `
     INSERT INTO productos 
-    (nombre, categoria, costo, precio, cantidad, fechaVencimiento, numeroLote, proveedorId, proveedorNombre, descuento, fechaInicioGarantia, fechaFinGarantia) 
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    (nombre, categoria, costo, precio, cantidad, fechavencimiento, numerolote, proveedorid, proveedornombre, descuento, fechainiciogarantia, fechafingarantia) 
+    VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
+    RETURNING id
   `;
   try {
-    const [result] = await db.query(sql, [
+    const insertResult = await db.query(sql, [
       productData.nombre,
       productData.categoria,
       productData.costo,
@@ -68,7 +69,7 @@ export async function createProduct(
       productData.fechaFinGarantia,
     ]);
     
-    const insertId = (result as any).insertId;
+    const insertId = insertResult.rows[0].id;
     const nuevoProducto = { id: String(insertId), ...productData };
 
     await logMovement({
@@ -99,7 +100,11 @@ export async function updateProduct(id: string, productData: Partial<Omit<Produc
   const stockNuevo = productData.cantidad !== undefined ? Number(productData.cantidad) : stockAnterior;
 
   try {
-    await db.query('UPDATE productos SET ? WHERE id = ?', [productData, id]);
+    const fields = Object.keys(productData);
+    if (fields.length > 0) {
+      const sets = fields.map((f, i) => `${f} = $${i + 1}`).join(', ');
+      await db.query(`UPDATE productos SET ${sets} WHERE id = $${fields.length + 1}`, [...fields.map(k => (productData as any)[k]), id]);
+    }
     
     if (stockNuevo !== stockAnterior) {
       const cantidadMovida = Math.abs(stockNuevo - stockAnterior);
@@ -141,7 +146,7 @@ export async function registerProductExit(
   const stockNuevo = stockAnterior - cantidadSalida;
   
   try {
-    await db.query('UPDATE productos SET cantidad = ? WHERE id = ?', [stockNuevo, id]);
+    await db.query('UPDATE productos SET cantidad = $1 WHERE id = $2', [stockNuevo, id]);
 
     await logMovement({
       productoId: id,
@@ -171,7 +176,7 @@ export async function registerProductEntry(id: string, cantidadEntrada: number, 
   const stockNuevo = stockAnterior + cantidadEntrada;
   
   try {
-    await db.query('UPDATE productos SET cantidad = ? WHERE id = ?', [stockNuevo, id]);
+    await db.query('UPDATE productos SET cantidad = $1 WHERE id = $2', [stockNuevo, id]);
     
     await logMovement({
       productoId: id,
@@ -193,8 +198,8 @@ export async function registerProductEntry(id: string, cantidadEntrada: number, 
 
 export async function deleteProduct(id: string): Promise<boolean> {
   try {
-    const [result] = await db.query('DELETE FROM productos WHERE id = ?', [id]);
-    return (result as any).affectedRows > 0;
+    const result = await db.query('DELETE FROM productos WHERE id = $1', [id]);
+    return result.rowCount > 0;
   } catch (error) {
     console.error('Error al eliminar producto:', error);
     throw new Error('No se pudo eliminar el producto.');

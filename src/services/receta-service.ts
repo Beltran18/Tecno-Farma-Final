@@ -5,9 +5,9 @@ import db from '@/lib/db';
 function mapToReceta(row: any): RecetaMedica {
     return {
         id: String(row.id),
-        pacienteNombre: row.pacienteNombre,
-        doctorNombre: row.doctorNombre,
-        fechaPrescripcion: new Date(row.fechaPrescripcion),
+        pacienteNombre: row.pacientenombre,
+        doctorNombre: row.doctornombre,
+        fechaPrescripcion: new Date(row.fechaprescripcion),
         medicamentos: JSON.parse(row.medicamentos || '[]'),
         estado: row.estado,
     };
@@ -15,8 +15,8 @@ function mapToReceta(row: any): RecetaMedica {
 
 export async function getAllRecetas(): Promise<RecetaMedica[]> {
   try {
-    const [rows] = await db.query('SELECT * FROM recetas ORDER BY fechaPrescripcion DESC');
-    return (rows as any[]).map(mapToReceta);
+    const result = await db.query('SELECT * FROM recetas ORDER BY fechaPrescripcion DESC');
+    return (result.rows as any[]).map(mapToReceta);
   } catch (error) {
     console.error('Error al obtener recetas:', error);
     return [];
@@ -42,21 +42,19 @@ export async function createReceta(
 
   const medicamentosJson = JSON.stringify(medicamentosCompletos);
   const sql = `
-    INSERT INTO recetas (pacienteNombre, doctorNombre, fechaPrescripcion, medicamentos, estado) 
-    VALUES (?, ?, ?, ?, ?)
+    INSERT INTO recetas (pacientenombre, doctornombre, fechaprescripcion, medicamentos, estado) 
+    VALUES ($1, $2, $3, $4, $5) RETURNING *
   `;
 
   try {
-    const [result] = await db.query(sql, [
+    const insertResult = await db.query(sql, [
       data.pacienteNombre,
       data.doctorNombre,
       new Date(data.fechaPrescripcion),
       medicamentosJson,
       'Pendiente'
     ]);
-    const insertId = (result as any).insertId;
-    const [newRow] = await db.query('SELECT * FROM recetas WHERE id = ?', [insertId]);
-    return mapToReceta((newRow as any)[0]);
+    return mapToReceta(insertResult.rows[0]);
   } catch (error) {
     console.error('Error al crear receta:', error);
     throw new Error('No se pudo crear la receta.');
@@ -65,12 +63,12 @@ export async function createReceta(
 
 
 export async function dispenseReceta(recetaId: string): Promise<RecetaMedica> {
-  const [rows] = await db.query('SELECT * FROM recetas WHERE id = ?', [recetaId]);
-  if ((rows as any[]).length === 0) {
+  const select = await db.query('SELECT * FROM recetas WHERE id = $1', [recetaId]);
+  if (select.rows.length === 0) {
     throw new Error('Receta no encontrada.');
   }
 
-  const receta = mapToReceta((rows as any)[0]);
+  const receta = mapToReceta(select.rows[0]);
 
   if (receta.estado !== 'Pendiente') {
     throw new Error(`No se puede dispensar una receta que está en estado "${receta.estado}".`);
@@ -96,9 +94,9 @@ export async function dispenseReceta(recetaId: string): Promise<RecetaMedica> {
 
   // 3. Actualizar el estado de la receta
   try {
-    await db.query('UPDATE recetas SET estado = ? WHERE id = ?', ['Dispensada', recetaId]);
-    const [updatedRows] = await db.query('SELECT * FROM recetas WHERE id = ?', [recetaId]);
-    return mapToReceta((updatedRows as any)[0]);
+    await db.query('UPDATE recetas SET estado = $1 WHERE id = $2', ['Dispensada', recetaId]);
+    const updated = await db.query('SELECT * FROM recetas WHERE id = $1', [recetaId]);
+    return mapToReceta(updated.rows[0]);
   } catch (error) {
     console.error('Error al actualizar estado de la receta:', error);
     throw new Error('No se pudo actualizar el estado de la receta.');
@@ -107,8 +105,8 @@ export async function dispenseReceta(recetaId: string): Promise<RecetaMedica> {
 
 export async function deleteReceta(id: string): Promise<boolean> {
     try {
-        const [result] = await db.query('DELETE FROM recetas WHERE id = ?', [id]);
-        return (result as any).affectedRows > 0;
+        const result = await db.query('DELETE FROM recetas WHERE id = $1', [id]);
+        return result.rowCount > 0;
     } catch (error) {
         console.error('Error al eliminar receta:', error);
         throw new Error('No se pudo eliminar la receta.');
